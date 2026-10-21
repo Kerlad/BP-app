@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Golos+Text:wght@400;500;600;700&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&display=block" rel="stylesheet">
+<style>body{margin:0} *{box-sizing:border-box} a{color:inherit} a:hover{opacity:.8} .bp-scroll::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="{{ rootStyle }}">
+<div style="width:380px;height:800px;padding:10px;border-radius:48px;background:#15110F;box-shadow:0 30px 60px -20px rgba(40,20,10,.35)">
+<div style="position:relative;width:360px;height:780px;border-radius:38px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--fn);display:flex;flex-direction:column">
+
+  <div style="height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 26px;font-size:14px;font-weight:600">
+    <span>9:41</span>
+    <div style="display:flex;gap:4px;align-items:center">
+      <span style="font-family:'Material Symbols Rounded';font-size:17px;line-height:1">signal_cellular_alt</span>
+      <span style="font-family:'Material Symbols Rounded';font-size:17px;line-height:1">wifi</span>
+      <span style="font-family:'Material Symbols Rounded';font-size:17px;line-height:1">battery_full</span>
+    </div>
+  </div>
+
+  <div class="bp-scroll" style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none">
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0 4px">
+      <div>
+        <div style="font-size:14px;color:var(--mut)">{{ todayLabel }}</div>
+        <div style="font-size:24px;font-weight:700;letter-spacing:-.01em">Доброе утро, Анна</div>
+      </div>
+      <button onClick="{{ goLevels }}" style="width:44px;height:44px;border-radius:22px;border:none;background:var(--sf);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1">tune</span>
+      </button>
+    </div>
+
+    <div style="background:var(--sf);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:14px;color:var(--mut)">{{ last.when }}</span>
+        <span style="font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;background:{{ last.soft }};color:{{ last.color }}">{{ last.label }}</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:6px;font-family:var(--num);font-weight:var(--nw)">
+        <span style="font-size:62px;line-height:1;letter-spacing:-.03em">{{ last.sys }}</span>
+        <span style="font-size:40px;color:var(--mut);font-weight:400">/</span>
+        <span style="font-size:62px;line-height:1;letter-spacing:-.03em">{{ last.dia }}</span>
+        <span style="font-size:14px;color:var(--mut);font-family:var(--fn);font-weight:500;margin-left:4px;white-space:nowrap">мм рт. ст.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:15px;color:var(--mut)">
+        <span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1;color:var(--hi);font-variation-settings:'FILL' 1">favorite</span>
+        <span style="color:var(--ink);font-weight:700">{{ last.pulse }}</span><span>уд/мин · {{ last.arm }} рука</span>
+      </div>
+    </div>
+
+    <button onClick="{{ goAdd }}" style="height:62px;border:none;border-radius:var(--r);background:var(--ac);color:var(--aci);font-family:var(--fn);font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer">
+      <span style="font-family:'Material Symbols Rounded';font-size:26px;line-height:1">add</span>Записать давление
+    </button>
+
+    <button onClick="{{ goCharts }}" style="text-align:left;border:none;color:var(--ink);font-family:var(--fn);cursor:pointer;background:var(--sf);border-radius:var(--r);padding:18px 18px 14px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;width:100%">
+        <span style="font-size:16px;font-weight:700">7 дней</span>
+        <span style="font-size:14px;color:var(--mut);white-space:nowrap">среднее <b style="color:var(--ink);font-family:var(--num)">{{ wk.sys }}/{{ wk.dia }}</b></span>
+      </div>
+      <svg viewBox="0 0 300 120" width="100%" height="120" style="display:block">
+        <line x1="0" x2="300" y1="{{ wk.hsY }}" y2="{{ wk.hsY }}" style="stroke:var(--hi);stroke-width:1.5;stroke-dasharray:4 5;opacity:.7"></line>
+        <path d="{{ wk.barsOk }}" style="stroke:var(--ac);stroke-width:16;stroke-linecap:round;fill:none;opacity:.85"></path>
+        <path d="{{ wk.barsHi }}" style="stroke:var(--hi);stroke-width:16;stroke-linecap:round;fill:none"></path>
+        <path d="{{ wk.barsLo }}" style="stroke:var(--lo);stroke-width:16;stroke-linecap:round;fill:none"></path>
+      </svg>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);width:100%">
+        <sc-for list="{{ wk.days }}" as="d" hint-placeholder-count="7">
+          <span style="text-align:center;font-size:12px;color:var(--mut)">{{ d.label }}</span>
+        </sc-for>
+      </div>
+    </button>
+
+    <button onClick="{{ goReminders }}" style="border:none;text-align:left;color:var(--ink);font-family:var(--fn);cursor:pointer;background:var(--sf);border-radius:var(--r);padding:16px 18px;display:flex;align-items:center;gap:14px">
+      <span style="width:44px;height:44px;border-radius:22px;background:var(--acs);color:var(--ac);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:22px;line-height:1">alarm</span>
+      <div style="flex:1">
+        <div style="font-size:13px;color:var(--mut)">Следующее напоминание</div>
+        <div style="font-size:16px;font-weight:700">{{ nextRem }}</div>
+      </div>
+      <span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;color:var(--mut)">chevron_right</span>
+    </button>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100%;display:flex;flex-direction:column;padding:0 16px 14px;gap:12px">
+    <div style="display:flex;align-items:center;gap:8px;height:52px">
+      <button onClick="{{ goHome }}" style="width:44px;height:44px;border-radius:22px;border:none;background:transparent;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">close</span>
+      </button>
+      <span style="font-size:20px;font-weight:700">Новое измерение</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <span style="display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;padding:8px 12px;border-radius:999px;background:var(--sf)">
+        <span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1;color:var(--mut)">schedule</span>Сегодня, 09:12
+      </span>
+      <div style="display:flex;background:var(--sf);border-radius:999px;padding:3px">
+        <sc-for list="{{ arms }}" as="a" hint-placeholder-count="2">
+          <button onClick="{{ a.onClick }}" style="border:none;cursor:pointer;font-family:var(--fn);font-size:13px;font-weight:600;padding:7px 12px;border-radius:999px;background:{{ a.bg }};color:{{ a.fg }}">{{ a.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+      <sc-for list="{{ fields }}" as="f" hint-placeholder-count="3">
+        <button onClick="{{ f.onClick }}" style="cursor:pointer;font-family:var(--fn);color:var(--ink);text-align:left;padding:12px 12px 10px;border-radius:var(--r);background:var(--sf);border:2px solid {{ f.border }};display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:13px;font-weight:600;color:var(--mut)">{{ f.label }}</span>
+          <span style="font-family:var(--num);font-weight:var(--nw);font-size:36px;line-height:1.1;color:{{ f.color }}">{{ f.display }}</span>
+          <span style="font-size:12px;color:var(--mut)">{{ f.unit }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;min-height:30px">
+      <span style="font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;background:{{ preview.soft }};color:{{ preview.color }}">{{ preview.label }}</span>
+      <span style="font-size:13px;color:var(--mut)">{{ preview.hint }}</span>
+    </div>
+    <div class="bp-scroll" style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px">
+      <sc-for list="{{ tags }}" as="t" hint-placeholder-count="5">
+        <button onClick="{{ t.onClick }}" style="flex-shrink:0;white-space:nowrap;cursor:pointer;font-family:var(--fn);font-size:13px;font-weight:600;padding:8px 12px;border-radius:999px;border:1.5px solid {{ t.border }};background:{{ t.bg }};color:var(--ink)">{{ t.label }}</button>
+      </sc-for>
+    </div>
+    <input value="{{ comment }}" onChange="{{ onComment }}" placeholder="Свой комментарий" maxlength="120" style="height:44px;flex-shrink:0;border:1.5px solid var(--ln);border-radius:calc(var(--r) * .6);background:var(--sf);color:var(--ink);font-family:var(--fn);font-size:15px;padding:0 14px;outline:none">
+    <div style="flex:1"></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <sc-for list="{{ keys }}" as="k" hint-placeholder-count="12">
+        <button onClick="{{ k.onClick }}" style="height:50px;border:none;border-radius:calc(var(--r) * .6);background:{{ k.bg }};color:{{ k.fg }};font-family:var(--num);font-size:24px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <sc-if value="{{ k.isIcon }}"><span style="font-family:'Material Symbols Rounded';font-size:26px;line-height:1">{{ k.label }}</span></sc-if>
+          <sc-if value="{{ k.isText }}"><span>{{ k.label }}</span></sc-if>
+        </button>
+      </sc-for>
+    </div>
+    <button onClick="{{ save }}" style="height:56px;border:none;border-radius:var(--r);background:var(--ac);color:var(--aci);font-family:var(--fn);font-size:17px;font-weight:700;cursor:pointer;opacity:{{ saveOpacity }}">Сохранить</button>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px">
+    <div style="font-size:28px;font-weight:700;padding:8px 0 0">Дневник</div>
+    <div class="bp-scroll" style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -20px;padding:0 20px">
+      <sc-for list="{{ filters }}" as="c" hint-placeholder-count="4">
+        <button onClick="{{ c.onClick }}" style="flex-shrink:0;white-space:nowrap;border:none;cursor:pointer;font-family:var(--fn);font-size:14px;font-weight:600;padding:9px 14px;border-radius:999px;background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }}</button>
+      </sc-for>
+    </div>
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:14px;font-weight:700;color:var(--mut);padding:4px 4px 0">{{ g.title }}</div>
+        <div style="background:var(--sf);border-radius:var(--r);overflow:hidden">
+          <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--ln)">
+              <div style="width:4px;height:38px;border-radius:2px;background:{{ r.color }}"></div>
+              <div style="width:42px;font-size:14px;color:var(--mut)">{{ r.time }}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-family:var(--num);font-weight:var(--nw);font-size:22px;line-height:1.2">{{ r.sys }}/{{ r.dia }}</div>
+                <div style="font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.note }}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:15px;font-weight:700;color:{{ r.pulseColor }}">
+                <span style="font-family:'Material Symbols Rounded';font-size:16px;line-height:1;font-variation-settings:'FILL' 1;color:var(--hi)">favorite</span>{{ r.pulse }}
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+    <sc-if value="{{ historyEmpty }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:40px 0;text-align:center;color:var(--mut);font-size:15px">Нет измерений с такой отметкой</div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isCharts }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 0">
+      <span style="font-size:28px;font-weight:700">Графики</span>
+      <div style="display:flex;background:var(--sf);border-radius:999px;padding:3px">
+        <sc-for list="{{ periods }}" as="p" hint-placeholder-count="2">
+          <button onClick="{{ p.onClick }}" style="border:none;cursor:pointer;font-family:var(--fn);font-size:13px;font-weight:600;padding:7px 12px;border-radius:999px;background:{{ p.bg }};color:{{ p.fg }}">{{ p.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="background:var(--sf);border-radius:var(--r);padding:16px 14px 12px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:14px;font-size:13px;color:var(--mut);padding:0 4px">
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:5px;background:var(--ac)"></span>Верхнее</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:5px;background:var(--mut)"></span>Нижнее</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;border-top:2px dashed var(--hi)"></span>Ваш порог</span>
+      </div>
+      <svg viewBox="0 0 320 200" width="100%" height="200" style="display:block">
+        <g style="stroke:var(--ln);stroke-width:1">
+          <line x1="30" x2="318" y1="37.7" y2="37.7"></line><line x1="30" x2="318" y1="65.4" y2="65.4"></line><line x1="30" x2="318" y1="93.1" y2="93.1"></line><line x1="30" x2="318" y1="120.8" y2="120.8"></line><line x1="30" x2="318" y1="148.5" y2="148.5"></line><line x1="30" x2="318" y1="176.2" y2="176.2"></line>
+        </g>
+        <g style="fill:var(--mut);font-size:10px;font-family:var(--fn)">
+          <text x="2" y="41">160</text><text x="2" y="69">140</text><text x="2" y="97">120</text><text x="2" y="124">100</text><text x="8" y="152">80</text><text x="8" y="180">60</text>
+        </g>
+        <line x1="30" x2="318" y1="{{ ch.hsY }}" y2="{{ ch.hsY }}" style="stroke:var(--hi);stroke-width:1.5;stroke-dasharray:4 4"></line>
+        <line x1="30" x2="318" y1="{{ ch.hdY }}" y2="{{ ch.hdY }}" style="stroke:var(--hi);stroke-width:1.5;stroke-dasharray:4 4;opacity:.6"></line>
+        <path d="{{ ch.diaLine }}" style="stroke:var(--mut);stroke-width:2;fill:none;stroke-linejoin:round;opacity:.8"></path>
+        <path d="{{ ch.sysLine }}" style="stroke:var(--ac);stroke-width:2.5;fill:none;stroke-linejoin:round"></path>
+        <path d="{{ ch.diaDots }}" stroke-width="{{ ch.dotW }}" style="stroke:var(--mut);stroke-linecap:round;fill:none"></path>
+        <path d="{{ ch.sysDots }}" stroke-width="{{ ch.dotW }}" style="stroke:var(--ac);stroke-linecap:round;fill:none"></path>
+        <path d="{{ ch.hiDots }}" stroke-width="{{ ch.hiW }}" style="stroke:var(--hi);stroke-linecap:round;fill:none"></path>
+      </svg>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut);padding:0 2px 0 30px">
+        <span>{{ ch.fromLabel }}</span><span>Сегодня</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <sc-for list="{{ ch.stats }}" as="s" hint-placeholder-count="4">
+        <div style="background:var(--sf);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:13px;color:var(--mut)">{{ s.label }}</span>
+          <span style="font-family:var(--num);font-weight:var(--nw);font-size:26px">{{ s.value }}</span>
+          <span style="font-size:12px;color:var(--mut)">{{ s.sub }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background:var(--sf);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span style="font-size:16px;font-weight:700">В пределах ваших уровней</span>
+        <span style="font-family:var(--num);font-weight:var(--nw);font-size:20px;color:var(--ok)">{{ ch.okPct }}%</span>
+      </div>
+      <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px">
+        <div style="flex:{{ ch.nHi }};background:var(--hi)"></div>
+        <div style="flex:{{ ch.nOk }};background:var(--ok)"></div>
+        <div style="flex:{{ ch.nLo }};background:var(--lo)"></div>
+      </div>
+      <div style="display:flex;gap:14px;font-size:13px;color:var(--mut);flex-wrap:wrap">
+        <span>Повышенное: <b style="color:var(--ink)">{{ ch.nHi }}</b></span>
+        <span>Норма: <b style="color:var(--ink)">{{ ch.nOk }}</b></span>
+        <span>Пониженное: <b style="color:var(--ink)">{{ ch.nLo }}</b></span>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isReminders }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:28px;font-weight:700;padding:8px 0 2px">Напоминания</div>
+    <sc-for list="{{ reminders }}" as="m" hint-placeholder-count="3">
+      <div style="background:var(--sf);border-radius:var(--r);padding:16px 18px;display:flex;align-items:center;gap:12px">
+        <div style="flex:1;opacity:{{ m.opacity }}">
+          <div style="font-family:var(--num);font-weight:var(--nw);font-size:32px;line-height:1.1">{{ m.time }}</div>
+          <div style="font-size:15px;font-weight:600">{{ m.label }}</div>
+          <div style="font-size:13px;color:var(--mut)">{{ m.days }}</div>
+        </div>
+        <button onClick="{{ m.onToggle }}" style="width:52px;height:32px;border-radius:16px;border:none;padding:4px;cursor:pointer;background:{{ m.track }};display:flex">
+          <span style="width:24px;height:24px;border-radius:12px;background:{{ m.knob }};transform:translateX({{ m.knobX }}px);transition:transform .15s"></span>
+        </button>
+      </div>
+    </sc-for>
+    <button onClick="{{ addReminder }}" style="height:56px;border-radius:var(--r);border:1.5px dashed var(--ln);background:transparent;color:var(--ac);font-family:var(--fn);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+      <span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1">add_alarm</span>Добавить напоминание
+    </button>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isLevels }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:0 20px 24px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:8px;height:52px;margin-left:-10px">
+      <button onClick="{{ goHome }}" style="width:44px;height:44px;border-radius:22px;border:none;background:transparent;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1">arrow_back</span>
+      </button>
+      <span style="font-size:20px;font-weight:700">Уровни давления</span>
+    </div>
+    <div style="font-size:14px;color:var(--mut);text-wrap:pretty;margin-top:-6px">Измерения за пределами этих значений отмечаются цветом в дневнике и на графиках.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <sc-for list="{{ presets }}" as="p" hint-placeholder-count="2">
+        <button onClick="{{ p.onClick }}" style="cursor:pointer;text-align:left;font-family:var(--fn);color:var(--ink);padding:12px 14px;border-radius:var(--r);background:{{ p.bg }};border:1.5px solid {{ p.border }}">
+          <div style="font-family:var(--num);font-weight:var(--nw);font-size:20px">{{ p.label }}</div>
+          <div style="font-size:12px;color:var(--mut)">{{ p.sub }}</div>
+        </button>
+      </sc-for>
+    </div>
+    <sc-for list="{{ levelGroups }}" as="g" hint-placeholder-count="3">
+      <div style="background:var(--sf);border-radius:var(--r);padding:6px 16px">
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 0 4px;font-size:14px;font-weight:700">
+          <span style="width:10px;height:10px;border-radius:5px;background:{{ g.color }}"></span>{{ g.title }}
+        </div>
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+            <div style="flex:1">
+              <div style="font-size:15px">{{ r.label }}</div>
+              <div style="font-size:12px;color:var(--mut)">{{ r.unit }}</div>
+            </div>
+            <button onClick="{{ r.dec }}" style="width:40px;height:40px;border-radius:20px;border:none;background:var(--sf2);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center"><span style="font-family:'Material Symbols Rounded';font-size:20px;line-height:1">remove</span></button>
+            <span style="width:62px;text-align:center;font-family:var(--num);font-weight:var(--nw);font-size:22px">{{ r.display }}</span>
+            <button onClick="{{ r.inc }}" style="width:40px;height:40px;border-radius:20px;border:none;background:var(--sf2);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center"><span style="font-family:'Material Symbols Rounded';font-size:20px;line-height:1">add</span></button>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+    <div style="background:var(--sf);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px">
+      <span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;color:var(--mut)">dark_mode</span>
+      <span style="flex:1;font-size:15px">Тёмная тема</span>
+      <button onClick="{{ toggleDark }}" style="width:52px;height:32px;border-radius:16px;border:none;padding:4px;cursor:pointer;background:{{ darkSw.track }};display:flex">
+        <span style="width:24px;height:24px;border-radius:12px;background:{{ darkSw.knob }};transform:translateX({{ darkSw.knobX }}px);transition:transform .15s"></span>
+      </button>
+    </div>
+    <div style="font-size:12px;color:var(--mut);text-align:center">Целевые значения согласуйте с лечащим врачом.</div>
+  </div>
+  </sc-if>
+  </div>
+
+  <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+  <div style="flex-shrink:0;height:74px;background:var(--sf2);display:grid;grid-template-columns:repeat(4,1fr);padding-top:10px">
+    <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+      <button onClick="{{ n.onClick }}" style="border:none;background:transparent;cursor:pointer;font-family:var(--fn);display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ n.fg }}">
+        <span style="width:58px;height:30px;border-radius:15px;background:{{ n.pill }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:23px;line-height:1">{{ n.icon }}</span>
+        <span style="font-size:12px;font-weight:{{ n.weight }}">{{ n.label }}</span>
+      </button>
+    </sc-for>
+  </div>
+  </sc-if>
+  <div style="height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:{{ gestureBg }}">
+    <span style="width:108px;height:4px;border-radius:2px;background:var(--ink);opacity:.35"></span>
+  </div>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:20px;right:20px;bottom:110px;background:var(--ink);color:var(--bg);border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px">
+      <span style="font-family:'Material Symbols Rounded';font-size:20px;line-height:1">check_circle</span>{{ toast }}
+    </div>
+  </sc-if>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:380,&quot;height&quot;:800},&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;peach&quot;,&quot;sage&quot;,&quot;plum&quot;],&quot;default&quot;:&quot;peach&quot;,&quot;tsType&quot;:&quot;'peach'|'sage'|'plum'&quot;},&quot;dark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'home', readings: this.makeData(),
+    th: { hs: 135, hd: 85, ls: 100, ld: 60, pl: 50, ph: 90 },
+    dark: null, period: 7, filter: 'all',
+    draft: { sys: '', dia: '', pulse: '' }, field: 'sys', arm: (() => { try { return localStorage.getItem('bp-arm') || 'Левая'; } catch (e) { return 'Левая'; } })(), tags: [], comment: '', toast: '',
+    reminders: [
+      { id: 1, time: '08:00', label: 'Утреннее измерение', days: 'Ежедневно', on: true },
+      { id: 2, time: '14:00', label: 'Дневное измерение', days: 'Пн – Пт', on: false },
+      { id: 3, time: '21:00', label: 'Вечернее измерение', days: 'Ежедневно', on: true }
+    ]
+  };
+  now() { return new Date(2026, 9, 20, 9, 12); }
+  makeData() {
+    let s = 11; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    const N = this.now(), out = [];
+    for (let d = 29; d >= 0; d--) for (const h of [7, 21]) {
+      const t = new Date(N.getFullYear(), N.getMonth(), N.getDate() - d, h, 5 + Math.floor(rnd() * 40)).getTime();
+      if (t > N.getTime()) continue;
+      const ev = h > 12 ? 5 : 0, tr = -(29 - d) * 0.3, sp = rnd() < 0.12 ? 14 : 0, dp = rnd() < 0.06 ? -24 : 0;
+      out.push({ id: out.length + 1, t, arm: 'Левая', tags: [],
+        sys: Math.round(134 + ev + tr + sp + dp + (rnd() - .5) * 16),
+        dia: Math.round(86 + ev * .6 + tr * .5 + sp * .5 + dp * .6 + (rnd() - .5) * 10),
+        pulse: Math.round(71 + (rnd() - .5) * 18) });
+    }
+    return out.reverse();
+  }
+  palette(dir, dark) {
+    const P = {
+      peach: { fn: "'Nunito', sans-serif", nw: 800, r: '28px',
+        light: ['#FAF3EC','#FFFFFF','#F4E8DE','#2D2420','#7B6B62','#DD6B4A','#FFFFFF','#FADFD3','#C9443A','#F8DCD7','#3F8B5E','#DCEEDF','#3F72B5','#DCE7F5','#ECDDD1'],
+        dark: ['#1C1613','#271F1B','#322823','#F6ECE5','#B3A197','#F08766','#2A130B','#47291E','#F17A6E','#4A2421','#7FC79A','#1F3A2A','#86ADE4','#1F2E44','#3B302A'] },
+      sage: { fn: "'Golos Text', sans-serif", nw: 700, r: '14px',
+        light: ['#F2F3EA','#FFFFFC','#E6E9DA','#22291F','#646D5B','#557A47','#FFFFFF','#DAE5CC','#BF5236','#F4DDD3','#557A47','#DAE5CC','#3E7397','#D8E6EE','#DDE1CF'],
+        dark: ['#141812','#1D231B','#262E23','#EAEFE3','#A2AC97','#9BC285','#13200C','#2C3B25','#EE8A6E','#43261D','#9BC285','#2C3B25','#8BB9D8','#1C2D38','#313A2C'] },
+      plum: { fn: "'Onest', sans-serif", nw: 700, r: '22px',
+        light: ['#F7F1F3','#FFFFFF','#EFE3E8','#2C2128','#77656F','#9A4E78','#FFFFFF','#F1DCE7','#C4453F','#F6DAD8','#3E8A6A','#D9EDE3','#4A6FB0','#DEE5F3','#EADCE2'],
+        dark: ['#1A1418','#251D22','#30262C','#F4EAF0','#B19FAA','#E08CB8','#2B1020','#44283A','#F07E77','#47232A','#82C9A6','#1F3A2F','#8FAEE6','#222D45','#3A2E35'] }
+    };
+    const p = P[dir] || P.peach, c = dark ? p.dark : p.light;
+    const k = ['bg','sf','sf2','ink','mut','ac','aci','acs','hi','hiS','ok','okS','lo','loS','ln'];
+    const o = { display: 'inline-block', '--fn': p.fn, '--num': p.fn, '--nw': p.nw, '--r': p.r };
+    k.forEach((n, i) => o['--' + n] = c[i]);
+    return o;
+  }
+  cls(sys, dia) {
+    const t = this.state.th;
+    if (sys >= t.hs || dia >= t.hd) return 'hi';
+    if (sys <= t.ls || dia <= t.ld) return 'lo';
+    return 'ok';
+  }
+  stat(k) {
+    return { hi: { label: 'Повышенное', color: 'var(--hi)', soft: 'var(--hiS)' },
+      ok: { label: 'В норме', color: 'var(--ok)', soft: 'var(--okS)' },
+      lo: { label: 'Пониженное', color: 'var(--lo)', soft: 'var(--loS)' } }[k];
+  }
+  hm(t) { const d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  dayDiff(t) { const a = new Date(t), b = this.now(); return Math.round((new Date(b.getFullYear(), b.getMonth(), b.getDate()) - new Date(a.getFullYear(), a.getMonth(), a.getDate())) / 864e5); }
+  dayLabel(t) {
+    const M = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+    const W = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+    const dd = this.dayDiff(t), d = new Date(t);
+    if (dd === 0) return 'Сегодня'; if (dd === 1) return 'Вчера';
+    return d.getDate() + ' ' + M[d.getMonth()] + ', ' + W[d.getDay()];
+  }
+  y(v) { return 190 - (Math.min(180, Math.max(50, v)) - 50) / 130 * 180; }
+  ym(v) { return 112 - (Math.min(180, Math.max(50, v)) - 50) / 130 * 104; }
+  go(screen) { this.setState({ screen }); }
+  press(k) {
+    const order = ['sys', 'dia', 'pulse'];
+    const f = this.state.field, d = { ...this.state.draft }, i = order.indexOf(f);
+    if (k === 'del') {
+      if (d[f] === '' && i > 0) { const pf = order[i - 1]; d[pf] = d[pf].slice(0, -1); return this.setState({ draft: d, field: pf }); }
+      d[f] = d[f].slice(0, -1); return this.setState({ draft: d });
+    }
+    if (k === 'next') { if (i < 2) return this.setState({ field: order[i + 1] }); return this.save(); }
+    if (d[f].length >= 3) return;
+    d[f] += k;
+    const adv = (d[f].length === 3 || (d[f].length === 2 && d[f][0] !== '1')) && i < 2;
+    this.setState({ draft: d, field: adv ? order[i + 1] : f });
+  }
+  save() {
+    const d = this.state.draft;
+    if (!d.sys || !d.dia || !d.pulse) return;
+    const r = { id: Date.now(), t: Math.max(this.now().getTime(), this.state.readings[0].t + 60000), sys: +d.sys, dia: +d.dia, pulse: +d.pulse, arm: this.state.arm, tags: this.state.tags, comment: this.state.comment.trim() };
+    this.setState(s => ({ readings: [r, ...s.readings], draft: { sys: '', dia: '', pulse: '' }, field: 'sys', tags: [], comment: '', screen: 'home', toast: 'Измерение сохранено' }));
+    clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: '' }), 2400);
+  }
+  componentWillUnmount() { clearTimeout(this._tt); }
+  sw(on) { return { track: on ? 'var(--ac)' : 'var(--ln)', knob: on ? 'var(--aci)' : 'var(--sf)', knobX: on ? 20 : 0 }; }
+  renderVals() {
+    const S = this.state, N = this.now(), th = S.th, R = S.readings;
+    const dark = S.dark ?? !!this.props.dark;
+    const rootStyle = this.palette(this.props.direction ?? 'peach', dark);
+    const seg = (on) => ({ bg: on ? 'var(--ac)' : 'transparent', fg: on ? 'var(--aci)' : 'var(--ink)' });
+
+    const l = R[0], lk = this.cls(l.sys, l.dia), ls = this.stat(lk);
+    const last = { ...l, ...ls, when: this.dayLabel(l.t) + ', ' + this.hm(l.t) };
+
+    const days = [], WD = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+    const bars = { ok: '', hi: '', lo: '' }; let wS = 0, wD = 0, wn = 0;
+    for (let i = 6; i >= 0; i--) {
+      const dr = R.filter(r => this.dayDiff(r.t) === i), x = ((6 - i) + .5) * 300 / 7;
+      const dt = new Date(N.getFullYear(), N.getMonth(), N.getDate() - i);
+      days.push({ label: i === 0 ? 'Сег' : WD[dt.getDay()] });
+      if (!dr.length) continue;
+      const as = dr.reduce((a, r) => a + r.sys, 0) / dr.length, ad = dr.reduce((a, r) => a + r.dia, 0) / dr.length;
+      dr.forEach(r => { wS += r.sys; wD += r.dia; wn++; });
+      const mx = Math.max(...dr.map(r => r.sys)), mn = Math.min(...dr.map(r => r.dia));
+      bars[this.cls(as, ad)] += `M${x.toFixed(1)} ${this.ym(mx).toFixed(1)}V${this.ym(mn).toFixed(1)} `;
+    }
+    const wk = { days, barsOk: bars.ok, barsHi: bars.hi, barsLo: bars.lo, hsY: this.ym(th.hs), sys: Math.round(wS / wn), dia: Math.round(wD / wn) };
+
+    const nowHM = this.hm(N.getTime()), on = S.reminders.filter(r => r.on).sort((a, b) => a.time.localeCompare(b.time));
+    const nr = on.find(r => r.time > nowHM) || on[0];
+    const nextRem = nr ? nr.time + ' · ' + nr.label : 'Не настроены';
+
+    const order = ['sys', 'dia', 'pulse'], lab = { sys: ['Верхнее', 'САД, мм'], dia: ['Нижнее', 'ДАД, мм'], pulse: ['Пульс', 'уд/мин'] };
+    const fields = order.map(k => ({ label: lab[k][0], unit: lab[k][1], display: S.draft[k] || '—',
+      color: S.draft[k] ? 'var(--ink)' : 'var(--ln)', border: S.field === k ? 'var(--ac)' : 'transparent',
+      onClick: () => this.setState({ field: k }) }));
+    const d = S.draft;
+    let preview = { label: 'Введите значения', color: 'var(--mut)', soft: 'var(--sf)', hint: '' };
+    if (d.sys.length >= 2 && d.dia.length >= 2) {
+      const pk = this.cls(+d.sys, +d.dia);
+      preview = { ...this.stat(pk), hint: pk === 'hi' ? `выше ${th.hs}/${th.hd}` : pk === 'lo' ? `ниже ${th.ls}/${th.ld}` : 'в пределах ваших уровней' };
+    }
+    const keys = ['1','2','3','4','5','6','7','8','9','del','0','next'].map(k => {
+      const icon = k === 'del' ? 'backspace' : k === 'next' ? (S.field === 'pulse' ? 'check' : 'arrow_forward') : null;
+      return { label: icon || k, isIcon: !!icon, isText: !icon, onClick: () => this.press(k),
+        bg: k === 'next' ? 'var(--acs)' : 'var(--sf)', fg: k === 'next' ? 'var(--ac)' : 'var(--ink)' };
+    });
+    const tagList = ['Хорошо', 'Головная боль', 'Головокружение', 'Слабость', 'После лекарства', 'После нагрузки'];
+    const tags = tagList.map(t => { const a = S.tags.includes(t); return { label: t, bg: a ? 'var(--acs)' : 'transparent', border: a ? 'var(--ac)' : 'var(--ln)',
+      onClick: () => this.setState(s => ({ tags: a ? s.tags.filter(x => x !== t) : [...s.tags, t] })) }; });
+    const arms = ['Левая', 'Правая'].map(a => ({ label: a, ...seg(S.arm === a), onClick: () => { try { localStorage.setItem('bp-arm', a); } catch (e) {} this.setState({ arm: a }); } }));
+
+    const filters = [['all', 'Все'], ['hi', 'Повышенное'], ['ok', 'Норма'], ['lo', 'Пониженное']].map(([id, label]) => ({ label, ...seg(S.filter === id), onClick: () => this.setState({ filter: id }) }));
+    const groups = []; let gmap = {};
+    R.filter(r => S.filter === 'all' || this.cls(r.sys, r.dia) === S.filter).slice(0, 40).forEach(r => {
+      const title = this.dayLabel(r.t); if (!gmap[title]) { gmap[title] = { title, items: [] }; groups.push(gmap[title]); }
+      const st = this.stat(this.cls(r.sys, r.dia));
+      gmap[title].items.push({ time: this.hm(r.t), sys: r.sys, dia: r.dia, pulse: r.pulse, color: st.color,
+        pulseColor: r.pulse < th.pl || r.pulse > th.ph ? 'var(--hi)' : 'var(--ink)',
+        note: [st.label, r.arm.toLowerCase() + ' рука', ...r.tags, r.comment].filter(Boolean).join(' · ') });
+    });
+
+    const periods = [[7, '7 дней'], [30, '30 дней']].map(([v, label]) => ({ label, ...seg(S.period === v), onClick: () => this.setState({ period: v }) }));
+    const from = new Date(N.getFullYear(), N.getMonth(), N.getDate() - (S.period - 1)).getTime();
+    const pts = R.filter(r => r.t >= from).sort((a, b) => a.t - b.t), n = pts.length;
+    const X = i => n > 1 ? 34 + i * 280 / (n - 1) : 174;
+    const line = k => pts.map((p, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + this.y(p[k]).toFixed(1)).join(' ');
+    const dots = (k, f) => pts.map((p, i) => f && !f(p) ? '' : 'M' + X(i).toFixed(1) + ' ' + this.y(p[k]).toFixed(1) + 'h0').join(' ');
+    const avg = k => Math.round(pts.reduce((a, p) => a + p[k], 0) / n);
+    const cnt = { hi: 0, ok: 0, lo: 0 }; pts.forEach(p => cnt[this.cls(p.sys, p.dia)]++);
+    const mx = pts.reduce((a, p) => p.sys > a.sys ? p : a, pts[0]), mn = pts.reduce((a, p) => p.sys < a.sys ? p : a, pts[0]);
+    const am = pts.filter(p => new Date(p.t).getHours() < 12), pm = pts.filter(p => new Date(p.t).getHours() >= 12);
+    const av2 = a => a.length ? Math.round(a.reduce((s, p) => s + p.sys, 0) / a.length) + '/' + Math.round(a.reduce((s, p) => s + p.dia, 0) / a.length) : '—';
+    const fd = new Date(from);
+    const ch = { sysLine: line('sys'), diaLine: line('dia'), sysDots: dots('sys'), diaDots: dots('dia'),
+      hiDots: dots('sys', p => this.cls(p.sys, p.dia) === 'hi'), dotW: S.period === 7 ? 8 : 4, hiW: S.period === 7 ? 9 : 5,
+      hsY: this.y(th.hs), hdY: this.y(th.hd), fromLabel: fd.getDate() + '.' + String(fd.getMonth() + 1).padStart(2, '0'),
+      nHi: cnt.hi, nOk: cnt.ok, nLo: cnt.lo, okPct: n ? Math.round(cnt.ok / n * 100) : 0,
+      stats: [
+        { label: 'Среднее', value: avg('sys') + '/' + avg('dia'), sub: 'мм рт. ст.' },
+        { label: 'Пульс', value: avg('pulse'), sub: 'уд/мин в среднем' },
+        { label: 'Утром', value: av2(am), sub: am.length + ' измерений' },
+        { label: 'Вечером', value: av2(pm), sub: pm.length + ' измерений' },
+        { label: 'Максимум', value: mx.sys + '/' + mx.dia, sub: this.dayLabel(mx.t) },
+        { label: 'Минимум', value: mn.sys + '/' + mn.dia, sub: this.dayLabel(mn.t) }
+      ] };
+
+    const reminders = S.reminders.map(m => ({ ...m, ...this.sw(m.on), opacity: m.on ? 1 : .5,
+      onToggle: () => this.setState(s => ({ reminders: s.reminders.map(x => x.id === m.id ? { ...x, on: !x.on } : x) })) }));
+
+    const setTh = (k, dv) => this.setState(s => ({ th: { ...s.th, [k]: s.th[k] + dv } }));
+    const row = (k, label, unit, sign) => ({ label, unit, display: (sign || '') + th[k], dec: () => setTh(k, -5), inc: () => setTh(k, 5) });
+    const levelGroups = [
+      { title: 'Повышенное', color: 'var(--hi)', rows: [row('hs', 'Верхнее (САД)', 'от, мм рт. ст.', '≥'), row('hd', 'Нижнее (ДАД)', 'от, мм рт. ст.', '≥')] },
+      { title: 'Пониженное', color: 'var(--lo)', rows: [row('ls', 'Верхнее (САД)', 'до, мм рт. ст.', '≤'), row('ld', 'Нижнее (ДАД)', 'до, мм рт. ст.', '≤')] },
+      { title: 'Пульс в норме', color: 'var(--ok)', rows: [row('pl', 'От', 'уд/мин'), row('ph', 'До', 'уд/мин')] }
+    ];
+    const presets = [[135, 85, 'Домашние измерения'], [140, 90, 'Измерения у врача']].map(([a, b, sub]) => {
+      const act = th.hs === a && th.hd === b;
+      return { label: a + '/' + b, sub, bg: act ? 'var(--acs)' : 'var(--sf)', border: act ? 'var(--ac)' : 'transparent',
+        onClick: () => this.setState(s => ({ th: { ...s.th, hs: a, hd: b } })) };
+    });
+
+    const main = ['home', 'history', 'charts', 'reminders'];
+    const nav = [['home', 'Главная', 'home'], ['history', 'Дневник', 'menu_book'], ['charts', 'Графики', 'monitoring'], ['reminders', 'Напоминания', 'notifications']]
+      .map(([id, label, icon]) => { const a = S.screen === id; return { label, icon, pill: a ? 'var(--acs)' : 'transparent', fg: a ? 'var(--ink)' : 'var(--mut)', weight: a ? 700 : 500, onClick: () => this.go(id) }; });
+
+    return {
+      rootStyle, todayLabel: (() => { const s = N.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); return s[0].toUpperCase() + s.slice(1); })(),
+      isHome: S.screen === 'home', isAdd: S.screen === 'add', isHistory: S.screen === 'history', isCharts: S.screen === 'charts',
+      isReminders: S.screen === 'reminders', isLevels: S.screen === 'levels', showNav: main.includes(S.screen),
+      gestureBg: main.includes(S.screen) ? 'var(--sf2)' : 'var(--bg)',
+      goHome: () => this.go('home'), goAdd: () => this.go('add'), goLevels: () => this.go('levels'), goCharts: () => this.go('charts'), goReminders: () => this.go('reminders'),
+      last, wk, nextRem, comment: S.comment, onComment: e => this.setState({ comment: e.target.value }), fields, preview, keys, tags, arms, save: () => this.save(),
+      saveOpacity: d.sys && d.dia && d.pulse ? 1 : .4,
+      filters, groups, historyEmpty: groups.length === 0, periods, ch, reminders,
+      addReminder: () => this.setState(s => ({ reminders: [...s.reminders, { id: Date.now(), time: '12:00', label: 'Измерение', days: 'Ежедневно', on: true }] })),
+      levelGroups, presets, darkSw: this.sw(dark), toggleDark: () => this.setState({ dark: !dark }),
+      nav, hasToast: !!S.toast, toast: S.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

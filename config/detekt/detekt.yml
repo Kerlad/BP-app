@@ -1,0 +1,18 @@
+# Layered on top of the detekt defaults (buildUponDefaultConfig = true).
+style:
+  ForbiddenImport:
+    active: true
+    imports:
+      - value: "java.util.Date"
+        reason: "Use java.time (Instant / ZonedDateTime) and TimeProvider."
+  ForbiddenMethodCall:
+    active: true
+    methods:
+      - value: "java.lang.System.currentTimeMillis"
+        reason: "Time comes only from TimeProvider (D-09)."
+      - value: "java.time.Instant.now"
+        reason: "Time comes only from TimeProvider (D-09)."
+      - value: "java.time.LocalDate.now"
+        reason: "Time comes only from TimeProvider (D-09)."
+      - value: "java.time.LocalDateTime.now"
+        reason: "Time comes only from TimeProvider (D-09)."

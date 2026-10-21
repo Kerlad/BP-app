@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#EDE7E1} a{color:#9A4E78} a:hover{color:#6E3556}</style>
+</helmet>
+<section style="padding:56px;font-family:'Onest',sans-serif;color:#2D2420;display:flex;flex-direction:column;gap:32px">
+  <div>
+    <div style="font-size:14px;color:#7B6B62">Раунд 1</div>
+    <div style="font-size:32px;font-weight:700">Дневник давления — три направления</div>
+    <div style="font-size:16px;color:#7B6B62;margin-top:6px">Каждый телефон кликабелен: ввод с клавиатуры, дневник, графики, напоминания, уровни (иконка вверху справа на главной).</div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:48px">
+    <div id="1a" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="background:#DD6B4A;color:#fff;font-weight:700;font-size:14px;padding:4px 10px;border-radius:8px">1a</span><span style="font-size:20px;font-weight:700">Персик</span><span style="color:#7B6B62">Nunito, крупные скругления, коралловый акцент</span></div>
+      <div style="display:flex;gap:24px">
+        <dc-import name="BPApp" direction="peach" dark="{{ false }}" hint-size="380px,800px"></dc-import>
+        <dc-import name="BPApp" direction="peach" dark="{{ true }}" hint-size="380px,800px"></dc-import>
+      </div>
+    </div>
+    <div id="1b" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="background:#557A47;color:#fff;font-weight:700;font-size:14px;padding:4px 10px;border-radius:8px">1b</span><span style="font-size:20px;font-weight:700">Шалфей</span><span style="color:#7B6B62">Golos Text, сдержанные углы, травяной зелёный</span></div>
+      <div style="display:flex;gap:24px">
+        <dc-import name="BPApp" direction="sage" dark="{{ false }}" hint-size="380px,800px"></dc-import>
+        <dc-import name="BPApp" direction="sage" dark="{{ true }}" hint-size="380px,800px"></dc-import>
+      </div>
+    </div>
+    <div id="1c" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="background:#9A4E78;color:#fff;font-weight:700;font-size:14px;padding:4px 10px;border-radius:8px">1c</span><span style="font-size:20px;font-weight:700">Слива</span><span style="color:#7B6B62">Onest, средние скругления, тёплый сливовый</span></div>
+      <div style="display:flex;gap:24px">
+        <dc-import name="BPApp" direction="plum" dark="{{ false }}" hint-size="380px,800px"></dc-import>
+        <dc-import name="BPApp" direction="plum" dark="{{ true }}" hint-size="380px,800px"></dc-import>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+</body>
+</html>
