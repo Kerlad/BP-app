@@ -38,8 +38,7 @@ object DemoData {
             for (h in HOURS) {
                 val minute = MINUTE_BASE + Math.floor(rng.next() * MINUTE_SPREAD).toInt()
                 val takenAt =
-                    LocalDate
-                        .from(today)
+                    today
                         .minusDays(d.toLong())
                         .atTime(LocalTime.of(h, minute))
                         .atZone(zone)
