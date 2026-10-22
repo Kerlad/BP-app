@@ -35,13 +35,30 @@ data class PeriodStats(
 )
 
 /** Rounds half up, like JS `Math.round` (not half to even). */
-private fun roundHalfUp(value: Double): Int = Math.round(value).toInt()
+internal fun roundHalfUp(value: Double): Int = Math.round(value).toInt()
 
 private fun Collection<Int>.mean(): Int = roundHalfUp(sum().toDouble() / size)
 
 private fun List<Reading>.avg(): Avg? = if (isEmpty()) null else Avg(map { it.sys }.mean(), map { it.dia }.mean(), size)
 
 private fun Reading.localHour(): Int = takenAt.atOffset(zoneOffset).hour
+
+/** Readings of the last [period] local days (today included) up to [now], oldest first. */
+fun readingsInPeriod(
+    readings: List<Reading>,
+    period: Int,
+    now: Instant,
+    zone: ZoneId,
+): List<Reading> {
+    val from =
+        now
+            .atZone(zone)
+            .toLocalDate()
+            .minusDays(period - 1L)
+            .atStartOfDay(zone)
+            .toInstant()
+    return readings.filter { !it.takenAt.isBefore(from) && !it.takenAt.isAfter(now) }.sortedBy { it.takenAt }
+}
 
 /**
  * Statistics for the last [period] local days, today included, up to [now]. Null when there are no readings.
@@ -54,14 +71,7 @@ fun computeStats(
     now: Instant,
     zone: ZoneId,
 ): PeriodStats? {
-    val from =
-        now
-            .atZone(zone)
-            .toLocalDate()
-            .minusDays(period - 1L)
-            .atStartOfDay(zone)
-            .toInstant()
-    val pts = readings.filter { !it.takenAt.isBefore(from) && !it.takenAt.isAfter(now) }.sortedBy { it.takenAt }
+    val pts = readingsInPeriod(readings, period, now, zone)
     if (pts.isEmpty()) return null
 
     val byStatus = pts.groupingBy { classify(it.sys, it.dia, th) }.eachCount()
