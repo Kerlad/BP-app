@@ -9,12 +9,13 @@ import ru.bpdiary.core.common.FixedTimeProvider
 import ru.bpdiary.core.model.Arm
 import ru.bpdiary.core.model.Field
 import ru.bpdiary.core.model.Reading
+import ru.bpdiary.domain.fake.FakeReadingRepository
 import java.time.Instant
 import java.time.ZoneOffset
 
 class SaveReadingUseCaseTest {
     private val time = FixedTimeProvider.default()
-    private val repo = RecordingRepository()
+    private val repo = FakeReadingRepository(time)
     private val useCase = SaveReadingUseCase(repo, time)
 
     private fun reading(
@@ -98,8 +99,8 @@ class SaveReadingUseCaseTest {
     fun `valid reading is saved and id returned`() =
         runTest {
             val result = useCase(reading())
-            assertEquals(SaveResult.Success(RecordingRepository.NEW_ID), result)
-            assertEquals(listOf(reading()), repo.saved)
+            assertEquals(SaveResult.Success(1L), result)
+            assertEquals(reading().copy(id = 1L), repo.getById(1L))
         }
 
     @Test
@@ -107,19 +108,6 @@ class SaveReadingUseCaseTest {
         runTest {
             val result = useCase(reading(sys = 49))
             assertEquals(SaveResult.Invalid(ValidationError(Field.SYS, Reason.SYS_RANGE)), result)
-            assertEquals(emptyList<Reading>(), repo.saved)
+            assertEquals(0, repo.storedCount)
         }
-
-    private class RecordingRepository : ReadingRepository {
-        val saved = mutableListOf<Reading>()
-
-        override suspend fun save(reading: Reading): Long {
-            saved += reading
-            return NEW_ID
-        }
-
-        companion object {
-            const val NEW_ID = 7L
-        }
-    }
 }

@@ -59,17 +59,29 @@ class SettingsDataStore(
         }
     }
 
-    suspend fun setLastArm(arm: Arm) = store.edit { it[LAST_ARM] = arm.name }
+    suspend fun setLastArm(arm: Arm) {
+        store.edit { it[LAST_ARM] = arm.name }
+    }
 
-    suspend fun setThemeMode(mode: ThemeMode) = store.edit { it[THEME_MODE] = mode.name }
+    suspend fun setThemeMode(mode: ThemeMode) {
+        store.edit { it[THEME_MODE] = mode.name }
+    }
 
-    suspend fun setDirection(direction: Direction) = store.edit { it[DIRECTION] = direction.name }
+    suspend fun setDirection(direction: Direction) {
+        store.edit { it[DIRECTION] = direction.name }
+    }
 
-    suspend fun setFontScaleBoost(boost: Float) = store.edit { it[FONT_SCALE_BOOST] = boost }
+    suspend fun setFontScaleBoost(boost: Float) {
+        store.edit { it[FONT_SCALE_BOOST] = boost }
+    }
 
-    suspend fun setOnboardingDone(done: Boolean) = store.edit { it[ONBOARDING_DONE] = done }
+    suspend fun setOnboardingDone(done: Boolean) {
+        store.edit { it[ONBOARDING_DONE] = done }
+    }
 
-    suspend fun setDisclaimerAck(version: Int) = store.edit { it[DISCLAIMER_ACK] = version }
+    suspend fun setDisclaimerAck(version: Int) {
+        store.edit { it[DISCLAIMER_ACK] = version }
+    }
 
     /** "Delete all data": everything goes back to the defaults. */
     suspend fun clear() {

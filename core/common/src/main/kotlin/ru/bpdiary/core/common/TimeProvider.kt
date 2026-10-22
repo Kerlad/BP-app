@@ -1,6 +1,7 @@
 package ru.bpdiary.core.common
 
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 
@@ -31,4 +32,20 @@ class FixedTimeProvider(
         fun default(): FixedTimeProvider =
             FixedTimeProvider(Instant.parse("2026-10-20T06:12:00Z"), ZoneId.of("Europe/Moscow"))
     }
+}
+
+/** For tests that need time to move: starts at [start] and only changes through [advance]. */
+class ManualTimeProvider(
+    start: Instant,
+    private val zone: ZoneId,
+) : TimeProvider {
+    private var current = start
+
+    fun advance(by: Duration) {
+        current = current.plus(by)
+    }
+
+    override fun now(): Instant = current
+
+    override fun zone(): ZoneId = zone
 }

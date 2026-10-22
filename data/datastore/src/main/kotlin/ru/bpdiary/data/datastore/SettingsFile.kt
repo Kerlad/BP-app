@@ -7,3 +7,5 @@ import androidx.datastore.preferences.preferencesDataStore
 
 /** One process-wide instance; the file is `settings.preferences_pb`. */
 val Context.settingsPreferences: DataStore<Preferences> by preferencesDataStore(name = "settings")
+
+fun createSettingsDataStore(context: Context): SettingsDataStore = SettingsDataStore(context.settingsPreferences)

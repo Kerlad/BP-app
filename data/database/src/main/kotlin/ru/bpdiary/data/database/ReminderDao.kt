@@ -23,6 +23,9 @@ interface ReminderDao {
     @Insert
     suspend fun insert(entity: ReminderEntity): Long
 
+    @Insert
+    suspend fun insertAll(entities: List<ReminderEntity>)
+
     @Update
     suspend fun update(entity: ReminderEntity)
 
