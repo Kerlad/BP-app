@@ -34,4 +34,4 @@ Needs `JAVA_HOME` (Temurin 21) and `ANDROID_HOME=D:\Android\Sdk` (no `local.prop
 - Backup: D-16 rules in `app/src/main/res/xml`. API<=30 `full_backup_content` cannot separate cloud/transfer, so it excludes all.
 
 ## Status
-2026-10-22: Step 1.1 done (core models in `:core:model`, TimeProvider/System/Fixed in `:core:common`). Next: Step 1.2.
+2026-10-22: Steps 0.1, 1.1, 1.2 done (models, TimeProvider, classify). Next: Step 1.3.
