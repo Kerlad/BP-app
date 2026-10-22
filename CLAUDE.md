@@ -27,11 +27,11 @@ Deps: `:data:repository` -> `:domain`; features -> `:core:ui`, `:domain`. `:benc
 7. Commit: `step N.M: summary`. Never commit `keystore.properties`/`local.properties`.
 
 ## Verify
-`./gradlew assembleDebug ktlintCheck detekt lintDebug testDebugUnitTest` (Windows: `gradlew.bat` or Git Bash `./gradlew`).
+`./gradlew assembleDebug ktlintCheck detekt lintDebug test testDebugUnitTest` (`test` runs JVM modules; `testDebugUnitTest` does not) (Windows: `gradlew.bat` or Git Bash `./gradlew`).
 Needs `JAVA_HOME` (Temurin 21) and `ANDROID_HOME=D:\Android\Sdk` (no `local.properties`: lint rejects Windows paths there).
 - ktlint: `.editorconfig` (max line 120, Composable naming exempt). Lint `warningsAsErrors`.
 - detekt: `config/detekt/detekt.yml`; ForbiddenImport everywhere; ForbiddenMethodCall (time APIs) only in JVM modules (needs type resolution, wired into `detekt`). AGP 9 gives no detektDebug for Android modules.
 - Backup: D-16 rules in `app/src/main/res/xml`. API<=30 `full_backup_content` cannot separate cloud/transfer, so it excludes all.
 
 ## Status
-2026-10-22: Steps 0.1, 1.1, 1.2 done (models, TimeProvider, classify). Next: Step 1.3.
+2026-10-22: Steps 0.1, 1.1-1.3 done (models, TimeProvider, classify, keypad reducer). Next: Step 1.4.
