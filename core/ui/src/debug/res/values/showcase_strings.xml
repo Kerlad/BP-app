@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Debug only: texts for the component showcase. The wording comes from the design handoff and docs;
+         the three accessibility labels marked "provisional" are placeholders until the customer decides. -->
+    <string name="showcase_title">Новое измерение</string>
+    <string name="showcase_arm_left">Левая</string>
+    <string name="showcase_arm_right">Правая</string>
+    <string name="showcase_filter_all">Все</string>
+    <string name="showcase_filter_high">Повышенное</string>
+    <string name="showcase_filter_normal">Норма</string>
+    <string name="showcase_filter_low">Пониженное</string>
+    <string name="showcase_tag_good">Хорошо</string>
+    <string name="showcase_tag_headache">Головная боль</string>
+    <string name="showcase_tag_dizziness">Головокружение</string>
+    <string name="showcase_tag_weakness">Слабость</string>
+    <string name="showcase_tag_after_medicine">После лекарства</string>
+    <string name="showcase_tag_after_exercise">После нагрузки</string>
+    <string name="showcase_period_7">7 дней</string>
+    <string name="showcase_period_30">30 дней</string>
+    <string name="showcase_nav_home">Главная</string>
+    <string name="showcase_nav_diary">Дневник</string>
+    <string name="showcase_nav_charts">Графики</string>
+    <string name="showcase_nav_reminders">Напоминания</string>
+    <string name="showcase_when">Сегодня, 07:24</string>
+    <string name="showcase_toast">Измерение сохранено</string>
+    <string name="showcase_pulse_caption">уд/мин · Левая рука</string>
+    <string name="showcase_high_label">Повышенное</string>
+    <string name="showcase_stepper_high_sys">Верхнее (САД)</string>
+    <!-- provisional -->
+    <string name="showcase_close_description">Закрыть</string>
+    <string name="showcase_decrease_description">Уменьшить</string>
+    <string name="showcase_increase_description">Увеличить</string>
+</resources>

@@ -37,3 +37,10 @@ naming:
     active: true
     ignoreAnnotated:
       - "Composable"
+
+complexity:
+  LongParameterList:
+    active: true
+    # Composable components take many small parameters by design.
+    ignoreAnnotated:
+      - "Composable"

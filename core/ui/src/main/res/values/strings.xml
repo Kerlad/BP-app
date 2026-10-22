@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Status labels (docs/06 §6.1) -->
+    <string name="status_high">Повышенное</string>
+    <string name="status_normal">В норме</string>
+    <string name="status_low">Пониженное</string>
+
+    <!-- Accessibility (docs/04 §4.8) -->
+    <string name="status_high_description">Статус: повышенное</string>
+    <string name="status_normal_description">Статус: в норме</string>
+    <string name="status_low_description">Статус: пониженное</string>
+    <string name="reading_description">%1$d на %2$d миллиметра ртутного столба</string>
+    <string name="key_digit_description">цифра %1$s</string>
+    <string name="key_backspace_description">стереть</string>
+    <string name="key_next_description">далее</string>
+    <string name="key_save_description">сохранить</string>
+
+    <!-- Unit of the pressure with non-breaking spaces (docs/06 §6.8) -->
+    <string name="unit_mmhg">мм рт. ст.</string>
+</resources>

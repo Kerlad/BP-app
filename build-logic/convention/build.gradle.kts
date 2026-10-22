@@ -11,6 +11,7 @@ dependencies {
     implementation(libs.room.gradle.plugin)
     implementation(libs.ktlint.gradle.plugin)
     implementation(libs.detekt.gradle.plugin)
+    implementation(libs.roborazzi.gradle.plugin)
 }
 
 gradlePlugin {
@@ -34,6 +35,10 @@ gradlePlugin {
         register("bpAndroidHilt") {
             id = "bp.android.hilt"
             implementationClass = "BpAndroidHiltPlugin"
+        }
+        register("bpAndroidScreenshots") {
+            id = "bp.android.screenshots"
+            implementationClass = "BpAndroidScreenshotsPlugin"
         }
         register("bpAndroidRoom") {
             id = "bp.android.room"
