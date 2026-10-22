@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sage background (#F2F3EA), the same flat colour as the supplied background artwork. -->
+    <color name="ic_launcher_background">#F2F3EA</color>
+</resources>

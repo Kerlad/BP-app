@@ -3,6 +3,7 @@ package ru.bpdiary.core.designsystem
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -16,6 +17,8 @@ val LocalBpColors =
     staticCompositionLocalOf<BpColors> { error("BpColors not provided: wrap the content in BpTheme") }
 val LocalBpShapes =
     staticCompositionLocalOf<BpShapes> { error("BpShapes not provided: wrap the content in BpTheme") }
+val LocalBpTypography =
+    staticCompositionLocalOf<BpTypography> { error("BpTypography not provided: wrap the content in BpTheme") }
 
 /** Access to the tokens inside [BpTheme]. */
 object BpTheme {
@@ -26,6 +29,10 @@ object BpTheme {
     val shapes: BpShapes
         @Composable @ReadOnlyComposable
         get() = LocalBpShapes.current
+
+    val typography: BpTypography
+        @Composable @ReadOnlyComposable
+        get() = LocalBpTypography.current
 }
 
 /**
@@ -40,8 +47,17 @@ fun BpTheme(
 ) {
     val colors = remember(direction, dark) { bpColors(direction, dark) }
     val shapes = remember(direction) { bpShapes(direction) }
-    CompositionLocalProvider(LocalBpColors provides colors, LocalBpShapes provides shapes) {
-        MaterialTheme(colorScheme = colors.toMaterial(dark), content = content)
+    val typography = remember(direction) { bpTypography(direction) }
+    CompositionLocalProvider(
+        LocalBpColors provides colors,
+        LocalBpShapes provides shapes,
+        LocalBpTypography provides typography,
+    ) {
+        MaterialTheme(
+            colorScheme = colors.toMaterial(dark),
+            typography = typography.toMaterial(),
+            content = content,
+        )
     }
 }
 
@@ -77,3 +93,15 @@ internal fun BpColors.toMaterial(dark: Boolean): ColorScheme =
             error = hi,
         )
     }
+
+/** Stock Material components (TimePicker, Snackbar, ...) pick the closest BP styles. */
+internal fun BpTypography.toMaterial(): Typography =
+    Typography(
+        titleLarge = screenTitle,
+        titleMedium = cardTitle,
+        labelLarge = button,
+        bodyLarge = body,
+        bodyMedium = secondary,
+        bodySmall = caption,
+        labelSmall = micro,
+    )
