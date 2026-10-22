@@ -16,3 +16,18 @@ style:
         reason: "Time comes only from TimeProvider (D-09)."
       - value: "java.time.LocalDateTime.now"
         reason: "Time comes only from TimeProvider (D-09)."
+  MagicNumber:
+    active: true
+    # Colour tokens are hex literals copied from the design handoff; every other file keeps the default rule.
+    excludes:
+      - "**/test/**"
+      - "**/androidTest/**"
+      - "**/testFixtures/**"
+      - "**/*.kts"
+      - "**/Palettes.kt"
+
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated:
+      - "Composable"
