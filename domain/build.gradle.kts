@@ -8,4 +8,5 @@ dependencies {
     api(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(testFixtures(projects.core.common))
 }

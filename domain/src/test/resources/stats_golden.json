@@ -1,0 +1,62 @@
+{
+  "p7": {
+    "count": 13,
+    "avgSys": 133,
+    "avgDia": 85,
+    "avgPulse": 72,
+    "morning": {
+      "sys": 130,
+      "dia": 83,
+      "count": 7
+    },
+    "evening": {
+      "sys": 138,
+      "dia": 87,
+      "count": 6
+    },
+    "max": {
+      "at": "2026-10-15T18:27:00.000Z",
+      "sys": 154,
+      "dia": 94
+    },
+    "min": {
+      "at": "2026-10-14T04:26:00.000Z",
+      "sys": 121,
+      "dia": 79
+    },
+    "countHigh": 6,
+    "countNormal": 7,
+    "countLow": 0,
+    "inRangePercent": 54
+  },
+  "p30": {
+    "count": 59,
+    "avgSys": 134,
+    "avgDia": 86,
+    "avgPulse": 71,
+    "morning": {
+      "sys": 130,
+      "dia": 85,
+      "count": 30
+    },
+    "evening": {
+      "sys": 138,
+      "dia": 87,
+      "count": 29
+    },
+    "max": {
+      "at": "2026-10-15T18:27:00.000Z",
+      "sys": 154,
+      "dia": 94
+    },
+    "min": {
+      "at": "2026-09-23T04:17:00.000Z",
+      "sys": 104,
+      "dia": 72
+    },
+    "countHigh": 41,
+    "countNormal": 18,
+    "countLow": 0,
+    "inRangePercent": 31
+  }
+}
