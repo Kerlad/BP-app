@@ -34,4 +34,4 @@ Needs `JAVA_HOME` (Temurin 21) and `ANDROID_HOME=D:\Android\Sdk` (no `local.prop
 - Backup: D-16 rules in `app/src/main/res/xml`. API<=30 `full_backup_content` cannot separate cloud/transfer, so it excludes all.
 
 ## Status
-2026-10-23: Phase 1 done (1.1-1.8); Step 2.1 done (Room v1, DAOs, Robolectric tests). Next: Step 2.2 (DataStore). Verify also needs `test` for JVM modules. Robolectric needs --add-opens (set in bp.android.library). Gradle needs access to dl.google.com (blocked in some networks: use VPN/hotspot, then --offline).
+2026-10-23: Phase 1 done (1.1-1.8); Phase 2: 2.1 Room and 2.2 DataStore done. Next: Step 2.3 (repositories). Verify also needs `test` for JVM modules. Robolectric needs --add-opens (set in bp.android.library). Gradle needs dl.google.com (use VPN/hotspot to download, then --offline). DataStore file store cannot be used in JVM tests on Windows (renameTo): use InMemoryPreferencesStore. androidTest classpath may need concurrent-futures aligned to 1.3.0.
