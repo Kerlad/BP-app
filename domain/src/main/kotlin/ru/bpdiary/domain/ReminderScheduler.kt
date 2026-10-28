@@ -14,7 +14,7 @@ interface ReminderScheduler {
     fun cancelAll()
 }
 
-/** Shows the reminder notification; the real one is built in Step 9.2. */
+/** Shows the reminder notification (docs/07 §7.4). */
 fun interface ReminderNotifier {
     fun show(reminder: Reminder)
 }

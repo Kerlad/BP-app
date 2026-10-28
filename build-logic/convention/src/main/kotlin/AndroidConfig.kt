@@ -12,6 +12,9 @@ internal fun Project.configureAndroidCommon(android: CommonExtension) {
         compileOptions.targetCompatibility = JavaVersion.VERSION_17
         lint.warningsAsErrors = true
         lint.abortOnError = true
+        // "Newer version available" checks depend on network access, so the same commit passed offline and
+        // failed online. Versions are bumped on purpose after checking release pages (CLAUDE.md).
+        lint.disable += setOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
     }
     extensions.configure<KotlinBaseExtension> {
         jvmToolchain(version("jdk").toInt())

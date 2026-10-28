@@ -9,6 +9,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ru.bpdiary.data.reminders.AlarmReminderScheduler
+import ru.bpdiary.data.reminders.NotificationReminderNotifier
 import ru.bpdiary.domain.ReminderNotifier
 import ru.bpdiary.domain.ReminderScheduler
 
@@ -19,10 +20,6 @@ internal object RemindersProvidesModule {
     fun alarmManager(
         @ApplicationContext context: Context,
     ): AlarmManager = context.getSystemService(AlarmManager::class.java)
-
-    /** Step 9.2 replaces this with the real notification; until then a fired reminder only re-plans. */
-    @Provides
-    fun notifier(): ReminderNotifier = ReminderNotifier { }
 }
 
 @Module
@@ -30,4 +27,7 @@ internal object RemindersProvidesModule {
 internal abstract class RemindersBindingsModule {
     @Binds
     abstract fun scheduler(impl: AlarmReminderScheduler): ReminderScheduler
+
+    @Binds
+    abstract fun notifier(impl: NotificationReminderNotifier): ReminderNotifier
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Accent `ac` of the released SAGE light palette (D-01), used to tint the notification -->
+    <color name="reminders_accent">#557A47</color>
+</resources>

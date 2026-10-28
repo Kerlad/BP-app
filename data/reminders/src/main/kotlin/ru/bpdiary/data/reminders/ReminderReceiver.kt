@@ -3,6 +3,7 @@ package ru.bpdiary.data.reminders
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,8 +15,8 @@ import ru.bpdiary.domain.ReminderScheduler
 import javax.inject.Inject
 
 /**
- * The alarm fired: show the notification, then plan the next one (docs/07 §7.3). A snooze shows the
- * reminder even if it was switched off meanwhile; a regular alarm only for a still enabled reminder.
+ * The alarm fired: show the notification, then plan the next one (docs/07 §7.3); or the user tapped «Отложить».
+ * A snooze shows the reminder even if it was switched off meanwhile; a regular alarm only for a still enabled one.
  */
 @AndroidEntryPoint
 class ReminderReceiver : BroadcastReceiver() {
@@ -29,9 +30,17 @@ class ReminderReceiver : BroadcastReceiver() {
         context: Context,
         intent: Intent,
     ) {
-        if (intent.action != ACTION_FIRE) return
         val id = intent.getLongExtra(EXTRA_REMINDER_ID, -1)
-        val snooze = intent.getBooleanExtra(EXTRA_SNOOZE, false)
+        when (intent.action) {
+            ACTION_SNOOZE -> snooze(context, id)
+            ACTION_FIRE -> fire(id, intent.getBooleanExtra(EXTRA_SNOOZE, false))
+        }
+    }
+
+    private fun fire(
+        id: Long,
+        snooze: Boolean,
+    ) {
         val pending = goAsync()
         scope.launch {
             try {
@@ -40,6 +49,15 @@ class ReminderReceiver : BroadcastReceiver() {
                 pending.finish()
             }
         }
+    }
+
+    /** «Отложить на 15 минут» from the notification: own alarm (D-13), the notification goes away. */
+    internal fun snooze(
+        context: Context,
+        id: Long,
+    ) {
+        scheduler.snooze(id)
+        NotificationManagerCompat.from(context).cancel(NotificationReminderNotifier.notificationId(id))
     }
 
     internal suspend fun handle(
@@ -52,6 +70,7 @@ class ReminderReceiver : BroadcastReceiver() {
 
     companion object {
         const val ACTION_FIRE = "ru.bpdiary.app.action.REMINDER_FIRE"
+        const val ACTION_SNOOZE = "ru.bpdiary.app.action.REMINDER_SNOOZE"
         const val EXTRA_REMINDER_ID = "reminder_id"
         const val EXTRA_SNOOZE = "snooze"
 

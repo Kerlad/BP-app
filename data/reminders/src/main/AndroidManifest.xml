@@ -4,9 +4,11 @@
     <!-- Exact alarms only through the user-granted permission; no USE_EXACT_ALARM (D-12, docs/07 §7.2). -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Asked in onboarding (Android 13+); without it reminders are planned but not shown. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application>
-        <!-- Fired only by our own explicit PendingIntent. -->
+        <!-- Alarm and «Отложить» action: fired only by our own explicit PendingIntents. -->
         <receiver
             android:name="ru.bpdiary.data.reminders.ReminderReceiver"
             android:exported="false" />

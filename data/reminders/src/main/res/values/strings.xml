@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Reminder notification (docs/07 §7.4). No health data: it is visible on the lock screen (docs/09). -->
+    <string name="reminders_channel_name">Напоминания об измерении</string>
+    <string name="reminders_notification_text">Пора измерить давление</string>
+    <string name="reminders_action_snooze">Отложить на 15 минут</string>
+</resources>
