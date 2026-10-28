@@ -12,6 +12,7 @@ dependencies {
     implementation(libs.ktlint.gradle.plugin)
     implementation(libs.detekt.gradle.plugin)
     implementation(libs.roborazzi.gradle.plugin)
+    implementation(libs.kotlin.serialization.gradle.plugin)
 }
 
 gradlePlugin {
@@ -39,6 +40,10 @@ gradlePlugin {
         register("bpAndroidScreenshots") {
             id = "bp.android.screenshots"
             implementationClass = "BpAndroidScreenshotsPlugin"
+        }
+        register("bpAndroidNavigation") {
+            id = "bp.android.navigation"
+            implementationClass = "BpAndroidNavigationPlugin"
         }
         register("bpAndroidRoom") {
             id = "bp.android.room"

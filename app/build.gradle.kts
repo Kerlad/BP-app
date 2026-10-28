@@ -2,6 +2,7 @@ plugins {
     id("bp.android.application")
     id("bp.android.compose")
     id("bp.android.hilt")
+    id("bp.android.navigation")
 }
 
 android {
@@ -48,5 +49,5 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 }

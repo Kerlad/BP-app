@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Entry screen (handoff screen 2, docs/05 §5.2) -->
+    <string name="entry_title_new">Новое измерение</string>
+    <string name="entry_title_edit">Измерение</string>
+    <string name="entry_delete">Удалить</string>
+    <string name="entry_arm_left">Левая</string>
+    <string name="entry_arm_right">Правая</string>
+    <string name="entry_field_sys">Верхнее</string>
+    <string name="entry_field_sys_unit">САД, мм</string>
+    <string name="entry_field_dia">Нижнее</string>
+    <string name="entry_field_dia_unit">ДАД, мм</string>
+    <string name="entry_field_pulse">Пульс</string>
+    <string name="entry_field_pulse_unit">уд/мин</string>
+    <string name="entry_field_empty">—</string>
+    <string name="entry_status_empty">Введите значения</string>
+    <string name="entry_hint_above">выше %1$d/%2$d</string>
+    <string name="entry_hint_below">ниже %1$d/%2$d</string>
+    <string name="entry_hint_within">в пределах ваших уровней</string>
+    <string name="entry_comment_hint">Свой комментарий</string>
+    <string name="entry_comment_counter">%1$d/%2$d</string>
+    <string name="entry_save">Сохранить</string>
+
+    <!-- Validation errors (docs/03 §3.7). Only SYS_NOT_GREATER is approved; the others are
+         PROVISIONAL, awaiting the customer's texts (plan §6 question 2). -->
+    <string name="entry_error_sys_not_greater">Верхнее должно быть больше нижнего</string>
+    <string name="entry_error_sys_range">Верхнее должно быть от 50 до 300</string>
+    <string name="entry_error_dia_range">Нижнее должно быть от 30 до 200</string>
+    <string name="entry_error_pulse_range">Пульс должен быть от 25 до 250</string>
+    <string name="entry_error_pulse_missing">Введите пульс</string>
+    <string name="entry_error_future_time">Время измерения не может быть в будущем</string>
+
+    <!-- Leaving with an unsaved draft (docs/05 §5.2) -->
+    <string name="entry_discard_title">Не сохранять измерение?</string>
+    <string name="entry_discard_confirm">Не сохранять</string>
+    <string name="entry_discard_continue">Продолжить ввод</string>
+
+    <!-- Delete in edit mode (D-10). PROVISIONAL texts, awaiting the customer. -->
+    <string name="entry_delete_title">Удалить измерение?</string>
+    <string name="entry_delete_confirm">Удалить</string>
+    <string name="entry_delete_cancel">Отмена</string>
+
+    <!-- Accessibility. PROVISIONAL, awaiting the customer. -->
+    <string name="entry_close_description">Закрыть</string>
+</resources>

@@ -17,4 +17,31 @@
 
     <!-- Unit of the pressure with non-breaking spaces (docs/06 §6.8) -->
     <string name="unit_mmhg">мм рт. ст.</string>
+    <!-- Feeling tags (D-08), in the order of Tag -->
+    <string name="tag_good">Хорошо</string>
+    <string name="tag_headache">Головная боль</string>
+    <string name="tag_dizziness">Головокружение</string>
+    <string name="tag_weakness">Слабость</string>
+    <string name="tag_after_medicine">После лекарства</string>
+    <string name="tag_after_exercise">После нагрузки</string>
+
+    <!-- Dates (docs/06 §6.3): month in the genitive case, lower case -->
+    <string name="day_today">Сегодня</string>
+    <string name="day_yesterday">Вчера</string>
+    <string name="day_month">%1$d %2$s</string>
+    <string name="day_time">%1$s, %2$s</string>
+    <string-array name="months_genitive">
+        <item>января</item>
+        <item>февраля</item>
+        <item>марта</item>
+        <item>апреля</item>
+        <item>мая</item>
+        <item>июня</item>
+        <item>июля</item>
+        <item>августа</item>
+        <item>сентября</item>
+        <item>октября</item>
+        <item>ноября</item>
+        <item>декабря</item>
+    </string-array>
 </resources>

@@ -31,3 +31,12 @@ fun pulseOutOfRange(
     pulse: Int?,
     th: Thresholds,
 ): Boolean = pulse != null && (pulse < th.pulseLow || pulse > th.pulseHigh)
+
+private const val CRITICAL_SYS = 180
+private const val CRITICAL_DIA = 120
+
+/** D-06: high enough to show the neutral "seek help if you feel worse" hint once after saving. */
+fun isCritical(
+    sys: Int,
+    dia: Int,
+): Boolean = sys >= CRITICAL_SYS || dia >= CRITICAL_DIA

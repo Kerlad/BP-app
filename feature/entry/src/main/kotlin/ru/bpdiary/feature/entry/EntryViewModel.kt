@@ -1,0 +1,372 @@
+package ru.bpdiary.feature.entry
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import ru.bpdiary.core.common.TimeProvider
+import ru.bpdiary.core.model.Arm
+import ru.bpdiary.core.model.Field
+import ru.bpdiary.core.model.Reading
+import ru.bpdiary.core.model.Status
+import ru.bpdiary.core.model.Tag
+import ru.bpdiary.core.model.Thresholds
+import ru.bpdiary.domain.Draft
+import ru.bpdiary.domain.DraftResult
+import ru.bpdiary.domain.ReadingRepository
+import ru.bpdiary.domain.SaveReadingUseCase
+import ru.bpdiary.domain.SaveResult
+import ru.bpdiary.domain.SettingsRepository
+import ru.bpdiary.domain.ThresholdsRepository
+import ru.bpdiary.domain.ValidationError
+import ru.bpdiary.domain.classify
+import ru.bpdiary.domain.dayLabel
+import ru.bpdiary.domain.isCritical
+import ru.bpdiary.domain.reduce
+import java.time.Instant
+import java.time.ZoneOffset
+
+/** Max comment length (FR-1, docs/05 §5.2). */
+const val COMMENT_MAX_LENGTH = 120
+
+/** Live status appears once SYS and DIA both have this many digits. */
+private const val LIVE_STATUS_DIGITS = 2
+private const val STOP_TIMEOUT_MS = 5_000L
+private const val KEY_FORM = "entry_form"
+
+/**
+ * New reading (`readingId == null`) or edit of an existing one (D-10).
+ * The whole form lives in [SavedStateHandle], so it survives rotation and process death.
+ */
+@HiltViewModel(assistedFactory = EntryViewModel.Factory::class)
+class EntryViewModel
+    @AssistedInject
+    constructor(
+        @Assisted private val readingId: Long?,
+        private val savedStateHandle: SavedStateHandle,
+        private val readings: ReadingRepository,
+        thresholdsRepository: ThresholdsRepository,
+        private val settings: SettingsRepository,
+        private val time: TimeProvider,
+    ) : ViewModel() {
+        @AssistedFactory
+        interface Factory {
+            fun create(readingId: Long?): EntryViewModel
+        }
+
+        private val saveReading = SaveReadingUseCase(readings, time)
+        private val form = MutableStateFlow<Form?>(null)
+        private val transient = MutableStateFlow(Transient())
+        private var original: Reading? = null
+        private var busy = false
+
+        private val effectChannel = Channel<EntryEffect>(Channel.BUFFERED)
+        val effects: Flow<EntryEffect> = effectChannel.receiveAsFlow()
+
+        val state: StateFlow<EntryUiState> =
+            combine(form, thresholdsRepository.observe(), transient) { f, th, t ->
+                f?.toUiState(th, t) ?: EntryUiState(isEdit = readingId != null)
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), EntryUiState())
+
+        init {
+            viewModelScope.launch { load() }
+        }
+
+        private suspend fun load() {
+            val restored = savedStateHandle.get<String>(KEY_FORM)?.let { Json.decodeFromString<Form>(it) }
+            if (readingId != null) {
+                val reading = readings.getById(readingId)
+                if (reading == null) {
+                    effectChannel.send(EntryEffect.Closed)
+                    return
+                }
+                original = reading
+                setForm(restored ?: Form.of(reading))
+            } else {
+                setForm(restored ?: newForm())
+            }
+        }
+
+        private suspend fun newForm(): Form {
+            val now = time.now()
+            return Form(
+                arm = settings.lastArm.first(),
+                takenAtMillis = now.toEpochMilli(),
+                offsetSeconds =
+                    time
+                        .zone()
+                        .rules
+                        .getOffset(now)
+                        .totalSeconds,
+            )
+        }
+
+        private fun setForm(value: Form) {
+            form.value = value
+            savedStateHandle[KEY_FORM] = Json.encodeToString(value)
+        }
+
+        private fun updateForm(block: (Form) -> Form) {
+            val current = form.value ?: return
+            setForm(block(current))
+        }
+
+        fun onEvent(event: EntryEvent) {
+            when (event) {
+                is EntryEvent.KeyPressed -> {
+                    onKey(event)
+                }
+
+                is EntryEvent.FieldTapped -> {
+                    updateForm { it.copy(field = event.field) }
+                }
+
+                is EntryEvent.ArmSelected -> {
+                    updateForm { it.copy(arm = event.arm) }
+                }
+
+                is EntryEvent.TagToggled -> {
+                    updateForm { f ->
+                        f.copy(
+                            tags =
+                                if (event.tag in
+                                    f.tags
+                                ) {
+                                    f.tags - event.tag
+                                } else {
+                                    f.tags + event.tag
+                                },
+                        )
+                    }
+                }
+
+                is EntryEvent.CommentChanged -> {
+                    updateForm { it.copy(comment = event.text.take(COMMENT_MAX_LENGTH)) }
+                }
+
+                EntryEvent.SaveClicked -> {
+                    save()
+                }
+
+                EntryEvent.CloseClicked -> {
+                    close()
+                }
+
+                EntryEvent.DiscardConfirmed -> {
+                    transient.update { it.copy(dialog = null) }
+                    effectChannel.trySend(EntryEffect.Closed)
+                }
+
+                EntryEvent.DeleteClicked -> {
+                    if (original != null) transient.update { it.copy(dialog = EntryDialog.Delete) }
+                }
+
+                EntryEvent.DeleteConfirmed -> {
+                    delete()
+                }
+
+                EntryEvent.DialogDismissed -> {
+                    transient.update { it.copy(dialog = null) }
+                }
+            }
+        }
+
+        private fun onKey(event: EntryEvent.KeyPressed) {
+            val current = form.value ?: return
+            when (val result = reduce(current.draft(), event.key)) {
+                is DraftResult.Updated -> {
+                    setForm(current.withDraft(result.draft))
+                    transient.update { it.copy(error = null) }
+                }
+
+                DraftResult.Ignored -> {
+                    Unit
+                }
+
+                DraftResult.Save -> {
+                    save()
+                }
+            }
+        }
+
+        private fun close() {
+            val current = form.value
+            val dirty =
+                when {
+                    current == null -> false
+                    original != null -> current.content() != Form.of(original!!).content()
+                    else -> current.hasInput()
+                }
+            if (dirty) {
+                transient.update {
+                    it.copy(
+                        dialog = EntryDialog.Discard,
+                    )
+                }
+            } else {
+                effectChannel.trySend(EntryEffect.Closed)
+            }
+        }
+
+        private fun save() {
+            val current = form.value ?: return
+            if (busy || !current.complete(pulseRequired)) return
+            busy = true
+            viewModelScope.launch {
+                val reading = current.toReading(original)
+                when (val result = saveReading(reading, requirePulse = pulseRequired)) {
+                    is SaveResult.Success -> {
+                        settings.setLastArm(current.arm)
+                        savedStateHandle.remove<String>(KEY_FORM)
+                        effectChannel.send(
+                            EntryEffect.Saved(
+                                readingId = result.id,
+                                edited = original != null,
+                                critical = isCritical(reading.sys, reading.dia),
+                            ),
+                        )
+                    }
+
+                    is SaveResult.Invalid -> {
+                        transient.update { it.copy(error = result.error) }
+                        busy = false
+                    }
+                }
+            }
+        }
+
+        private fun delete() {
+            val id = original?.id ?: return
+            transient.update { it.copy(dialog = null) }
+            if (busy) return
+            busy = true
+            viewModelScope.launch {
+                readings.softDelete(id)
+                savedStateHandle.remove<String>(KEY_FORM)
+                effectChannel.send(EntryEffect.Deleted(id))
+            }
+        }
+
+        /** Manual entry needs a pulse; an imported reading edited without one may stay without (D-07). */
+        private val pulseRequired: Boolean get() = original?.let { it.pulse != null } ?: true
+
+        private fun Form.toUiState(
+            th: Thresholds,
+            t: Transient,
+        ): EntryUiState {
+            val takenAt = Instant.ofEpochMilli(takenAtMillis)
+            val offset = ZoneOffset.ofTotalSeconds(offsetSeconds)
+            // Same rule as localDay(): the day in the offset of the measurement.
+            val day = takenAt.atOffset(offset).toLocalDate()
+            val today = time.now().atZone(time.zone()).toLocalDate()
+            return EntryUiState(
+                isEdit = readingId != null,
+                loading = false,
+                draft = draft(),
+                arm = arm,
+                tags = tags,
+                comment = comment,
+                dayLabel = dayLabel(day, today),
+                time = takenAt.atOffset(offset).toLocalTime(),
+                liveStatus = liveStatus(th),
+                error = t.error,
+                canSave = complete(pulseRequired),
+                dialog = t.dialog,
+            )
+        }
+    }
+
+/** UI-only state that is not worth restoring after process death. */
+private data class Transient(
+    val error: ValidationError? = null,
+    val dialog: EntryDialog? = null,
+)
+
+@Serializable
+internal data class Form(
+    val sys: String = "",
+    val dia: String = "",
+    val pulse: String = "",
+    val field: Field = Field.SYS,
+    val arm: Arm = Arm.LEFT,
+    val tags: Set<Tag> = emptySet(),
+    val comment: String = "",
+    val takenAtMillis: Long,
+    val offsetSeconds: Int,
+) {
+    fun draft() = Draft(sys = sys, dia = dia, pulse = pulse, field = field)
+
+    fun withDraft(d: Draft) = copy(sys = d.sys, dia = d.dia, pulse = d.pulse, field = d.field)
+
+    /** Everything the user can change except the focused field. */
+    fun content() = copy(field = Field.SYS)
+
+    fun hasInput() =
+        sys.isNotEmpty() || dia.isNotEmpty() || pulse.isNotEmpty() || tags.isNotEmpty() || comment.isNotEmpty()
+
+    fun complete(pulseRequired: Boolean) =
+        sys.isNotEmpty() && dia.isNotEmpty() && (pulse.isNotEmpty() || !pulseRequired)
+
+    /** Edits keep the original time, offset and profile. */
+    fun toReading(original: Reading?): Reading {
+        val base =
+            original ?: Reading(
+                takenAt = Instant.ofEpochMilli(takenAtMillis),
+                zoneOffset = ZoneOffset.ofTotalSeconds(offsetSeconds),
+                sys = 0,
+                dia = 0,
+                pulse = null,
+                arm = arm,
+            )
+        return base.copy(
+            sys = sys.toInt(),
+            dia = dia.toInt(),
+            pulse = pulse.toIntOrNull(),
+            arm = arm,
+            tags = tags,
+            comment = comment,
+        )
+    }
+
+    fun liveStatus(th: Thresholds): LiveStatus {
+        if (sys.length < LIVE_STATUS_DIGITS || dia.length < LIVE_STATUS_DIGITS) return LiveStatus.Empty
+        val status = classify(sys.toInt(), dia.toInt(), th)
+        val hint =
+            when (status) {
+                Status.HIGH -> Hint.Above(th.highSys, th.highDia)
+                Status.LOW -> Hint.Below(th.lowSys, th.lowDia)
+                Status.NORMAL -> Hint.Within
+            }
+        return LiveStatus.Classified(status, hint)
+    }
+
+    companion object {
+        fun of(reading: Reading) =
+            Form(
+                sys = reading.sys.toString(),
+                dia = reading.dia.toString(),
+                pulse = reading.pulse?.toString().orEmpty(),
+                arm = reading.arm,
+                tags = reading.tags,
+                comment = reading.comment,
+                takenAtMillis = reading.takenAt.toEpochMilli(),
+                offsetSeconds = reading.zoneOffset.totalSeconds,
+            )
+    }
+}
