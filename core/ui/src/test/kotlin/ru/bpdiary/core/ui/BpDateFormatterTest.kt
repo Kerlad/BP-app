@@ -8,6 +8,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import ru.bpdiary.core.model.Tag
 import ru.bpdiary.domain.DayLabel
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -28,6 +29,21 @@ class BpDateFormatterTest {
         assertEquals("18 октября, 21:40", formatter.dayTime(label, LocalTime.of(21, 40)))
         assertEquals("1 января", formatter.day(DayLabel.Date(LocalDate.of(2026, 1, 1))))
         assertEquals("31 декабря", formatter.day(DayLabel.Date(LocalDate.of(2026, 12, 31))))
+    }
+
+    @Test
+    fun `home date header starts with a capital weekday`() {
+        assertEquals("Вторник, 20 октября", formatter.weekdayDayMonth(LocalDate.of(2026, 10, 20)))
+        assertEquals("Воскресенье, 1 ноября", formatter.weekdayDayMonth(LocalDate.of(2026, 11, 1)))
+        assertEquals("Среда, 21 октября", formatter.weekdayDayMonth(LocalDate.of(2026, 10, 21)))
+    }
+
+    @Test
+    fun `short weekdays from Monday`() {
+        assertEquals(
+            listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"),
+            DayOfWeek.entries.map { formatter.weekdayShort(it) },
+        )
     }
 
     @Test

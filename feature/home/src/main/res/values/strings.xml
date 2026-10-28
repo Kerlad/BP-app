@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home (handoff screen 1, docs/05 §5.1). The greeting never has a name (D-02). -->
+    <string name="home_greeting_morning">Доброе утро</string>
+    <string name="home_greeting_day">Добрый день</string>
+    <string name="home_greeting_evening">Добрый вечер</string>
+    <string name="home_greeting_night">Доброй ночи</string>
+    <string name="home_empty">Запишите первое измерение, и здесь появится ваша динамика</string>
+    <string name="home_arm_left">Левая рука</string>
+    <string name="home_arm_right">Правая рука</string>
+    <string name="home_pulse_caption">уд/мин · %1$s</string>
+    <string name="home_add_reading">Записать давление</string>
+
+    <!-- Week card (docs/05 §5.1, D-24) -->
+    <string name="home_week_title">7 дней</string>
+    <string name="home_week_average">среднее %1$s</string>
+    <string name="home_week_empty">За неделю измерений нет</string>
+    <string name="home_week_today">Сег</string>
+
+    <!-- Next reminder (docs/06 §6.6, D-23) -->
+    <string name="home_reminder_title">Следующее напоминание</string>
+    <string name="home_reminder_today">%1$s · %2$s</string>
+    <string name="home_reminder_tomorrow">Завтра, %1$s · %2$s</string>
+    <string name="home_reminder_weekday">%1$s, %2$s · %3$s</string>
+    <string name="home_reminders_off">Напоминания выключены</string>
+
+    <!-- Accessibility. PROVISIONAL, awaiting the customer: the tune button is named after the Levels
+         screen, the chart summary is the start of the docs/04 §4.8 example (without the maximum). -->
+    <string name="home_levels_description">Уровни давления</string>
+    <string name="home_week_chart_description">График за 7 дней, среднее %1$d на %2$d</string>
+</resources>

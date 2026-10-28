@@ -1,16 +1,12 @@
 package ru.bpdiary.app
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -28,31 +24,25 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.serialization.Serializable
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.ui.BpToast
 import ru.bpdiary.feature.entry.EntryEffect
 import ru.bpdiary.feature.entry.EntryRoute
 import ru.bpdiary.feature.entry.entryScreen
+import ru.bpdiary.feature.home.HomeRoute
+import ru.bpdiary.feature.home.homeScreen
 
 private const val TOAST_MS = 2_400L
 private const val UNDO_MS = 5_000L
-
-/** Temporary start destination; Step 5 replaces it with the real Home screen. */
-@Serializable
-data object HomeRoute
 
 /**
  * Navigation and the app-wide messages: toast after saving, undo snackbar after deleting and the
@@ -70,7 +60,13 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
 
     Box(Modifier.fillMaxSize().background(BpTheme.colors.bg)) {
         NavHost(navController = navController, startDestination = HomeRoute) {
-            composable<HomeRoute> { HomePlaceholder { navController.navigate(EntryRoute()) } }
+            homeScreen(
+                onAddReading = { navController.navigate(EntryRoute()) },
+                // Levels (Step 8), Charts (Step 7) and Reminders (Step 9.3) are not built yet.
+                onOpenLevels = {},
+                onOpenCharts = {},
+                onOpenReminders = {},
+            )
             entryScreen(
                 onSaved = { saved ->
                     navController.leaveEntry(saved)
@@ -116,27 +112,5 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
 private fun NavHostController.leaveEntry(saved: EntryEffect.Saved) {
     if (saved.edited || !popBackStack(HomeRoute, inclusive = false)) {
         popBackStack()
-    }
-}
-
-@Composable
-private fun HomePlaceholder(onAdd: () -> Unit) {
-    val colors = BpTheme.colors
-    Box(
-        modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(20.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 62.dp)
-                    .clip(RoundedCornerShape(BpTheme.shapes.card))
-                    .background(colors.ac)
-                    .clickable(role = Role.Button, onClick = onAdd),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(stringResource(R.string.home_add_reading), style = BpTheme.typography.button, color = colors.aci)
-        }
     }
 }

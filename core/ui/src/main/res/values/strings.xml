@@ -44,4 +44,26 @@
         <item>ноября</item>
         <item>декабря</item>
     </string-array>
+    <!-- Weekdays from Monday, nominative, lower case (docs/06 §6.3); Home capitalizes the first letter -->
+    <string-array name="weekdays">
+        <item>понедельник</item>
+        <item>вторник</item>
+        <item>среда</item>
+        <item>четверг</item>
+        <item>пятница</item>
+        <item>суббота</item>
+        <item>воскресенье</item>
+    </string-array>
+    <!-- Short weekdays from Monday (week card on Home, next reminder) -->
+    <string-array name="weekdays_short">
+        <item>Пн</item>
+        <item>Вт</item>
+        <item>Ср</item>
+        <item>Чт</item>
+        <item>Пт</item>
+        <item>Сб</item>
+        <item>Вс</item>
+    </string-array>
+    <!-- «Вторник, 20 октября»: weekday, then «20 октября» -->
+    <string name="weekday_day_month">%1$s, %2$s</string>
 </resources>

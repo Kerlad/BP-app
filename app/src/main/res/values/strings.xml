@@ -11,7 +11,4 @@
     <!-- Critical value hint (D-06, docs/09 §9.6) -->
     <string name="critical_hint_text">Значение заметно выше ваших обычных уровней. Если самочувствие ухудшилось — обратитесь за медицинской помощью.</string>
     <string name="critical_hint_ok">Понятно</string>
-
-    <!-- Temporary Home until Step 5 (handoff screen 1) -->
-    <string name="home_add_reading">Записать давление</string>
 </resources>

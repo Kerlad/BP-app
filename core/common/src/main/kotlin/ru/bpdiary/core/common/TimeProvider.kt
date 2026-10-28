@@ -34,15 +34,20 @@ class FixedTimeProvider(
     }
 }
 
-/** For tests that need time to move: starts at [start] and only changes through [advance]. */
+/** For tests that need time to move: starts at [start] and only changes through [advance] and [moveTo]. */
 class ManualTimeProvider(
     start: Instant,
-    private val zone: ZoneId,
+    private var zone: ZoneId,
 ) : TimeProvider {
     private var current = start
 
     fun advance(by: Duration) {
         current = current.plus(by)
+    }
+
+    /** Simulates a time zone change of the device. */
+    fun moveTo(zone: ZoneId) {
+        this.zone = zone
     }
 
     override fun now(): Instant = current

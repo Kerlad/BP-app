@@ -6,6 +6,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalResources
 import ru.bpdiary.app.core.ui.R
 import ru.bpdiary.domain.DayLabel
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -17,6 +19,8 @@ class BpDateFormatter(
     private val resources: Resources,
 ) {
     private val months: Array<String> by lazy { resources.getStringArray(R.array.months_genitive) }
+    private val weekdays: Array<String> by lazy { resources.getStringArray(R.array.weekdays) }
+    private val weekdaysShort: Array<String> by lazy { resources.getStringArray(R.array.weekdays_short) }
 
     /** «Сегодня», «Вчера» or «18 октября». */
     fun day(label: DayLabel): String =
@@ -30,7 +34,7 @@ class BpDateFormatter(
             }
 
             is DayLabel.Date -> {
-                resources.getString(R.string.day_month, label.day.dayOfMonth, months[label.day.monthValue - 1])
+                dayMonth(label.day)
             }
         }
 
@@ -38,7 +42,22 @@ class BpDateFormatter(
     fun dayTime(
         label: DayLabel,
         time: LocalTime,
-    ): String = resources.getString(R.string.day_time, day(label), time.format(HOURS_MINUTES))
+    ): String = resources.getString(R.string.day_time, day(label), time(time))
+
+    /** «09:12». */
+    fun time(time: LocalTime): String = time.format(HOURS_MINUTES)
+
+    /** «Вторник, 20 октября» (date header on Home): weekday with a capital letter, nominative. */
+    fun weekdayDayMonth(date: LocalDate): String {
+        val weekday = weekdays[date.dayOfWeek.value - 1].replaceFirstChar { it.uppercaseChar() }
+        return resources.getString(R.string.weekday_day_month, weekday, dayMonth(date))
+    }
+
+    /** «Пн» … «Вс». */
+    fun weekdayShort(dow: DayOfWeek): String = weekdaysShort[dow.value - 1]
+
+    private fun dayMonth(date: LocalDate): String =
+        resources.getString(R.string.day_month, date.dayOfMonth, months[date.monthValue - 1])
 
     private companion object {
         val HOURS_MINUTES: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
