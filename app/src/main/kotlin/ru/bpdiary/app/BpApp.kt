@@ -43,6 +43,8 @@ import ru.bpdiary.feature.entry.EntryRoute
 import ru.bpdiary.feature.entry.entryScreen
 import ru.bpdiary.feature.home.HomeRoute
 import ru.bpdiary.feature.home.homeScreen
+import ru.bpdiary.feature.levels.LevelsRoute
+import ru.bpdiary.feature.levels.levelsScreen
 
 private const val TOAST_MS = 2_400L
 private const val UNDO_MS = 5_000L
@@ -77,12 +79,14 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
         NavHost(navController = navController, startDestination = HomeRoute) {
             homeScreen(
                 onAddReading = { navController.navigate(EntryRoute()) },
-                // Levels (Step 8) and Reminders (Step 9.3) are not built yet.
-                onOpenLevels = {},
+                // Reminders (Step 9.3) are not built yet.
+                onOpenLevels = { navController.navigate(LevelsRoute) },
                 onOpenCharts = { navController.navigate(ChartsRoute) },
                 onOpenReminders = {},
             )
             chartsScreen()
+            // Settings come in Step 10.3.
+            levelsScreen(onClose = { navController.popBackStack() }, onOpenSettings = {})
             // Reachable from the bottom navigation, which comes with the shell in Step 10.1.
             diaryScreen(
                 onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },

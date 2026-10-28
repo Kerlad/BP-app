@@ -6,8 +6,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import ru.bpdiary.core.designsystem.BpTheme
+import ru.bpdiary.core.model.ThemeMode
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -24,8 +29,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        // Theme mode and direction from settings are wired in Step 10.3; SAGE follows the system theme (D-01).
-        setContent { BpTheme { BpApp() } }
+        // Direction stays SAGE (D-01); the splash that hides the first theme read comes in Step 10.1.
+        setContent {
+            val shell: ShellViewModel = hiltViewModel()
+            val mode by shell.themeMode.collectAsStateWithLifecycle()
+            val dark =
+                when (mode) {
+                    ThemeMode.DARK -> true
+                    ThemeMode.LIGHT -> false
+                    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                }
+            BpTheme(dark = dark) { BpApp(shell) }
+        }
     }
 
     private companion object {

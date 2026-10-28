@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Levels (handoff screen 6, docs/05 §5.6) -->
+    <string name="levels_title">Уровни давления</string>
+    <string name="levels_intro">Измерения за пределами этих значений отмечаются цветом в дневнике и на графиках.</string>
+    <string name="levels_preset_value">%1$d/%2$d</string>
+    <string name="levels_preset_home">Домашние измерения</string>
+    <string name="levels_preset_clinic">Измерения у врача</string>
+
+    <string name="levels_group_high">Повышенное</string>
+    <string name="levels_group_low">Пониженное</string>
+    <string name="levels_group_pulse">Пульс в норме</string>
+    <string name="levels_row_sys">Верхнее (САД)</string>
+    <string name="levels_row_dia">Нижнее (ДАД)</string>
+    <string name="levels_row_from">От</string>
+    <string name="levels_row_to">До</string>
+    <!-- Units with non-breaking spaces inside «мм рт. ст.» (docs/06 §6.8) -->
+    <string name="levels_unit_from_mmhg">от, мм рт. ст.</string>
+    <string name="levels_unit_to_mmhg">до, мм рт. ст.</string>
+    <string name="levels_unit_pulse">уд/мин</string>
+    <string name="levels_at_least">≥%1$d</string>
+    <string name="levels_at_most">≤%1$d</string>
+
+    <string name="levels_dark_theme">Тёмная тема</string>
+    <string name="levels_footnote">Целевые значения согласуйте с лечащим врачом.</string>
+    <!-- D-11: visible entry to the settings -->
+    <string name="levels_settings">Настройки</string>
+
+    <!-- Accessibility. PROVISIONAL, awaiting the customer. -->
+    <string name="levels_back_description">Назад</string>
+    <string name="levels_decrease_description">%1$s, %2$s: уменьшить</string>
+    <string name="levels_increase_description">%1$s, %2$s: увеличить</string>
+</resources>

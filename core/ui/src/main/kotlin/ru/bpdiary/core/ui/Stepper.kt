@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,7 +54,8 @@ fun Stepper(
             color = BpTheme.colors.ink,
             textAlign = TextAlign.Center,
             maxLines = 1,
-            modifier = Modifier.width(62.dp),
+            // 62 dp as in the handoff; wider at large font scales instead of cutting «≥135».
+            modifier = Modifier.widthIn(min = 62.dp),
         )
         StepButton(BpIcon.Add, incrementDescription, canIncrement, onIncrement)
     }
