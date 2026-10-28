@@ -35,6 +35,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.ui.BpToast
+import ru.bpdiary.feature.charts.ChartsRoute
+import ru.bpdiary.feature.charts.chartsScreen
 import ru.bpdiary.feature.diary.diaryScreen
 import ru.bpdiary.feature.entry.EntryEffect
 import ru.bpdiary.feature.entry.EntryRoute
@@ -75,11 +77,12 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
         NavHost(navController = navController, startDestination = HomeRoute) {
             homeScreen(
                 onAddReading = { navController.navigate(EntryRoute()) },
-                // Levels (Step 8), Charts (Step 7) and Reminders (Step 9.3) are not built yet.
+                // Levels (Step 8) and Reminders (Step 9.3) are not built yet.
                 onOpenLevels = {},
-                onOpenCharts = {},
+                onOpenCharts = { navController.navigate(ChartsRoute) },
                 onOpenReminders = {},
             )
+            chartsScreen()
             // Reachable from the bottom navigation, which comes with the shell in Step 10.1.
             diaryScreen(
                 onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },

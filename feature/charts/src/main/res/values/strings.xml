@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Charts (handoff screen 4, docs/05 §5.4) -->
+    <string name="charts_title">Графики</string>
+    <string name="charts_period_7">7 дней</string>
+    <string name="charts_period_30">30 дней</string>
+    <string name="charts_legend_sys">Верхнее</string>
+    <string name="charts_legend_dia">Нижнее</string>
+    <string name="charts_legend_threshold">Ваш порог</string>
+    <string name="charts_today">Сегодня</string>
+    <!-- «14.10»: day without a leading zero, month with one (as in the prototype) -->
+    <string name="charts_from_date">%1$d.%2$02d</string>
+    <string name="charts_clipped">Значения выше 180 показаны по границе</string>
+    <string name="charts_not_enough">Мало данных для графика. Нужно хотя бы два измерения</string>
+
+    <!-- Statistics grid 2×3 -->
+    <string name="charts_stat_average">Среднее</string>
+    <string name="charts_stat_pulse">Пульс</string>
+    <string name="charts_stat_morning">Утром</string>
+    <string name="charts_stat_evening">Вечером</string>
+    <string name="charts_stat_max">Максимум</string>
+    <string name="charts_stat_min">Минимум</string>
+    <string name="charts_unit_pulse_avg">уд/мин в среднем</string>
+    <string name="charts_no_value">—</string>
+    <string name="charts_reading">%1$d/%2$d</string>
+    <plurals name="measurements_count">
+        <item quantity="one">%d измерение</item>
+        <item quantity="few">%d измерения</item>
+        <item quantity="many">%d измерений</item>
+        <item quantity="other">%d измерения</item>
+    </plurals>
+
+    <!-- In-range block -->
+    <string name="charts_in_range_title">В пределах ваших уровней</string>
+    <string name="charts_percent">%1$d%%</string>
+    <string name="charts_count_high">Повышенное: %1$d</string>
+    <string name="charts_count_normal">Норма: %1$d</string>
+    <string name="charts_count_low">Пониженное: %1$d</string>
+
+    <!-- Accessibility. PROVISIONAL, awaiting the customer: the docs/04 §4.8 example with the date as «16 октября» -->
+    <string name="charts_description">График за %1$s, среднее %2$d на %3$d, максимум %4$d на %5$d %6$s</string>
+</resources>

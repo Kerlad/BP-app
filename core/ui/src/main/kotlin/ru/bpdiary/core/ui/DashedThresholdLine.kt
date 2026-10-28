@@ -16,18 +16,21 @@ private const val LINE_ALPHA = 0.7f
 private val LineWidth = 1.5.dp
 
 /**
- * Draws the threshold dashes (colour `hi`, alpha .7): [y] is in chart units, [scale] converts them to pixels.
+ * Draws the threshold dashes (colour `hi`, alpha .7): [y], [startX] and [endX] are in chart units,
+ * [scale] converts them to pixels.
  * Dash lengths scale with the chart, the stroke width stays in dp.
  */
 fun DrawScope.drawThresholdLine(
     y: Float,
     color: Color,
     scale: Float = 1f,
+    startX: Float = 0f,
+    endX: Float = size.width / scale,
 ) {
     drawLine(
         color = color.copy(alpha = LINE_ALPHA),
-        start = Offset(0f, y * scale),
-        end = Offset(size.width, y * scale),
+        start = Offset(startX * scale, y * scale),
+        end = Offset(endX * scale, y * scale),
         strokeWidth = LineWidth.toPx(),
         pathEffect = PathEffect.dashPathEffect(floatArrayOf(DASH_ON * scale, DASH_OFF * scale)),
     )

@@ -12,6 +12,13 @@ android {
         versionName = "0.1.0"
     }
 
+    // The app forces the Russian locale (MainActivity), so every device needs the default resources.
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+
     buildFeatures {
         buildConfig = true
     }
