@@ -39,6 +39,14 @@ class BpDateFormatterTest {
     }
 
     @Test
+    fun `diary headers`() {
+        assertEquals("Сегодня", formatter.dayHeader(DayLabel.Today))
+        assertEquals("Вчера", formatter.dayHeader(DayLabel.Yesterday))
+        assertEquals("18 октября, воскресенье", formatter.dayHeader(DayLabel.Date(LocalDate.of(2026, 10, 18))))
+        assertEquals("1 января, четверг", formatter.dayHeader(DayLabel.Date(LocalDate.of(2026, 1, 1))))
+    }
+
+    @Test
     fun `short weekdays from Monday`() {
         assertEquals(
             listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"),

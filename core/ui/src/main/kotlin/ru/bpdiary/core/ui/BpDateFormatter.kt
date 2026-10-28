@@ -38,6 +38,22 @@ class BpDateFormatter(
             }
         }
 
+    /** Diary day header: «Сегодня», «Вчера» or «18 октября, воскресенье» (weekday in lower case). */
+    fun dayHeader(label: DayLabel): String =
+        when (label) {
+            is DayLabel.Date -> {
+                resources.getString(
+                    R.string.day_month_weekday,
+                    dayMonth(label.day),
+                    weekdays[label.day.dayOfWeek.value - 1],
+                )
+            }
+
+            else -> {
+                day(label)
+            }
+        }
+
     /** «Сегодня, 09:12», «18 октября, 21:40» (time chip on the Entry screen). */
     fun dayTime(
         label: DayLabel,

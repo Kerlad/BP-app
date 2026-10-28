@@ -2,6 +2,7 @@ package ru.bpdiary.core.ui
 
 import androidx.annotation.StringRes
 import ru.bpdiary.app.core.ui.R
+import ru.bpdiary.core.model.Status
 import ru.bpdiary.core.model.Tag
 
 /** Russian label of a stored tag key (D-08). */
@@ -14,4 +15,13 @@ fun Tag.labelRes(): Int =
         Tag.WEAKNESS -> R.string.tag_weakness
         Tag.AFTER_MEDICINE -> R.string.tag_after_medicine
         Tag.AFTER_EXERCISE -> R.string.tag_after_exercise
+    }
+
+/** «Повышенное», «В норме», «Пониженное». */
+@StringRes
+fun Status.labelRes(): Int =
+    when (this) {
+        Status.HIGH -> R.string.status_high
+        Status.NORMAL -> R.string.status_normal
+        Status.LOW -> R.string.status_low
     }

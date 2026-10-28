@@ -1,10 +1,12 @@
 package ru.bpdiary.domain
 
+import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import ru.bpdiary.core.model.Reading
+import ru.bpdiary.core.model.Status
+import ru.bpdiary.core.model.Thresholds
 import java.time.Instant
 
-/** Paging for the diary is added in Step 6. */
 interface ReadingRepository {
     fun observeLast(): Flow<Reading?>
 
@@ -14,7 +16,14 @@ interface ReadingRepository {
         to: Instant,
     ): Flow<List<Reading>>
 
-    fun observeById(id: Long): Flow<Reading?>
+    /**
+     * Diary pages, newest first. [status] null means every reading; otherwise the filter runs in SQL
+     * with [th] (docs/03 §3.3), so a threshold change needs a new call (docs/06 §6.7).
+     */
+    fun paged(
+        status: Status?,
+        th: Thresholds,
+    ): Flow<PagingData<Reading>>
 
     fun observeCount(): Flow<Int>
 

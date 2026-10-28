@@ -32,6 +32,27 @@ class DayGroupingTest {
     }
 
     @Test
+    fun `diary header before the first reading and at each new day only`() {
+        val plus3 = ZoneOffset.ofHours(3)
+        val evening = localDay(reading("2026-10-20T18:00:00Z", plus3))
+        val morning = localDay(reading("2026-10-20T04:00:00Z", plus3))
+        val yesterday = localDay(reading("2026-10-19T18:00:00Z", plus3))
+        assertEquals(LocalDate.of(2026, 10, 20), dayHeaderBetween(null, evening))
+        assertEquals(null, dayHeaderBetween(evening, morning))
+        assertEquals(LocalDate.of(2026, 10, 19), dayHeaderBetween(morning, yesterday))
+        assertEquals(null, dayHeaderBetween(yesterday, null))
+        assertEquals(null, dayHeaderBetween(null, null))
+    }
+
+    @Test
+    fun `diary header uses the offset of each reading`() {
+        // Same instant, different offsets: 23:30 on the 20th at +3 and 00:30 on the 21st at +4.
+        val moscow = localDay(reading("2026-10-20T20:30:00Z", ZoneOffset.ofHours(3)))
+        val samara = localDay(reading("2026-10-20T20:30:00Z", ZoneOffset.ofHours(4)))
+        assertEquals(LocalDate.of(2026, 10, 20), dayHeaderBetween(samara, moscow))
+    }
+
+    @Test
     fun `reading keeps the day of its own offset`() {
         // 02:00 UTC on the 21st is still the 20th at UTC-5, whatever zone the device is in now.
         assertEquals(LocalDate.of(2026, 10, 20), localDay(reading("2026-10-21T02:00:00Z", ZoneOffset.ofHours(-5))))

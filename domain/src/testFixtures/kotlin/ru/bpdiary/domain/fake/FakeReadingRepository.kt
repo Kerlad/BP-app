@@ -1,11 +1,17 @@
 package ru.bpdiary.domain.fake
 
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
+import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import ru.bpdiary.core.common.TimeProvider
 import ru.bpdiary.core.model.Reading
+import ru.bpdiary.core.model.Status
+import ru.bpdiary.core.model.Thresholds
 import ru.bpdiary.domain.ReadingRepository
+import ru.bpdiary.domain.classify
 import java.time.Duration
 import java.time.Instant
 
@@ -36,7 +42,17 @@ class FakeReadingRepository(
         to: Instant,
     ): Flow<List<Reading>> = live.map { list -> list.filter { it.takenAt in from..to }.sortedBy { it.takenAt } }
 
-    override fun observeById(id: Long): Flow<Reading?> = live.map { list -> list.firstOrNull { it.id == id } }
+    /** One static page per change: enough for tests of separators and deletes. */
+    override fun paged(
+        status: Status?,
+        th: Thresholds,
+    ): Flow<PagingData<Reading>> =
+        live.map { list ->
+            PagingData.from(
+                list.filter { status == null || classify(it.sys, it.dia, th) == status },
+                sourceLoadStates = LOADED,
+            )
+        }
 
     override fun observeCount(): Flow<Int> = live.map { it.size }
 
@@ -69,6 +85,8 @@ class FakeReadingRepository(
     }
 
     private companion object {
+        /** Without explicit load states a static page never reports "loaded", and `asSnapshot` waits forever. */
+        val LOADED = LoadStates(LoadState.NotLoading(true), LoadState.NotLoading(true), LoadState.NotLoading(true))
         val PURGE_AFTER: Duration = Duration.ofHours(24)
     }
 }

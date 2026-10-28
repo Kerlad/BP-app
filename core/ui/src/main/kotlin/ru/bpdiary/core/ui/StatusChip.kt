@@ -22,14 +22,7 @@ fun StatusChip(
     modifier: Modifier = Modifier,
 ) {
     val colors = BpTheme.colors.forStatus(status)
-    val label =
-        stringResource(
-            when (status) {
-                Status.HIGH -> R.string.status_high
-                Status.NORMAL -> R.string.status_normal
-                Status.LOW -> R.string.status_low
-            },
-        )
+    val label = stringResource(status.labelRes())
     val description =
         stringResource(
             when (status) {

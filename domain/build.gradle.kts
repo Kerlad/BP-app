@@ -7,6 +7,7 @@ dependencies {
     api(projects.core.model)
     api(projects.core.common)
     api(libs.kotlinx.coroutines.core)
+    api(libs.paging.common)
 
     testFixturesApi(projects.core.model)
     testFixturesApi(projects.core.common)

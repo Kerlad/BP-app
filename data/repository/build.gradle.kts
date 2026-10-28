@@ -20,5 +20,6 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.room.runtime)
+    testImplementation(libs.paging.testing)
     testImplementation(testFixtures(projects.domain))
 }

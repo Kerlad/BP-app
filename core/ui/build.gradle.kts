@@ -13,10 +13,11 @@ dependencies {
     api(projects.core.model)
     api(projects.domain)
 
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
     // ui-test-manifest pulls an old androidx.activity; activity-compose lifts it to the version the app uses.
     debugImplementation(libs.androidx.activity.compose)
-    debugImplementation(libs.androidx.core.ktx)
-    debugImplementation(libs.androidx.lifecycle.runtime.compose)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     testImplementation(libs.junit4)

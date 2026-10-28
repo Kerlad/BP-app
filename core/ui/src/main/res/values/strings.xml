@@ -64,6 +64,8 @@
         <item>Сб</item>
         <item>Вс</item>
     </string-array>
+    <!-- «18 октября, воскресенье» (diary day header) -->
+    <string name="day_month_weekday">%1$s, %2$s</string>
     <!-- «Вторник, 20 октября»: weekday, then «20 октября» -->
     <string name="weekday_day_month">%1$s, %2$s</string>
 </resources>

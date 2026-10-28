@@ -2,7 +2,6 @@ package ru.bpdiary.feature.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,14 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -38,6 +34,7 @@ import ru.bpdiary.core.designsystem.painter
 import ru.bpdiary.core.ui.BigReading
 import ru.bpdiary.core.ui.BigReadingSize
 import ru.bpdiary.core.ui.BpCard
+import ru.bpdiary.core.ui.BpPrimaryButton
 import ru.bpdiary.core.ui.PulseRow
 import ru.bpdiary.core.ui.RoundIconButton
 import ru.bpdiary.core.ui.StatusChip
@@ -78,7 +75,7 @@ private fun HomeContent(
             onEvent(HomeEvent.LevelsClicked)
         }
         if (state.last != null) LastReadingCard(state.last, texts) else EmptyCard()
-        AddButton { onEvent(HomeEvent.AddClicked) }
+        BpPrimaryButton(stringResource(R.string.home_add_reading), { onEvent(HomeEvent.AddClicked) }, icon = BpIcon.Add)
         state.week?.let { WeekCard(it, texts) { onEvent(HomeEvent.WeekClicked) } }
         ReminderCard(state.nextReminder, texts) { onEvent(HomeEvent.ReminderClicked) }
     }
@@ -150,31 +147,6 @@ private fun LastReadingCard(
 private fun EmptyCard() {
     BpCard {
         Text(stringResource(R.string.home_empty), style = BpTheme.typography.body, color = BpTheme.colors.ink)
-    }
-}
-
-@Composable
-private fun AddButton(onClick: () -> Unit) {
-    val colors = BpTheme.colors
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 62.dp)
-                .clip(RoundedCornerShape(BpTheme.shapes.card))
-                .background(colors.ac)
-                .clickable(role = Role.Button, onClick = onClick)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(
-            painter = BpIcon.Add.painter(),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(colors.aci),
-            modifier = Modifier.size(26.dp),
-        )
-        Text(stringResource(R.string.home_add_reading), style = BpTheme.typography.button, color = colors.aci)
     }
 }
 

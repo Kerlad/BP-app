@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.ui.BpToast
+import ru.bpdiary.feature.diary.diaryScreen
 import ru.bpdiary.feature.entry.EntryEffect
 import ru.bpdiary.feature.entry.EntryRoute
 import ru.bpdiary.feature.entry.entryScreen
@@ -58,6 +59,18 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
     val deletedText = stringResource(R.string.snackbar_reading_deleted)
     val undoText = stringResource(R.string.snackbar_undo)
 
+    /** «Измерение удалено / Отменить» for 5 s; the reading stays soft-deleted in the database meanwhile. */
+    fun offerUndo(readingId: Long) {
+        scope.launch {
+            val result =
+                withTimeoutOrNull(UNDO_MS) {
+                    snackbar.showSnackbar(deletedText, undoText, duration = SnackbarDuration.Indefinite)
+                }
+            if (result == null) snackbar.currentSnackbarData?.dismiss()
+            if (result == SnackbarResult.ActionPerformed) shell.undoDelete(readingId)
+        }
+    }
+
     Box(Modifier.fillMaxSize().background(BpTheme.colors.bg)) {
         NavHost(navController = navController, startDestination = HomeRoute) {
             homeScreen(
@@ -67,6 +80,12 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
                 onOpenCharts = {},
                 onOpenReminders = {},
             )
+            // Reachable from the bottom navigation, which comes with the shell in Step 10.1.
+            diaryScreen(
+                onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },
+                onAddReading = { navController.navigate(EntryRoute()) },
+                onDeleted = ::offerUndo,
+            )
             entryScreen(
                 onSaved = { saved ->
                     navController.leaveEntry(saved)
@@ -75,14 +94,7 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
                 },
                 onDeleted = { id ->
                     navController.popBackStack()
-                    scope.launch {
-                        val result =
-                            withTimeoutOrNull(UNDO_MS) {
-                                snackbar.showSnackbar(deletedText, undoText, duration = SnackbarDuration.Indefinite)
-                            }
-                        if (result == null) snackbar.currentSnackbarData?.dismiss()
-                        if (result == SnackbarResult.ActionPerformed) shell.undoDelete(id)
-                    }
+                    offerUndo(id)
                 },
                 onClose = { navController.popBackStack() },
             )

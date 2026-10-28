@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Diary (handoff screen 3, docs/05 §5.3) -->
+    <string name="diary_title">Дневник</string>
+    <string name="diary_filter_all">Все</string>
+    <string name="diary_filter_high">Повышенное</string>
+    <string name="diary_filter_normal">Норма</string>
+    <string name="diary_filter_low">Пониженное</string>
+    <!-- Row note: «Повышенное · левая рука · Головная боль · комментарий» -->
+    <string name="diary_arm_left">левая рука</string>
+    <string name="diary_arm_right">правая рука</string>
+    <string name="diary_note_separator">" · "</string>
+
+    <!-- Empty states -->
+    <string name="diary_filter_empty">Нет измерений с такой отметкой</string>
+    <string name="diary_empty">Дневник пуст</string>
+    <string name="diary_add_reading">Записать давление</string>
+
+    <!-- Long-press menu (docs/05 §5.3) -->
+    <string name="diary_menu_edit">Изменить</string>
+    <string name="diary_menu_delete">Удалить</string>
+    <string name="diary_menu_copy">Копировать значения</string>
+
+    <!-- PROVISIONAL, awaiting the customer: copied text, the swipe label and the pulse for TalkBack -->
+    <string name="diary_copy_with_pulse">%1$d/%2$d мм рт. ст., пульс %3$d уд/мин</string>
+    <string name="diary_copy_without_pulse">%1$d/%2$d мм рт. ст.</string>
+    <string name="diary_swipe_delete">Удалить</string>
+    <string name="diary_pulse_description">пульс %1$d</string>
+</resources>

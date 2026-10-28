@@ -7,6 +7,15 @@ import java.time.LocalTime
 /** The day of the measurement in the zone it was taken in, not in the current device zone. */
 fun localDay(reading: Reading): LocalDate = reading.takenAt.atOffset(reading.zoneOffset).toLocalDate()
 
+/**
+ * Day header to put between two neighbouring diary rows, newest first (Paging `insertSeparators`).
+ * Days come from [localDay]. Returns [afterDay] when it starts a new day; nothing after the last row.
+ */
+fun dayHeaderBetween(
+    beforeDay: LocalDate?,
+    afterDay: LocalDate?,
+): LocalDate? = afterDay?.takeIf { beforeDay != it }
+
 sealed interface DayLabel {
     data object Today : DayLabel
 

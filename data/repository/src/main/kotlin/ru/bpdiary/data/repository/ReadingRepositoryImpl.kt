@@ -1,9 +1,15 @@
 package ru.bpdiary.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.bpdiary.core.common.TimeProvider
 import ru.bpdiary.core.model.Reading
+import ru.bpdiary.core.model.Status
+import ru.bpdiary.core.model.Thresholds
 import ru.bpdiary.data.database.ReadingDao
 import ru.bpdiary.data.database.ReadingMaintenanceDao
 import ru.bpdiary.domain.ReadingRepository
@@ -28,7 +34,13 @@ class ReadingRepositoryImpl
         ): Flow<List<Reading>> =
             dao.observeRange(from.toEpochMilli(), to.toEpochMilli()).map { list -> list.map { it.toDomain() } }
 
-        override fun observeById(id: Long): Flow<Reading?> = dao.observeById(id).map { it?.toDomain() }
+        override fun paged(
+            status: Status?,
+            th: Thresholds,
+        ): Flow<PagingData<Reading>> =
+            Pager(PagingConfig(pageSize = PAGE_SIZE, enablePlaceholders = false)) {
+                dao.pagingSource(status?.name.orEmpty(), th.highSys, th.highDia, th.lowSys, th.lowDia)
+            }.flow.map { page -> page.map { it.toDomain() } }
 
         override fun observeCount(): Flow<Int> = dao.observeCount()
 
@@ -58,6 +70,7 @@ class ReadingRepositoryImpl
         override suspend fun deleteAll() = maintenance.hardDeleteAll()
 
         private companion object {
+            const val PAGE_SIZE = 50
             val PURGE_AFTER: Duration = Duration.ofHours(24)
         }
     }
