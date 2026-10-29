@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+        WorkManager brings a foreground service and its permission, but nothing here runs foreground or expedited
+        work. Left in, Play Console would ask for a foreground-service declaration.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
+
     <application
         android:name=".BpDiaryApplication"
         android:allowBackup="true"
@@ -22,6 +28,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            tools:node="remove" />
 
         <!-- WorkManager gets Hilt's worker factory from BpDiaryApplication instead of the default initializer. -->
         <provider
