@@ -25,6 +25,10 @@ gradlePlugin {
             id = "bp.android.application"
             implementationClass = "BpAndroidApplicationPlugin"
         }
+        register("bpAndroidBenchmark") {
+            id = "bp.android.benchmark"
+            implementationClass = "BpAndroidBenchmarkPlugin"
+        }
         register("bpAndroidLibrary") {
             id = "bp.android.library"
             implementationClass = "BpAndroidLibraryPlugin"

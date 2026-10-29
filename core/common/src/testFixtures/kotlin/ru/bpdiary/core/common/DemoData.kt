@@ -18,8 +18,10 @@ object DemoData {
     private const val MINUTE_SPREAD = 40
     private val HOURS = listOf(7, 21)
 
-    private class Rng {
-        private var s = SEED
+    private class Rng(
+        seed: Long = SEED,
+    ) {
+        private var s = seed
 
         fun next(): Double {
             s = s * MULTIPLIER % MODULUS
@@ -64,5 +66,53 @@ object DemoData {
             }
         }
         return out.reversed()
+    }
+
+    private const val BULK_SEED = 4321L
+    private const val BULK_PER_DAY = 2
+    private val BULK_HOURS = listOf(7, 21)
+
+    /**
+     * [count] readings for the benchmarks, newest first, two a day (07:xx and 21:xx) going back from today.
+     * Not the prototype's data: the values only have to look like a diary, and the same call gives the same rows.
+     * Ids are not set; the database assigns them.
+     */
+    fun bulk(
+        count: Int,
+        time: TimeProvider = FixedTimeProvider.default(),
+    ): List<Reading> {
+        val rng = Rng(BULK_SEED)
+        val now = time.now()
+        val zone = time.zone()
+        val today = now.atZone(zone).toLocalDate()
+        val out = mutableListOf<Reading>()
+        var day = 0
+        while (out.size < count) {
+            for (h in BULK_HOURS.reversed()) {
+                val minute = MINUTE_BASE + (rng.next() * MINUTE_SPREAD).toInt()
+                val takenAt =
+                    today
+                        .minusDays(day.toLong())
+                        .atTime(LocalTime.of(h, minute))
+                        .atZone(zone)
+                        .toInstant()
+                // Today's evening reading is still to come when the clock is earlier.
+                val sys = 105 + (rng.next() * 60).toInt()
+                val dia = 65 + (rng.next() * 40).toInt().coerceAtMost(sys - 65 - 1)
+                val pulse = 55 + (rng.next() * 40).toInt()
+                if (takenAt.isAfter(now) || out.size >= count) continue
+                out +=
+                    Reading(
+                        takenAt = takenAt,
+                        zoneOffset = zone.rules.getOffset(takenAt),
+                        sys = sys,
+                        dia = dia,
+                        pulse = pulse,
+                        arm = Arm.LEFT,
+                    )
+            }
+            day++
+        }
+        return out
     }
 }

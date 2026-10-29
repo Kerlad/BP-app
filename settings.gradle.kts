@@ -51,3 +51,10 @@ include(
     ":feature:settings",
     ":feature:onboarding",
 )
+
+// The benchmark module is part of the build only on request (`-Pbp.benchmark`, see docs/benchmarks.md): its flag
+// android.experimental.self-instrumenting makes the AAPT2 daemon crash when the other modules link their
+// unit-test resources (seen with AGP 9.5.0), so the everyday verify command runs without it.
+if (providers.gradleProperty("bp.benchmark").isPresent) {
+    include(":benchmark")
+}

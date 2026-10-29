@@ -33,6 +33,15 @@ android {
         release {
             buildConfigField("boolean", "DEMO_DATA", "false")
         }
+        // The build that `:benchmark` measures: like release, signed with the debug key, installed next to it.
+        // It also carries the data seeder in src/benchmark; nothing of that is in release.
+        create("benchmark") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".benchmark"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
+            isDebuggable = false
+        }
     }
 }
 
@@ -62,6 +71,11 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
     implementation(libs.androidx.core.splashscreen)
+    // Installs the baseline profile at the first start and lets the benchmarks compile with it.
+    implementation(libs.androidx.profileinstaller)
+
+    // 2 000 demo readings for the benchmarks only (docs/10 §10.7).
+    "benchmarkImplementation"(testFixtures(projects.core.common))
 
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 

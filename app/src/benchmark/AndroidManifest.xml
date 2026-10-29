@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <!-- Lets the macrobenchmarks trace a build that is not debuggable. Only in the benchmark build. -->
+        <profileable
+            android:shell="true"
+            tools:ignore="UnusedAttribute" />
+
+        <!-- Fills the database for the benchmarks, see SeedReceiver. Only in the benchmark build. -->
+        <receiver
+            android:name=".benchmark.SeedReceiver"
+            android:exported="true" />
+    </application>
+</manifest>
