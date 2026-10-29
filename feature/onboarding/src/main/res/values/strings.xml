@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Onboarding (docs/05 §5.8): the titles are the customer's -->
+    <string name="onboarding_purpose_title">Дневник давления</string>
+    <string name="onboarding_levels_title">Ваши уровни</string>
+    <string name="onboarding_reminders_title">Напоминания</string>
+
+    <!-- Same words as the Levels screen -->
+    <string name="onboarding_levels_intro">Измерения за пределами этих значений отмечаются цветом в дневнике и на графиках.</string>
+    <string name="onboarding_preset_value">%1$d/%2$d</string>
+    <string name="onboarding_preset_home">Домашние измерения</string>
+    <string name="onboarding_preset_clinic">Измерения у врача</string>
+
+    <!-- Same words as the Reminders screen (docs/05 §5.5, docs/01) -->
+    <string name="onboarding_notifications_hint">Чтобы напоминания приходили, разрешите уведомления</string>
+    <string name="onboarding_notifications_allow">Разрешить</string>
+    <string name="onboarding_exact_hint">Напоминания могут приходить с задержкой</string>
+
+    <!-- Disclaimer: docs/09 §9.6, word for word -->
+    <string name="disclaimer_text">Дневник давления помогает вести записи и не является медицинским прибором. Он не ставит диагноз и не заменяет консультацию врача. Все решения о лечении принимает врач.</string>
+
+    <!--
+        PROVISIONAL, awaiting the customer: the docs fix the titles and the texts above, but not these.
+        The purpose and the reminders paragraphs (built from the words docs/09 §9.6 allows), the note that the
+        levels can be changed later, «Далее», the button names of the two permission hints, the disclaimer title,
+        the checkbox and «Продолжить», and the step description for TalkBack.
+    -->
+    <string name="onboarding_purpose_body">Записывайте измерения, следите за динамикой и показывайте историю врачу.</string>
+    <string name="onboarding_levels_later">Позже уровни можно изменить.</string>
+    <string name="onboarding_reminders_body">Напомним вовремя измерить давление. Выберите, когда.</string>
+    <string name="onboarding_next">Далее</string>
+    <string name="onboarding_open_settings">Открыть настройки</string>
+    <string name="onboarding_exact_action">Настроить</string>
+    <string name="onboarding_step_description">Шаг %1$d из %2$d</string>
+    <string name="disclaimer_title">Важно</string>
+    <string name="disclaimer_check">Я прочитал(а) и понимаю</string>
+    <string name="disclaimer_continue">Продолжить</string>
+    <string name="onboarding_switch_description">%1$s, %2$s</string>
+</resources>

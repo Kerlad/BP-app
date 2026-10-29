@@ -9,9 +9,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.bpdiary.core.model.ThemeMode
+import ru.bpdiary.domain.LaunchGate
 import ru.bpdiary.domain.ReadingRepository
 import ru.bpdiary.domain.SettingsRepository
 import javax.inject.Inject
+import ru.bpdiary.domain.launchGate as gateFor
 
 /** What the first frame needs: the theme and the font boost (docs/02 §2.5). */
 data class Appearance(
@@ -30,6 +32,11 @@ class ShellViewModel
         /** Null until the settings have been read: the splash screen stays up meanwhile, so the theme never flashes. */
         val appearance: StateFlow<Appearance?> =
             combine(settings.themeMode, settings.fontScaleBoost, ::Appearance)
+                .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+        /** What to show first. Null until read; the splash stays up meanwhile (docs/05 §5.8, D-18). */
+        val launchGate: StateFlow<LaunchGate?> =
+            combine(settings.onboardingDone, settings.disclaimerAck, ::gateFor)
                 .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
         fun undoDelete(readingId: Long) {

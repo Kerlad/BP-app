@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.ui.BpToast
+import ru.bpdiary.domain.LaunchGate
 import ru.bpdiary.feature.charts.ChartsRoute
 import ru.bpdiary.feature.charts.chartsScreen
 import ru.bpdiary.feature.diary.diaryScreen
@@ -46,6 +47,10 @@ import ru.bpdiary.feature.home.HomeRoute
 import ru.bpdiary.feature.home.homeScreen
 import ru.bpdiary.feature.levels.LevelsRoute
 import ru.bpdiary.feature.levels.levelsScreen
+import ru.bpdiary.feature.onboarding.DisclaimerRoute
+import ru.bpdiary.feature.onboarding.OnboardingRoute
+import ru.bpdiary.feature.onboarding.disclaimerScreen
+import ru.bpdiary.feature.onboarding.onboardingScreen
 import ru.bpdiary.feature.reminders.ReminderEditRoute
 import ru.bpdiary.feature.reminders.RemindersRoute
 import ru.bpdiary.feature.reminders.reminderEditScreen
@@ -61,10 +66,13 @@ private const val UNDO_MS = 5_000L
 @Composable
 fun BpApp(
     shell: ShellViewModel = hiltViewModel(),
+    startGate: LaunchGate = LaunchGate.MAIN,
     openEntryNew: Boolean = false,
     onOpenEntryHandled: () -> Unit = {},
 ) {
     val navController = rememberNavController()
+    // Read once: the stored flags change while the onboarding is going on, the start screen must not.
+    val startDestination: Any = remember { startGate.destination() }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var toast by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -105,7 +113,7 @@ fun BpApp(
             SnackbarHost(snackbar, bottom)
         },
     ) {
-        NavHost(navController = navController, startDestination = HomeRoute) {
+        NavHost(navController = navController, startDestination = startDestination) {
             appGraph(
                 navController = navController,
                 onReadingDeleted = ::offerUndo,
@@ -134,6 +142,8 @@ private fun NavGraphBuilder.appGraph(
     onReadingDeleted: (readingId: Long) -> Unit,
     onReadingSaved: (EntryEffect.Saved) -> Unit,
 ) {
+    onboardingScreen(onFinished = { navController.navigate(DisclaimerRoute) })
+    disclaimerScreen(onAccepted = navController::openAppAfterDisclaimer)
     homeScreen(
         onAddReading = { navController.navigate(EntryRoute()) },
         onOpenLevels = { navController.navigate(LevelsRoute) },
@@ -162,6 +172,13 @@ private fun NavGraphBuilder.appGraph(
         onClose = { navController.popBackStack() },
     )
 }
+
+private fun LaunchGate.destination(): Any =
+    when (this) {
+        LaunchGate.ONBOARDING -> OnboardingRoute
+        LaunchGate.DISCLAIMER -> DisclaimerRoute
+        LaunchGate.MAIN -> HomeRoute
+    }
 
 /** A new reading goes to Home, an edit back to where it was opened from (D-10). */
 private fun NavHostController.leaveEntry(saved: EntryEffect.Saved) {

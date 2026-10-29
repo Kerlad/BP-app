@@ -40,13 +40,16 @@ class MainActivity : ComponentActivity() {
         val splash = installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        splash.setKeepOnScreenCondition { shell.appearance.value == null }
+        splash.setKeepOnScreenCondition { shell.appearance.value == null || shell.launchGate.value == null }
         // After a rotation or process death the intent is the old one: only a fresh launch may open Entry.
         if (savedInstanceState == null) openEntryNew = intent.requestsNewEntry()
         // Direction stays SAGE (D-01).
         setContent {
             val appearance by shell.appearance.collectAsStateWithLifecycle()
+            val gate by shell.launchGate.collectAsStateWithLifecycle()
             val current = appearance ?: return@setContent
+            // The first screen is decided once: the onboarding itself changes the stored flags on the way.
+            val startGate = gate ?: return@setContent
             val dark =
                 when (current.themeMode) {
                     ThemeMode.DARK -> true
@@ -55,7 +58,7 @@ class MainActivity : ComponentActivity() {
                 }
             BoostedFontScale(current.fontScaleBoost) {
                 BpTheme(dark = dark) {
-                    BpApp(shell, openEntryNew = openEntryNew, onOpenEntryHandled = ::onOpenEntryHandled)
+                    BpApp(shell, startGate, openEntryNew = openEntryNew, onOpenEntryHandled = ::onOpenEntryHandled)
                 }
             }
         }

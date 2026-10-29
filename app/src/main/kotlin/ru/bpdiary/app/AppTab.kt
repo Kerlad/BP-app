@@ -11,6 +11,8 @@ import ru.bpdiary.feature.charts.ChartsRoute
 import ru.bpdiary.feature.diary.DiaryRoute
 import ru.bpdiary.feature.entry.EntryRoute
 import ru.bpdiary.feature.home.HomeRoute
+import ru.bpdiary.feature.onboarding.DisclaimerRoute
+import ru.bpdiary.feature.onboarding.OnboardingRoute
 import ru.bpdiary.feature.reminders.RemindersRoute
 import kotlin.reflect.KClass
 
@@ -45,8 +47,18 @@ fun NavController.navigateToTab(tab: AppTab) {
     }
 }
 
-/** «Новое измерение» from the reminder notification (D-14). A reading that is already being entered stays. */
+/**
+ * «Новое измерение» from the reminder notification (D-14). A reading that is already being entered stays, and the
+ * onboarding or the disclaimer is never skipped: without the accepted disclaimer the app does not go on (docs/05 §5.8).
+ */
 fun NavController.openNewEntry() {
-    if (currentDestination?.hasRoute<EntryRoute>() == true) return
+    val current = currentDestination
+    if (current?.hasRoute<EntryRoute>() == true) return
+    if (current?.hasRoute<OnboardingRoute>() == true || current?.hasRoute<DisclaimerRoute>() == true) return
     navigate(EntryRoute())
+}
+
+/** The disclaimer is accepted: Home becomes the bottom of the stack, back leaves the app. */
+fun NavController.openAppAfterDisclaimer() {
+    navigate(HomeRoute) { popUpTo(graph.id) { inclusive = true } }
 }

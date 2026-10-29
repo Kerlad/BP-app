@@ -31,6 +31,8 @@ import ru.bpdiary.feature.charts.ChartsRoute
 import ru.bpdiary.feature.diary.DiaryRoute
 import ru.bpdiary.feature.entry.EntryRoute
 import ru.bpdiary.feature.home.HomeRoute
+import ru.bpdiary.feature.onboarding.DisclaimerRoute
+import ru.bpdiary.feature.onboarding.OnboardingRoute
 import ru.bpdiary.feature.reminders.ReminderEditRoute
 import ru.bpdiary.feature.reminders.RemindersRoute
 
@@ -43,18 +45,20 @@ class AppShellTest {
 
     private lateinit var navController: NavHostController
 
-    private fun show() {
+    private fun show(start: Any = HomeRoute) {
         rule.setContent {
             navController = rememberNavController()
             BpTheme(Direction.SAGE, dark = false) {
                 AppShell(navController) {
-                    NavHost(navController, startDestination = HomeRoute) {
+                    NavHost(navController, startDestination = start) {
                         composable<HomeRoute> { Text("Экран: главная") }
                         composable<DiaryRoute> { LongList() }
                         composable<ChartsRoute> { Text("Экран: графики") }
                         composable<RemindersRoute> { Text("Экран: напоминания") }
                         composable<ReminderEditRoute> { Text("Экран: правка напоминания") }
                         composable<EntryRoute> { Text("Экран: ввод") }
+                        composable<OnboardingRoute> { Text("Экран: онбординг") }
+                        composable<DisclaimerRoute> { Text("Экран: дисклеймер") }
                     }
                 }
             }
@@ -163,6 +167,39 @@ class AppShellTest {
         rule.waitForIdle()
         rule.onNodeWithText("Экран: главная").assertExists()
         rule.runOnUiThread { assertTrue(navController.currentDestination?.hasRoute<HomeRoute>() == true) }
+    }
+
+    @Test
+    fun `onboarding and the disclaimer have no bottom navigation`() {
+        show(start = OnboardingRoute)
+        rule.onNodeWithText("Экран: онбординг").assertExists()
+        tab("Главная").assertDoesNotExist()
+    }
+
+    @Test
+    fun `a notification cannot skip the onboarding or the disclaimer`() {
+        show(start = OnboardingRoute)
+        rule.runOnUiThread { navController.openNewEntry() }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: онбординг").assertExists()
+        rule.onNodeWithText("Экран: ввод").assertDoesNotExist()
+
+        rule.runOnUiThread { navController.navigate(DisclaimerRoute) }
+        rule.waitForIdle()
+        rule.runOnUiThread { navController.openNewEntry() }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: дисклеймер").assertExists()
+        rule.onNodeWithText("Экран: ввод").assertDoesNotExist()
+    }
+
+    @Test
+    fun `after the disclaimer the app opens on Home and back leaves it`() {
+        show(start = DisclaimerRoute)
+        rule.runOnUiThread { navController.openAppAfterDisclaimer() }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: главная").assertExists()
+        tab("Главная").assertIsSelected()
+        rule.runOnUiThread { assertTrue(navController.previousBackStackEntry == null) }
     }
 
     private companion object {

@@ -11,7 +11,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import ru.bpdiary.core.common.FixedTimeProvider
+import ru.bpdiary.core.model.DISCLAIMER_VERSION
 import ru.bpdiary.core.model.ThemeMode
+import ru.bpdiary.domain.LaunchGate
 import ru.bpdiary.domain.fake.FakeReadingRepository
 import ru.bpdiary.domain.fake.FakeSettingsRepository
 
@@ -45,5 +47,22 @@ class ShellViewModelTest {
             assertEquals(Appearance(ThemeMode.SYSTEM, 1f), vm.appearance.value)
             settings.setThemeMode(ThemeMode.LIGHT)
             assertEquals(Appearance(ThemeMode.LIGHT, 1f), vm.appearance.value)
+        }
+
+    @Test
+    fun `a fresh install starts with the onboarding`() =
+        runTest {
+            val vm = ShellViewModel(FakeReadingRepository(FixedTimeProvider.default()), settings)
+            assertEquals(LaunchGate.ONBOARDING, vm.launchGate.value)
+        }
+
+    @Test
+    fun `the gate follows the onboarding and the accepted disclaimer`() =
+        runTest {
+            val vm = ShellViewModel(FakeReadingRepository(FixedTimeProvider.default()), settings)
+            settings.setOnboardingDone(true)
+            assertEquals(LaunchGate.DISCLAIMER, vm.launchGate.value)
+            settings.setDisclaimerAck(DISCLAIMER_VERSION)
+            assertEquals(LaunchGate.MAIN, vm.launchGate.value)
         }
 }
