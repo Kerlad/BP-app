@@ -55,6 +55,10 @@ import ru.bpdiary.feature.reminders.ReminderEditRoute
 import ru.bpdiary.feature.reminders.RemindersRoute
 import ru.bpdiary.feature.reminders.reminderEditScreen
 import ru.bpdiary.feature.reminders.remindersScreen
+import ru.bpdiary.feature.settings.AboutRoute
+import ru.bpdiary.feature.settings.SettingsRoute
+import ru.bpdiary.feature.settings.aboutScreen
+import ru.bpdiary.feature.settings.settingsScreen
 
 private const val TOAST_MS = 2_400L
 private const val UNDO_MS = 5_000L
@@ -156,8 +160,13 @@ private fun NavGraphBuilder.appGraph(
         onOpen = { navController.navigate(ReminderEditRoute(it)) },
     )
     reminderEditScreen(onClose = { navController.popBackStack() })
-    // Settings come in Step 10.3.
-    levelsScreen(onClose = { navController.popBackStack() }, onOpenSettings = {})
+    levelsScreen(onClose = { navController.popBackStack() }, onOpenSettings = { navController.navigate(SettingsRoute) })
+    settingsScreen(
+        onClose = { navController.popBackStack() },
+        onOpenAbout = { navController.navigate(AboutRoute) },
+        onDataDeleted = navController::restartFromOnboarding,
+    )
+    aboutScreen(onClose = { navController.popBackStack() })
     diaryScreen(
         onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },
         onAddReading = { navController.navigate(EntryRoute()) },

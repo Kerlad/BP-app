@@ -62,3 +62,8 @@ fun NavController.openNewEntry() {
 fun NavController.openAppAfterDisclaimer() {
     navigate(HomeRoute) { popUpTo(graph.id) { inclusive = true } }
 }
+
+/** «Удалить все данные» is done: the back stack is dropped and the app starts again from the onboarding. */
+fun NavController.restartFromOnboarding() {
+    navigate(OnboardingRoute) { popUpTo(graph.id) { inclusive = true } }
+}

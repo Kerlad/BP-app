@@ -35,6 +35,7 @@ import ru.bpdiary.feature.onboarding.DisclaimerRoute
 import ru.bpdiary.feature.onboarding.OnboardingRoute
 import ru.bpdiary.feature.reminders.ReminderEditRoute
 import ru.bpdiary.feature.reminders.RemindersRoute
+import ru.bpdiary.feature.settings.SettingsRoute
 
 /** The shell around the real routes with plain screens inside: what is tested is the navigation, not the screens. */
 @RunWith(RobolectricTestRunner::class)
@@ -57,6 +58,7 @@ class AppShellTest {
                         composable<RemindersRoute> { Text("Экран: напоминания") }
                         composable<ReminderEditRoute> { Text("Экран: правка напоминания") }
                         composable<EntryRoute> { Text("Экран: ввод") }
+                        composable<SettingsRoute> { Text("Экран: настройки") }
                         composable<OnboardingRoute> { Text("Экран: онбординг") }
                         composable<DisclaimerRoute> { Text("Экран: дисклеймер") }
                     }
@@ -199,6 +201,21 @@ class AppShellTest {
         rule.waitForIdle()
         rule.onNodeWithText("Экран: главная").assertExists()
         tab("Главная").assertIsSelected()
+        rule.runOnUiThread { assertTrue(navController.previousBackStackEntry == null) }
+    }
+
+    @Test
+    fun `after deleting all data the app starts again from the onboarding with nothing to go back to`() {
+        show()
+        tab("Дневник").performClick()
+        rule.runOnUiThread { navController.navigate(SettingsRoute) }
+        rule.waitForIdle()
+        tab("Дневник").assertDoesNotExist()
+
+        rule.runOnUiThread { navController.restartFromOnboarding() }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: онбординг").assertExists()
+        tab("Главная").assertDoesNotExist()
         rule.runOnUiThread { assertTrue(navController.previousBackStackEntry == null) }
     }
 

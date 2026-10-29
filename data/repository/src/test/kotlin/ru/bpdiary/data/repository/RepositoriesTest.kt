@@ -18,6 +18,9 @@ import ru.bpdiary.core.model.Reading
 import ru.bpdiary.core.model.Reminder
 import ru.bpdiary.data.database.BpDatabase
 import ru.bpdiary.data.database.DefaultRemindersCallback
+import ru.bpdiary.domain.DeleteAllDataUseCase
+import ru.bpdiary.domain.fake.FakeReminderScheduler
+import ru.bpdiary.domain.fake.FakeSettingsRepository
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
@@ -133,6 +136,22 @@ class RepositoriesTest {
             readings.softDelete(id)
             readings.deleteAll()
             assertEquals(0, db.readingMaintenanceDao().countIncludingDeleted())
+        }
+
+    @Test
+    fun `delete all data leaves no reading in the database file and the default reminders`() =
+        runTest {
+            val soft = readings.save(reading())
+            readings.save(reading())
+            readings.softDelete(soft)
+            reminders.delete(reminders.getAll().first().id)
+            val scheduler = FakeReminderScheduler()
+
+            DeleteAllDataUseCase(readings, reminders, FakeSettingsRepository(), scheduler).invoke()
+
+            assertEquals(0, db.readingMaintenanceDao().countIncludingDeleted())
+            assertEquals(3, reminders.getAll().size)
+            assertEquals(true, scheduler.cancelled)
         }
 
     // --- reminders ------------------------------------------------------------------------------

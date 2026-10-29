@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings (docs/05 §5.7, D-11, D-26): the customer's words -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_theme_system">Системная</string>
+    <string name="settings_theme_light">Светлая</string>
+    <string name="settings_theme_dark">Тёмная</string>
+    <string name="settings_delete_all">Удалить все данные</string>
+    <string name="settings_delete_forever">Удалить навсегда</string>
+    <string name="settings_about">О приложении</string>
+
+    <!-- About: docs/09 §9.6, word for word -->
+    <string name="about_title">О приложении</string>
+    <string name="about_disclaimer">Дневник давления помогает вести записи и не является медицинским прибором. Он не ставит диагноз и не заменяет консультацию врача. Все решения о лечении принимает врач.</string>
+    <string name="about_urgent">При резком ухудшении самочувствия обратитесь за медицинской помощью</string>
+
+    <!--
+        PROVISIONAL, awaiting the customer: the docs fix the words above, but not these.
+        The name of the theme section, both dialogs (title, text, «Продолжить», «Отмена»), the paragraph about a new
+        phone (made from docs/08 §8.4), «Версия», «Политика конфиденциальности» and the back button description.
+    -->
+    <string name="settings_theme_section">Тема</string>
+    <string name="settings_delete_first_title">Удалить все данные?</string>
+    <string name="settings_delete_first_text">Все измерения, напоминания и настройки будут удалены с этого телефона.</string>
+    <string name="settings_delete_first_confirm">Продолжить</string>
+    <string name="settings_delete_second_title">Удалить навсегда?</string>
+    <string name="settings_delete_second_text">Это нельзя отменить. Приложение начнёт работу с чистого листа.</string>
+    <string name="settings_delete_cancel">Отмена</string>
+    <string name="settings_back_description">Назад</string>
+    <string name="about_new_phone">Чтобы не потерять записи при смене телефона, перенесите данные при настройке нового телефона через мастер Android (кабель или «Быстрый перенос»). Из облачной копии записи не восстанавливаются.</string>
+    <string name="about_version">Версия %1$s</string>
+    <string name="about_privacy">Политика конфиденциальности</string>
+    <!-- The address is not known yet (the customer has to give it): while empty, the line is not shown. -->
+    <string name="about_privacy_url" translatable="false"></string>
+</resources>
