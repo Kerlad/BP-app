@@ -56,10 +56,14 @@ private const val UNDO_MS = 5_000L
 
 /**
  * Navigation and the app-wide messages: toast after saving, undo snackbar after deleting and the
- * critical-value hint (D-06). The full shell with the bottom navigation comes in Step 10.1.
+ * critical-value hint (D-06). [openEntryNew] is the reminder notification's request for a new reading.
  */
 @Composable
-fun BpApp(shell: ShellViewModel = hiltViewModel()) {
+fun BpApp(
+    shell: ShellViewModel = hiltViewModel(),
+    openEntryNew: Boolean = false,
+    onOpenEntryHandled: () -> Unit = {},
+) {
     val navController = rememberNavController()
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -80,7 +84,27 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
         }
     }
 
-    Box(Modifier.fillMaxSize().background(BpTheme.colors.bg)) {
+    LaunchedEffect(openEntryNew) {
+        if (openEntryNew) {
+            navController.openNewEntry()
+            onOpenEntryHandled()
+        }
+    }
+
+    AppShell(
+        navController = navController,
+        overlay = {
+            val bottom = Modifier.align(Alignment.BottomCenter).windowInsetsPadding(WindowInsets.safeDrawing)
+            toast?.let { text ->
+                BpToast(stringResource(text), bottom.padding(16.dp))
+                LaunchedEffect(text) {
+                    delay(TOAST_MS)
+                    toast = null
+                }
+            }
+            SnackbarHost(snackbar, bottom)
+        },
+    ) {
         NavHost(navController = navController, startDestination = HomeRoute) {
             appGraph(
                 navController = navController,
@@ -92,15 +116,6 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
                 },
             )
         }
-        val bottom = Modifier.align(Alignment.BottomCenter).windowInsetsPadding(WindowInsets.safeDrawing)
-        toast?.let { text ->
-            BpToast(stringResource(text), bottom.padding(16.dp))
-            LaunchedEffect(text) {
-                delay(TOAST_MS)
-                toast = null
-            }
-        }
-        SnackbarHost(snackbar, bottom)
     }
     if (criticalHint) {
         AlertDialog(
@@ -122,8 +137,8 @@ private fun NavGraphBuilder.appGraph(
     homeScreen(
         onAddReading = { navController.navigate(EntryRoute()) },
         onOpenLevels = { navController.navigate(LevelsRoute) },
-        onOpenCharts = { navController.navigate(ChartsRoute) },
-        onOpenReminders = { navController.navigate(RemindersRoute) },
+        onOpenCharts = { navController.navigateToTab(AppTab.CHARTS) },
+        onOpenReminders = { navController.navigateToTab(AppTab.REMINDERS) },
     )
     chartsScreen()
     remindersScreen(
@@ -133,7 +148,6 @@ private fun NavGraphBuilder.appGraph(
     reminderEditScreen(onClose = { navController.popBackStack() })
     // Settings come in Step 10.3.
     levelsScreen(onClose = { navController.popBackStack() }, onOpenSettings = {})
-    // Reachable from the bottom navigation, which comes with the shell in Step 10.1.
     diaryScreen(
         onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },
         onAddReading = { navController.navigate(EntryRoute()) },

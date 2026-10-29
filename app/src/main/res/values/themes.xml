@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.BpDiary" parent="@android:style/Theme.Material.Light.NoActionBar" />
+    <style name="Theme.BpDiary" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/splash_background</item>
+    </style>
+
+    <!-- Launch theme: the splash screen is held until the settings are read, then the app theme takes over. -->
+    <style name="Theme.BpDiary.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.BpDiary</item>
+    </style>
 </resources>

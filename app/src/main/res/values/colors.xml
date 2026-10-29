@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sage background `bg`, light and dark (design_handoff_bp_diary, direction 1b): the splash matches the first frame. -->
+    <color name="splash_background">#F2F3EA</color>
+</resources>

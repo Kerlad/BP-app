@@ -1,0 +1,172 @@
+package ru.bpdiary.app
+
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import ru.bpdiary.core.designsystem.BpTheme
+import ru.bpdiary.core.model.Direction
+import ru.bpdiary.feature.charts.ChartsRoute
+import ru.bpdiary.feature.diary.DiaryRoute
+import ru.bpdiary.feature.entry.EntryRoute
+import ru.bpdiary.feature.home.HomeRoute
+import ru.bpdiary.feature.reminders.ReminderEditRoute
+import ru.bpdiary.feature.reminders.RemindersRoute
+
+/** The shell around the real routes with plain screens inside: what is tested is the navigation, not the screens. */
+@RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = "ru-w360dp-h780dp-xxhdpi")
+class AppShellTest {
+    @get:Rule
+    val rule = createComposeRule()
+
+    private lateinit var navController: NavHostController
+
+    private fun show() {
+        rule.setContent {
+            navController = rememberNavController()
+            BpTheme(Direction.SAGE, dark = false) {
+                AppShell(navController) {
+                    NavHost(navController, startDestination = HomeRoute) {
+                        composable<HomeRoute> { Text("Экран: главная") }
+                        composable<DiaryRoute> { LongList() }
+                        composable<ChartsRoute> { Text("Экран: графики") }
+                        composable<RemindersRoute> { Text("Экран: напоминания") }
+                        composable<ReminderEditRoute> { Text("Экран: правка напоминания") }
+                        composable<EntryRoute> { Text("Экран: ввод") }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun LongList() {
+        val state = rememberLazyListState()
+        LazyColumn(state = state, modifier = Modifier.testTag("diary")) {
+            items((0 until ROWS).toList()) { Text("Строка $it") }
+        }
+    }
+
+    private fun tab(label: String) = rule.onNodeWithText(label)
+
+    @Test
+    fun `the four tabs are shown on the main screens, Home is selected first`() {
+        show()
+        listOf("Главная", "Дневник", "Графики", "Напоминания").forEach { tab(it).assertExists() }
+        tab("Главная").assertIsSelected()
+        tab("Дневник").assertIsNotSelected()
+    }
+
+    @Test
+    fun `a tab opens its screen and becomes selected`() {
+        show()
+        tab("Графики").performClick()
+        rule.onNodeWithText("Экран: графики").assertExists()
+        tab("Графики").assertIsSelected()
+        tab("Главная").assertIsNotSelected()
+    }
+
+    @Test
+    fun `switching tabs keeps the scroll position of the diary`() {
+        show()
+        tab("Дневник").performClick()
+        rule.onNodeWithTag("diary").performScrollToIndex(SCROLLED_TO)
+        rule.onNodeWithText("Строка $SCROLLED_TO").assertExists()
+        rule.onNodeWithText("Строка 0").assertDoesNotExist()
+
+        tab("Графики").performClick()
+        tab("Дневник").performClick()
+        rule.waitForIdle()
+        rule.onNodeWithText("Строка $SCROLLED_TO").assertExists()
+        rule.onNodeWithText("Строка 0").assertDoesNotExist()
+    }
+
+    @Test
+    fun `back from another tab goes to Home, not through the visited tabs`() {
+        show()
+        tab("Дневник").performClick()
+        tab("Графики").performClick()
+        tab("Напоминания").performClick()
+        rule.runOnUiThread { navController.popBackStack() }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: главная").assertExists()
+    }
+
+    @Test
+    fun `the tab is selected again by tapping it twice without stacking screens`() {
+        show()
+        tab("Напоминания").performClick()
+        tab("Напоминания").performClick()
+        rule.runOnUiThread { navController.popBackStack() }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: главная").assertExists()
+    }
+
+    @Test
+    fun `full-screen destinations hide the bottom navigation`() {
+        show()
+        tab("Напоминания").performClick()
+        rule.runOnUiThread { navController.navigate(ReminderEditRoute()) }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: правка напоминания").assertExists()
+        tab("Напоминания").assertDoesNotExist()
+
+        rule.runOnUiThread { navController.popBackStack() }
+        rule.waitForIdle()
+        tab("Напоминания").assertIsSelected()
+    }
+
+    @Test
+    fun `the notification request opens a new reading over the current screen`() {
+        show()
+        tab("Дневник").performClick()
+        rule.runOnUiThread { navController.openNewEntry() }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: ввод").assertExists()
+        tab("Дневник").assertDoesNotExist()
+
+        rule.runOnUiThread { navController.popBackStack() }
+        rule.waitForIdle()
+        tab("Дневник").assertIsSelected()
+    }
+
+    @Test
+    fun `a second notification tap does not stack another Entry`() {
+        show()
+        rule.runOnUiThread {
+            navController.openNewEntry()
+            navController.openNewEntry()
+            navController.popBackStack()
+        }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: главная").assertExists()
+        rule.runOnUiThread { assertTrue(navController.currentDestination?.hasRoute<HomeRoute>() == true) }
+    }
+
+    private companion object {
+        const val ROWS = 100
+        const val SCROLLED_TO = 60
+    }
+}

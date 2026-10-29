@@ -23,6 +23,8 @@ android {
         buildConfig = true
     }
 
+    testOptions.unitTests.isIncludeAndroidResources = true
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -59,4 +61,16 @@ dependencies {
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
+    implementation(libs.androidx.core.splashscreen)
+
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    testImplementation(testFixtures(projects.domain))
+    testImplementation(testFixtures(projects.core.common))
+    testImplementation(libs.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.test.espresso.core)
 }

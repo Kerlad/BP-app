@@ -5,12 +5,19 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.bpdiary.core.model.ThemeMode
 import ru.bpdiary.domain.ReadingRepository
 import ru.bpdiary.domain.SettingsRepository
 import javax.inject.Inject
+
+/** What the first frame needs: the theme and the font boost (docs/02 §2.5). */
+data class Appearance(
+    val themeMode: ThemeMode,
+    val fontScaleBoost: Float,
+)
 
 /** App-wide actions that outlive a single screen, such as undoing a delete from the snackbar. */
 @HiltViewModel
@@ -20,9 +27,10 @@ class ShellViewModel
         private val readings: ReadingRepository,
         settings: SettingsRepository,
     ) : ViewModel() {
-        /** Light or dark theme chosen on the Levels screen; the full theme selector comes in Step 10.3. */
-        val themeMode: StateFlow<ThemeMode> =
-            settings.themeMode.stateIn(viewModelScope, SharingStarted.Eagerly, ThemeMode.SYSTEM)
+        /** Null until the settings have been read: the splash screen stays up meanwhile, so the theme never flashes. */
+        val appearance: StateFlow<Appearance?> =
+            combine(settings.themeMode, settings.fontScaleBoost, ::Appearance)
+                .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
         fun undoDelete(readingId: Long) {
             viewModelScope.launch { readings.restore(readingId) }

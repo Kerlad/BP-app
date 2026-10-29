@@ -2,6 +2,12 @@
 <resources>
     <string name="app_name">Дневник давления</string>
 
+    <!-- Bottom navigation (handoff, «Interactions & Behavior») -->
+    <string name="tab_home">Главная</string>
+    <string name="tab_diary">Дневник</string>
+    <string name="tab_charts">Графики</string>
+    <string name="tab_reminders">Напоминания</string>
+
     <!-- Messages after the Entry screen (docs/05 §5.2, D-10) -->
     <string name="toast_reading_saved">Измерение сохранено</string>
     <string name="toast_changes_saved">Изменения сохранены</string>
