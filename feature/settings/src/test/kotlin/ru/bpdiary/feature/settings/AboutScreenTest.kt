@@ -17,6 +17,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.model.Direction
+import ru.bpdiary.core.ui.assertAccessible
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -37,14 +38,23 @@ class AboutScreenTest {
         }
     }
 
-    @Test
-    fun sageLight() {
-        show()
+    private fun snapshot(
+        name: String,
+        dark: Boolean,
+    ) {
+        show(dark)
         // A short screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
-        rule.onRoot().captureRoboImage("src/test/snapshots/about_sage_light.png")
+        rule.assertAccessible()
+        rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
+
+    @Test
+    fun sageLight() = snapshot("about_sage_light", dark = false)
+
+    @Test
+    fun sageDark() = snapshot("about_sage_dark", dark = true)
 
     @Test
     fun `the disclaimer and the urgent care line are the ones from the docs, word for word`() {

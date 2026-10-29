@@ -27,6 +27,7 @@ import ru.bpdiary.core.common.FixedTimeProvider
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.model.Direction
 import ru.bpdiary.core.model.Thresholds
+import ru.bpdiary.core.ui.assertAccessible
 import java.time.LocalDate
 
 /** `./gradlew recordRoborazziDebug` re-records, `verifyRoborazziDebug` compares. */
@@ -73,6 +74,8 @@ class ChartsScreenTest {
         // A short screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
+        // Every state that gets a snapshot is checked for names and touch targets too (docs/10 §10.6).
+        rule.assertAccessible()
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 

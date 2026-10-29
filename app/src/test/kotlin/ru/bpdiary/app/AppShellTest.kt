@@ -27,6 +27,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.model.Direction
+import ru.bpdiary.core.ui.assertAccessible
 import ru.bpdiary.feature.charts.ChartsRoute
 import ru.bpdiary.feature.diary.DiaryRoute
 import ru.bpdiary.feature.entry.EntryRoute
@@ -83,6 +84,8 @@ class AppShellTest {
         listOf("Главная", "Дневник", "Графики", "Напоминания").forEach { tab(it).assertExists() }
         tab("Главная").assertIsSelected()
         tab("Дневник").assertIsNotSelected()
+        // The tabs have names and touch targets of at least 48 dp (docs/10 §10.6).
+        rule.assertAccessible()
     }
 
     @Test

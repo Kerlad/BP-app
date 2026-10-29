@@ -20,6 +20,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.model.Direction
+import ru.bpdiary.core.ui.assertAccessible
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -50,6 +51,7 @@ class DisclaimerScreenTest {
         // A short screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
+        rule.assertAccessible()
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 

@@ -38,6 +38,7 @@ import ru.bpdiary.core.model.Reading
 import ru.bpdiary.core.model.Status
 import ru.bpdiary.core.model.Tag
 import ru.bpdiary.core.model.Thresholds
+import ru.bpdiary.core.ui.assertAccessible
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -100,6 +101,7 @@ class DiaryScreenTest {
         // A short screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
+        rule.assertAccessible()
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 

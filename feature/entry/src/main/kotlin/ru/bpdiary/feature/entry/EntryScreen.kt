@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -345,6 +346,7 @@ private fun CommentField(
 ) {
     val colors = BpTheme.colors
     val shape = RoundedCornerShape(BpTheme.shapes.key)
+    val hint = stringResource(R.string.entry_comment_hint)
     BasicTextField(
         value = value,
         onValueChange = onChange,
@@ -353,12 +355,13 @@ private fun CommentField(
         cursorBrush = SolidColor(colors.ac),
         keyboardOptions =
             KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-        modifier = Modifier.fillMaxWidth(),
+        // The hint is drawn inside the field and is not part of its semantics: TalkBack needs the name.
+        modifier = Modifier.fillMaxWidth().semantics { contentDescription = hint },
         decorationBox = { inner ->
             Row(
                 modifier =
                     Modifier
-                        .heightIn(min = 44.dp)
+                        .heightIn(min = 48.dp)
                         .clip(shape)
                         .background(colors.sf)
                         .border(BorderStroke(1.5.dp, colors.ln), shape)

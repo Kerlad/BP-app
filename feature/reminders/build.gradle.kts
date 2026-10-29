@@ -21,6 +21,7 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    testImplementation(testFixtures(projects.core.ui))
     testImplementation(testFixtures(projects.domain))
     testImplementation(testFixtures(projects.core.common))
     testImplementation(libs.junit4)

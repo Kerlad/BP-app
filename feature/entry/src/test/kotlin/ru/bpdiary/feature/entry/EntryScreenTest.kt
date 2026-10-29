@@ -25,6 +25,7 @@ import ru.bpdiary.core.model.Direction
 import ru.bpdiary.core.model.Field
 import ru.bpdiary.core.model.Status
 import ru.bpdiary.core.model.Tag
+import ru.bpdiary.core.ui.assertAccessible
 import ru.bpdiary.domain.DayLabel
 import ru.bpdiary.domain.Draft
 import ru.bpdiary.domain.Key
@@ -95,6 +96,7 @@ class EntryScreenTest {
         fontScale: Float = 1f,
     ) {
         show(state, direction, dark, fontScale)
+        rule.assertAccessible()
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 
@@ -115,6 +117,15 @@ class EntryScreenTest {
 
     @Test
     fun filledPlumDark() = snapshot("entry_filled_plum_dark", filled, Direction.PLUM, dark = true)
+
+    @Test
+    fun filledPeachDark() = snapshot("entry_filled_peach_dark", filled, Direction.PEACH, dark = true)
+
+    @Test
+    fun filledPlumLight() = snapshot("entry_filled_plum_light", filled, Direction.PLUM)
+
+    @Test
+    fun filledSageLightFontScale15() = snapshot("entry_filled_sage_light_fs15", filled, fontScale = 1.5f)
 
     @Test
     fun errorSageLight() = snapshot("entry_error_sage_light", invalid)

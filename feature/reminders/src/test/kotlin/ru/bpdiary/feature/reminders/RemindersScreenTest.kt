@@ -27,6 +27,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import ru.bpdiary.core.model.Direction
+import ru.bpdiary.core.ui.assertAccessible
 import ru.bpdiary.domain.DaysSummary
 import ru.bpdiary.domain.WORKDAYS
 import java.time.DayOfWeek
@@ -85,6 +86,7 @@ class RemindersScreenTest {
         // A short screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
+        rule.assertAccessible()
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 

@@ -23,6 +23,7 @@ dependencies {
 
     // E2E-style test: a preset chosen here recolours the last reading on Home.
     testImplementation(projects.feature.home)
+    testImplementation(testFixtures(projects.core.ui))
     testImplementation(testFixtures(projects.domain))
     testImplementation(testFixtures(projects.core.common))
     testImplementation(libs.junit4)

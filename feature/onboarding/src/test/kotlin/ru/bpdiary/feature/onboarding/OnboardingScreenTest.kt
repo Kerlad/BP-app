@@ -28,6 +28,7 @@ import org.robolectric.annotation.GraphicsMode
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.model.Direction
 import ru.bpdiary.core.model.Thresholds
+import ru.bpdiary.core.ui.assertAccessible
 import ru.bpdiary.domain.ThresholdPreset
 import java.time.LocalTime
 
@@ -80,11 +81,18 @@ class OnboardingScreenTest {
         // A short screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
+        rule.assertAccessible()
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 
     @Test
     fun purposeSageLight() = snapshot("onboarding_purpose_sage_light", first)
+
+    @Test
+    fun purposeSageDark() = snapshot("onboarding_purpose_sage_dark", first, dark = true)
+
+    @Test
+    fun levelsSageDark() = snapshot("onboarding_levels_sage_dark", levels, dark = true)
 
     @Test
     fun levelsSageLight() = snapshot("onboarding_levels_sage_light", levels)

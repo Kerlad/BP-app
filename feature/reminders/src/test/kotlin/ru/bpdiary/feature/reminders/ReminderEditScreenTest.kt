@@ -21,6 +21,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.model.Direction
+import ru.bpdiary.core.ui.assertAccessible
 import ru.bpdiary.domain.DaysSummary
 import ru.bpdiary.domain.WORKDAYS
 import java.time.DayOfWeek
@@ -69,11 +70,15 @@ class ReminderEditScreenTest {
         // A short screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
+        rule.assertAccessible()
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 
     @Test
     fun newSageLight() = snapshot("reminder_edit_new_sage_light", new)
+
+    @Test
+    fun newSageDark() = snapshot("reminder_edit_new_sage_dark", new, dark = true)
 
     @Test
     fun existingSageDark() = snapshot("reminder_edit_existing_sage_dark", existing, dark = true)

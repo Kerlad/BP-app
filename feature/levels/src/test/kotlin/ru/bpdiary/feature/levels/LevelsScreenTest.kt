@@ -26,6 +26,7 @@ import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.model.Direction
 import ru.bpdiary.core.model.ThemeMode
 import ru.bpdiary.core.model.Thresholds
+import ru.bpdiary.core.ui.assertAccessible
 import ru.bpdiary.domain.THRESHOLD_STEP
 import ru.bpdiary.domain.ThresholdField
 import ru.bpdiary.domain.ThresholdPreset
@@ -72,6 +73,7 @@ class LevelsScreenTest {
         // A short screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
+        rule.assertAccessible()
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 

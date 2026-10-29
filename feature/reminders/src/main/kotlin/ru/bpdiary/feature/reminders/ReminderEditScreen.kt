@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -215,6 +216,7 @@ private fun LabelField(
 ) {
     val colors = BpTheme.colors
     val shape = RoundedCornerShape(BpTheme.shapes.key)
+    val hint = stringResource(R.string.reminders_edit_label_hint)
     BasicTextField(
         value = value,
         onValueChange = onChange,
@@ -223,7 +225,8 @@ private fun LabelField(
         cursorBrush = SolidColor(colors.ac),
         keyboardOptions =
             KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-        modifier = Modifier.fillMaxWidth(),
+        // The hint is drawn inside the field and is not part of its semantics: TalkBack needs the name.
+        modifier = Modifier.fillMaxWidth().semantics { contentDescription = hint },
         decorationBox = { inner ->
             Row(
                 modifier =
@@ -238,7 +241,7 @@ private fun LabelField(
                 Box(Modifier.weight(1f)) {
                     if (value.isEmpty()) {
                         Text(
-                            text = stringResource(R.string.reminders_edit_label_hint),
+                            text = hint,
                             style = BpTheme.typography.body,
                             color = colors.mut,
                         )

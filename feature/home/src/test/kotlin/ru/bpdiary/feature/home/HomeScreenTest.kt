@@ -30,6 +30,7 @@ import ru.bpdiary.core.model.Direction
 import ru.bpdiary.core.model.Reading
 import ru.bpdiary.core.model.Reminder
 import ru.bpdiary.core.model.Thresholds
+import ru.bpdiary.core.ui.assertAccessible
 import ru.bpdiary.domain.GreetingSlot
 import ru.bpdiary.domain.NextReminderLabel
 import ru.bpdiary.domain.fake.FakeReminderRepository
@@ -105,6 +106,7 @@ class HomeScreenTest {
         // The short empty screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
+        rule.assertAccessible()
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 
@@ -131,6 +133,15 @@ class HomeScreenTest {
 
     @Test
     fun demoPlumDark() = snapshot("home_demo_plum_dark", demo, Direction.PLUM, dark = true)
+
+    @Test
+    fun demoPeachDark() = snapshot("home_demo_peach_dark", demo, Direction.PEACH, dark = true)
+
+    @Test
+    fun demoPlumLight() = snapshot("home_demo_plum_light", demo, Direction.PLUM)
+
+    @Test
+    fun demoSageLightFontScale15() = snapshot("home_demo_sage_light_fs15", demo, fontScale = 1.5f)
 
     @Test
     fun remindersOffSageLight() = snapshot("home_reminders_off_sage_light", remindersOff)
