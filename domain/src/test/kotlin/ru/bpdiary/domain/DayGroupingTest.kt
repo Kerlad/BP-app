@@ -60,6 +60,14 @@ class DayGroupingTest {
     }
 
     @Test
+    fun `a day label never fails, whatever the day of today`() {
+        // The diary shows its first frame before today is known (LocalDate.MIN): minusDays(1) would overflow there.
+        val day = LocalDate.of(2026, 10, 18)
+        assertEquals(DayLabel.Date(day), dayLabel(day, LocalDate.MIN))
+        assertEquals(DayLabel.Date(day), dayLabel(day, LocalDate.MAX))
+    }
+
+    @Test
     fun `day labels`() {
         val today = LocalDate.of(2026, 10, 20)
         assertEquals(DayLabel.Today, dayLabel(today, today))

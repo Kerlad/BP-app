@@ -62,7 +62,11 @@ class DiaryViewModel
 
         val state: StateFlow<DiaryUiState> =
             combine(filter, today, readings.observeCount()) { f, day, count -> DiaryUiState(f, day, count) }
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), DiaryUiState())
+                .stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS),
+                    DiaryUiState(today = today.value),
+                )
 
         /** Delete and the filter; navigation and copying are handled by the screen's destination. */
         fun onEvent(event: DiaryEvent) {

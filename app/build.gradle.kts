@@ -10,6 +10,9 @@ android {
         applicationId = "ru.bpdiary.app"
         versionCode = 1
         versionName = "0.1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // The orchestrator wipes the app data before every test: each end-to-end scenario starts on a fresh install.
+        testInstrumentationRunnerArguments["clearPackageData"] = "true"
     }
 
     // The app forces the Russian locale (MainActivity), so every device needs the default resources.
@@ -23,7 +26,10 @@ android {
         buildConfig = true
     }
 
-    testOptions.unitTests.isIncludeAndroidResources = true
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
+    }
 
     buildTypes {
         debug {
@@ -88,4 +94,12 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(libs.androidx.test.espresso.core)
+
+    // End-to-end scenarios of docs/10 §10.5 on an emulator (`connectedDebugAndroidTest`).
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestUtil(libs.androidx.test.orchestrator)
 }

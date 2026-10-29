@@ -31,9 +31,12 @@ fun dayLabel(
     day: LocalDate,
     today: LocalDate,
 ): DayLabel =
-    when (day) {
-        today -> DayLabel.Today
-        today.minusDays(1) -> DayLabel.Yesterday
+    when {
+        day == today -> DayLabel.Today
+
+        // `day + 1`, not `today - 1`: the latter overflows when a screen still holds the placeholder `LocalDate.MIN`.
+        day.plusDays(1) == today -> DayLabel.Yesterday
+
         else -> DayLabel.Date(day)
     }
 

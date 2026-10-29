@@ -97,6 +97,15 @@ class DiaryViewModelTest {
     private fun day(d: Int): LocalDate = LocalDate.of(2026, 10, d)
 
     @Test
+    fun `the first state already knows today, before anything is collected`() =
+        runTest {
+            val time = FixedTimeProvider.default()
+            val vm = DiaryViewModel(SavedStateHandle(), FakeReadingRepository(time, sample), thresholds, time)
+            // Not subscribed yet: this is what the first frame of the screen sees.
+            assertEquals(time.now().atZone(time.zone()).toLocalDate(), vm.state.value.today)
+        }
+
+    @Test
     fun `rows are grouped under a header per local day, newest first`() =
         runTest {
             val (vm, _) = viewModel()
