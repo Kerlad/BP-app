@@ -9,8 +9,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ru.bpdiary.data.reminders.AlarmReminderScheduler
+import ru.bpdiary.data.reminders.AndroidReminderPermissions
 import ru.bpdiary.data.reminders.NotificationReminderNotifier
 import ru.bpdiary.domain.ReminderNotifier
+import ru.bpdiary.domain.ReminderPermissions
 import ru.bpdiary.domain.ReminderScheduler
 
 @Module
@@ -30,4 +32,7 @@ internal abstract class RemindersBindingsModule {
 
     @Binds
     abstract fun notifier(impl: NotificationReminderNotifier): ReminderNotifier
+
+    @Binds
+    abstract fun permissions(impl: AndroidReminderPermissions): ReminderPermissions
 }

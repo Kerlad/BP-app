@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Reminders list (handoff screen 5, docs/05 §5.5) -->
+    <string name="reminders_title">Напоминания</string>
+    <string name="reminders_add">Добавить напоминание</string>
+    <string name="reminders_days_daily">Ежедневно</string>
+    <string name="reminders_days_workdays">Пн – Пт</string>
+    <string name="reminders_banner_notifications">Чтобы напоминания приходили, разрешите уведомления</string>
+    <string name="reminders_banner_notifications_allow">Разрешить</string>
+    <string name="reminders_banner_exact">Напоминания могут приходить с задержкой</string>
+
+    <!-- Reminder edit (docs/05 §5.5) -->
+    <string name="reminders_edit_done">Готово</string>
+    <string name="reminders_edit_delete">Удалить напоминание</string>
+
+    <!--
+        PROVISIONAL, awaiting the customer: the docs fix the texts above but not these.
+        Banner buttons «Открыть настройки» / «Настроить», edit screen titles, the field and the weekday group name,
+        the default name of a reminder left without one, the delete confirmation, all accessibility descriptions.
+    -->
+    <string name="reminders_banner_open_settings">Открыть настройки</string>
+    <string name="reminders_banner_exact_action">Настроить</string>
+    <string name="reminders_edit_title_new">Новое напоминание</string>
+    <string name="reminders_edit_title_existing">Напоминание</string>
+    <string name="reminders_edit_label_hint">Название</string>
+    <string name="reminders_edit_days">Дни недели</string>
+    <string name="reminders_default_label">Измерение давления</string>
+    <string name="reminders_delete_title">Удалить напоминание?</string>
+    <string name="reminders_delete_confirm">Удалить</string>
+    <string name="reminders_delete_cancel">Отмена</string>
+    <string name="reminders_edit_close_description">Закрыть</string>
+    <string name="reminders_switch_description">%1$s, %2$s</string>
+</resources>

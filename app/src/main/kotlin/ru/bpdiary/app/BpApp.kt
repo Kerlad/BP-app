@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
@@ -45,6 +46,10 @@ import ru.bpdiary.feature.home.HomeRoute
 import ru.bpdiary.feature.home.homeScreen
 import ru.bpdiary.feature.levels.LevelsRoute
 import ru.bpdiary.feature.levels.levelsScreen
+import ru.bpdiary.feature.reminders.ReminderEditRoute
+import ru.bpdiary.feature.reminders.RemindersRoute
+import ru.bpdiary.feature.reminders.reminderEditScreen
+import ru.bpdiary.feature.reminders.remindersScreen
 
 private const val TOAST_MS = 2_400L
 private const val UNDO_MS = 5_000L
@@ -77,33 +82,14 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
 
     Box(Modifier.fillMaxSize().background(BpTheme.colors.bg)) {
         NavHost(navController = navController, startDestination = HomeRoute) {
-            homeScreen(
-                onAddReading = { navController.navigate(EntryRoute()) },
-                // Reminders (Step 9.3) are not built yet.
-                onOpenLevels = { navController.navigate(LevelsRoute) },
-                onOpenCharts = { navController.navigate(ChartsRoute) },
-                onOpenReminders = {},
-            )
-            chartsScreen()
-            // Settings come in Step 10.3.
-            levelsScreen(onClose = { navController.popBackStack() }, onOpenSettings = {})
-            // Reachable from the bottom navigation, which comes with the shell in Step 10.1.
-            diaryScreen(
-                onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },
-                onAddReading = { navController.navigate(EntryRoute()) },
-                onDeleted = ::offerUndo,
-            )
-            entryScreen(
-                onSaved = { saved ->
+            appGraph(
+                navController = navController,
+                onReadingDeleted = ::offerUndo,
+                onReadingSaved = { saved ->
                     navController.leaveEntry(saved)
                     toast = if (saved.edited) R.string.toast_changes_saved else R.string.toast_reading_saved
                     criticalHint = saved.critical
                 },
-                onDeleted = { id ->
-                    navController.popBackStack()
-                    offerUndo(id)
-                },
-                onClose = { navController.popBackStack() },
             )
         }
         val bottom = Modifier.align(Alignment.BottomCenter).windowInsetsPadding(WindowInsets.safeDrawing)
@@ -125,6 +111,42 @@ fun BpApp(shell: ShellViewModel = hiltViewModel()) {
             },
         )
     }
+}
+
+/** All destinations. The messages after saving or deleting a reading are shown by [BpApp]. */
+private fun NavGraphBuilder.appGraph(
+    navController: NavHostController,
+    onReadingDeleted: (readingId: Long) -> Unit,
+    onReadingSaved: (EntryEffect.Saved) -> Unit,
+) {
+    homeScreen(
+        onAddReading = { navController.navigate(EntryRoute()) },
+        onOpenLevels = { navController.navigate(LevelsRoute) },
+        onOpenCharts = { navController.navigate(ChartsRoute) },
+        onOpenReminders = { navController.navigate(RemindersRoute) },
+    )
+    chartsScreen()
+    remindersScreen(
+        onAdd = { navController.navigate(ReminderEditRoute()) },
+        onOpen = { navController.navigate(ReminderEditRoute(it)) },
+    )
+    reminderEditScreen(onClose = { navController.popBackStack() })
+    // Settings come in Step 10.3.
+    levelsScreen(onClose = { navController.popBackStack() }, onOpenSettings = {})
+    // Reachable from the bottom navigation, which comes with the shell in Step 10.1.
+    diaryScreen(
+        onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },
+        onAddReading = { navController.navigate(EntryRoute()) },
+        onDeleted = onReadingDeleted,
+    )
+    entryScreen(
+        onSaved = onReadingSaved,
+        onDeleted = { id ->
+            navController.popBackStack()
+            onReadingDeleted(id)
+        },
+        onClose = { navController.popBackStack() },
+    )
 }
 
 /** A new reading goes to Home, an edit back to where it was opened from (D-10). */

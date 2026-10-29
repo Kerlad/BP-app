@@ -1,6 +1,7 @@
 package ru.bpdiary.core.ui
 
 import android.content.Context
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertHeightIsAtLeast
@@ -34,6 +35,20 @@ class ComponentsTest {
 
     private fun themed(content: @Composable () -> Unit) =
         rule.setContent { BpTheme(Direction.SAGE, dark = false, content = content) }
+
+    @Test
+    fun `a disabled primary button takes no clicks, an enabled one does`() {
+        var clicks = 0
+        themed {
+            Column {
+                BpPrimaryButton("Выключена", onClick = { clicks += 10 }, enabled = false)
+                BpPrimaryButton("Включена", onClick = { clicks += 1 })
+            }
+        }
+        rule.onNodeWithText("Выключена").assertIsNotEnabled().performClick()
+        rule.onNodeWithText("Включена").performClick()
+        assertEquals(1, clicks)
+    }
 
     @Test
     fun `status chip is announced as a status and spelled out`() {
