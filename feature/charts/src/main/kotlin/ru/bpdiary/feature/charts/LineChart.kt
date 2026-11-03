@@ -1,8 +1,6 @@
 package ru.bpdiary.feature.charts
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -12,6 +10,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.drawText
@@ -20,12 +19,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.bpdiary.core.designsystem.BpTheme
+import ru.bpdiary.core.ui.ChartScale
 import ru.bpdiary.core.ui.drawThresholdLine
+import ru.bpdiary.core.ui.shrinkingAspectRatio
 import ru.bpdiary.domain.LineChartModel
 import ru.bpdiary.domain.LinePoint
 import ru.bpdiary.domain.yLine
 
-/** Chart units of the line chart (docs/06 §6.5): the canvas keeps the 320×200 proportions. */
+/** Chart units of the line chart (docs/06 §6.5): the canvas is 320×200 or flatter when the screen has less room. */
 internal const val CHART_WIDTH = 320f
 private const val CHART_HEIGHT = 200f
 
@@ -49,6 +50,7 @@ private val LabelSize = 10.sp
 private val SysWidth = 2.5.dp
 private val DiaWidth = 2.dp
 private val GridWidth = 1.dp
+private val MinChartHeight = 96.dp
 
 /**
  * SYS (`ac`) and DIA (`mut`) lines with dots, grid at 60…160 and the high SYS and DIA dashes.
@@ -67,18 +69,17 @@ internal fun LineChart(
     Canvas(
         modifier =
             modifier
-                .fillMaxWidth()
-                .aspectRatio(CHART_WIDTH / CHART_HEIGHT)
+                .shrinkingAspectRatio(CHART_WIDTH / CHART_HEIGHT, MinChartHeight * LocalDensity.current.fontScale)
                 .semantics { contentDescription = description },
     ) {
-        val scale = size.width / CHART_WIDTH
+        val scale = ChartScale(size.width / CHART_WIDTH, size.height / CHART_HEIGHT)
         GridValues.forEach { v ->
-            val y = yLine(v) * scale
-            drawLine(colors.ln, Offset(PLOT_START * scale, y), Offset(PLOT_END * scale, y), GridWidth.toPx())
+            val y = yLine(v) * scale.y
+            drawLine(colors.ln, Offset(PLOT_START * scale.x, y), Offset(PLOT_END * scale.x, y), GridWidth.toPx())
             val label = measurer.measure("$v", labelStyle)
             val x = if (v >= THREE_DIGITS) LABEL_X_WIDE else LABEL_X_NARROW
-            val baseline = (yLine(v) + LABEL_BASELINE_SHIFT) * scale
-            drawText(label, topLeft = Offset(x * scale, baseline - label.firstBaseline))
+            val baseline = (yLine(v) + LABEL_BASELINE_SHIFT) * scale.y
+            drawText(label, topLeft = Offset(x * scale.x, baseline - label.firstBaseline))
         }
         drawThresholdLine(chart.highSysY, colors.hi, scale, PLOT_START, PLOT_END)
         drawThresholdLine(chart.highDiaY, colors.hi, scale, PLOT_START, PLOT_END)
@@ -87,26 +88,26 @@ internal fun LineChart(
         drawSeries(points, scale, { it.ySys }, colors.ac, SysWidth)
         val radius = dot.toPx() / 2
         points.forEach { p ->
-            drawCircle(colors.mut, radius, Offset(p.x * scale, p.yDia * scale))
-            drawCircle(colors.ac, radius, Offset(p.x * scale, p.ySys * scale))
+            drawCircle(colors.mut, radius, Offset(p.x * scale.x, p.yDia * scale.y))
+            drawCircle(colors.ac, radius, Offset(p.x * scale.x, p.ySys * scale.y))
         }
         val highRadius = (dot + 1.dp).toPx() / 2
         points.filter { it.highStatus }.forEach { p ->
-            drawCircle(colors.hi, highRadius, Offset(p.x * scale, p.ySys * scale))
+            drawCircle(colors.hi, highRadius, Offset(p.x * scale.x, p.ySys * scale.y))
         }
     }
 }
 
 private fun DrawScope.drawSeries(
     points: List<LinePoint>,
-    scale: Float,
+    scale: ChartScale,
     y: (LinePoint) -> Float,
     color: Color,
     width: Dp,
 ) {
     val path = Path()
     points.forEachIndexed { i, p ->
-        if (i == 0) path.moveTo(p.x * scale, y(p) * scale) else path.lineTo(p.x * scale, y(p) * scale)
+        if (i == 0) path.moveTo(p.x * scale.x, y(p) * scale.y) else path.lineTo(p.x * scale.x, y(p) * scale.y)
     }
     drawPath(path, color, style = Stroke(width = width.toPx(), cap = StrokeCap.Butt, join = StrokeJoin.Round))
 }

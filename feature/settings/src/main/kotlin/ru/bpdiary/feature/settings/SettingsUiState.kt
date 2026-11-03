@@ -22,6 +22,8 @@ sealed interface SettingsEvent {
 
     data object DialogDismissed : SettingsEvent
 
+    data object RemindersClicked : SettingsEvent
+
     data object AboutClicked : SettingsEvent
 
     data object BackClicked : SettingsEvent

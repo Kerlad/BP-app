@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,9 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,9 +34,11 @@ import ru.bpdiary.core.ui.BigReading
 import ru.bpdiary.core.ui.BigReadingSize
 import ru.bpdiary.core.ui.BpCard
 import ru.bpdiary.core.ui.BpPrimaryButton
+import ru.bpdiary.core.ui.FixedScreenColumn
 import ru.bpdiary.core.ui.PulseRow
 import ru.bpdiary.core.ui.RoundIconButton
 import ru.bpdiary.core.ui.StatusChip
+import ru.bpdiary.core.ui.flexibleHeight
 import ru.bpdiary.domain.NextReminderLabel
 
 private val CardGap = 14.dp
@@ -63,20 +64,17 @@ private fun HomeContent(
     modifier: Modifier,
 ) {
     val texts = rememberHomeTexts()
-    Column(
-        modifier =
-            modifier
-                .verticalScroll(rememberScrollState())
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(CardGap),
+    FixedScreenColumn(
+        gap = CardGap,
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
+        modifier = modifier.windowInsetsPadding(WindowInsets.safeDrawing),
     ) {
         Header(texts.dates.weekdayDayMonth(state.today), texts.greeting(state.greeting)) {
             onEvent(HomeEvent.LevelsClicked)
         }
         if (state.last != null) LastReadingCard(state.last, texts) else EmptyCard()
         BpPrimaryButton(stringResource(R.string.home_add_reading), { onEvent(HomeEvent.AddClicked) }, icon = BpIcon.Add)
-        state.week?.let { WeekCard(it, texts) { onEvent(HomeEvent.WeekClicked) } }
+        state.week?.let { WeekCard(it, texts, Modifier.flexibleHeight()) { onEvent(HomeEvent.WeekClicked) } }
         ReminderCard(state.nextReminder, texts) { onEvent(HomeEvent.ReminderClicked) }
     }
 }

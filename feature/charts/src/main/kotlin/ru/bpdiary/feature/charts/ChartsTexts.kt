@@ -45,13 +45,13 @@ class ChartsTexts(
                 reading(stats.avgSys, stats.avgDia),
                 resources.getString(UiR.string.unit_mmhg),
             ),
+            partOfDay(R.string.charts_stat_morning, stats.morning),
+            partOfDay(R.string.charts_stat_evening, stats.evening),
             StatCell(
                 resources.getString(R.string.charts_stat_pulse),
                 stats.avgPulse?.toString() ?: noValue(),
                 resources.getString(R.string.charts_unit_pulse_avg),
             ),
-            partOfDay(R.string.charts_stat_morning, stats.morning),
-            partOfDay(R.string.charts_stat_evening, stats.evening),
             extreme(R.string.charts_stat_max, stats.max, today),
             extreme(R.string.charts_stat_min, stats.min, today),
         )
@@ -105,7 +105,7 @@ class ChartsTexts(
     ) = StatCell(
         resources.getString(label),
         reading(reading.sys, reading.dia),
-        dates.dayHeader(dayLabel(localDay(reading), today)),
+        dates.day(dayLabel(localDay(reading), today)),
     )
 
     private fun reading(

@@ -13,10 +13,9 @@ import ru.bpdiary.feature.entry.EntryRoute
 import ru.bpdiary.feature.home.HomeRoute
 import ru.bpdiary.feature.onboarding.DisclaimerRoute
 import ru.bpdiary.feature.onboarding.OnboardingRoute
-import ru.bpdiary.feature.reminders.RemindersRoute
 import kotlin.reflect.KClass
 
-/** The four main screens: only they show the bottom navigation (docs/02 §2.4). The order is the order on screen. */
+/** The three main screens: only they show the bottom navigation. The order is the order on screen. */
 enum class AppTab(
     val route: Any,
     val routeClass: KClass<out Any>,
@@ -26,7 +25,6 @@ enum class AppTab(
     HOME(HomeRoute, HomeRoute::class, BpIcon.Home, R.string.tab_home),
     DIARY(DiaryRoute, DiaryRoute::class, BpIcon.MenuBook, R.string.tab_diary),
     CHARTS(ChartsRoute, ChartsRoute::class, BpIcon.Monitoring, R.string.tab_charts),
-    REMINDERS(RemindersRoute, RemindersRoute::class, BpIcon.Notifications, R.string.tab_reminders),
 }
 
 /** The tab the destination belongs to; null on the full-screen destinations. */

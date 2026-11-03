@@ -2,6 +2,8 @@
 <resources>
     <!-- Reminders list (handoff screen 5, docs/05 §5.5) -->
     <string name="reminders_title">Напоминания</string>
+    <!-- PROVISIONAL, awaiting the customer -->
+    <string name="reminders_back_description">Назад</string>
     <string name="reminders_add">Добавить напоминание</string>
     <string name="reminders_days_daily">Ежедневно</string>
     <string name="reminders_days_workdays">Пн – Пт</string>

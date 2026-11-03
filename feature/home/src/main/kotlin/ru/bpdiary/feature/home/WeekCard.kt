@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
@@ -31,10 +30,12 @@ import ru.bpdiary.core.designsystem.BpColors
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.model.Status
 import ru.bpdiary.core.ui.BpCard
+import ru.bpdiary.core.ui.ChartScale
 import ru.bpdiary.core.ui.drawThresholdLine
+import ru.bpdiary.core.ui.shrinkingAspectRatio
 import ru.bpdiary.domain.WeekBars
 
-/** Chart units of the week bars (docs/06 §6.5): the canvas keeps the 300×120 proportions. */
+/** Chart units of the week bars (docs/06 §6.5): the canvas is 300×120 or flatter when Home has less room. */
 private const val CHART_WIDTH = 300f
 private const val CHART_HEIGHT = 120f
 private const val NORMAL_ALPHA = 0.85f
@@ -46,10 +47,11 @@ private val MinDayFont = 9.sp
 internal fun WeekCard(
     week: WeekBars,
     texts: HomeTexts,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     val colors = BpTheme.colors
-    BpCard(padding = 0.dp, onClick = onClick) {
+    BpCard(modifier = modifier, padding = 0.dp, onClick = onClick) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, top = 18.dp, bottom = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -78,17 +80,17 @@ internal fun WeekCard(
             Canvas(
                 modifier =
                     Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(CHART_WIDTH / CHART_HEIGHT)
+                        .weight(1f, fill = false)
+                        .shrinkingAspectRatio(CHART_WIDTH / CHART_HEIGHT)
                         .semantics { if (description != null) contentDescription = description },
             ) {
-                val scale = size.width / CHART_WIDTH
+                val scale = ChartScale(size.width / CHART_WIDTH, size.height / CHART_HEIGHT)
                 drawThresholdLine(week.highSysY, colors.hi, scale)
                 week.days.mapNotNull { it.bar }.forEach { bar ->
                     drawLine(
                         color = colors.barColor(bar.status),
-                        start = Offset(bar.x * scale, bar.yTop * scale),
-                        end = Offset(bar.x * scale, bar.yBottom * scale),
+                        start = Offset(bar.x * scale.x, bar.yTop * scale.y),
+                        end = Offset(bar.x * scale.x, bar.yBottom * scale.y),
                         strokeWidth = BarWidth.toPx(),
                         cap = StrokeCap.Round,
                     )

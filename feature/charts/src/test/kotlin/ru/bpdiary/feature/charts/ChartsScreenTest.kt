@@ -6,12 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
 import androidx.test.core.app.ApplicationProvider
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -113,7 +115,25 @@ class ChartsScreenTest {
         rule
             .onNodeWithContentDescription("График за 7 дней, среднее 133 на 85, максимум 154 на 94 15 октября")
             .assertExists()
-        rule.onNodeWithText("54%").performScrollTo().assertExists()
+        rule.onNodeWithText("54%").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the whole screen fits without scrolling`() {
+        show(week)
+        rule.onAllNodes(hasScrollAction()).assertCountEquals(0)
+        rule.onNodeWithText("Пониженное: 0").assertIsDisplayed()
+    }
+
+    @Test
+    fun `with a large font the screen scrolls instead of cutting the content`() {
+        rule.setContent {
+            Scaled(fontScale = 2f) {
+                BpTheme(Direction.SAGE, dark = false) { ChartsScreen(week, onEvent = {}) }
+            }
+        }
+        rule.waitForIdle()
+        rule.onAllNodes(hasScrollAction()).assertCountEquals(1)
     }
 
     @Test
@@ -138,11 +158,11 @@ class ChartsScreenTest {
         assertEquals(
             listOf(
                 StatCell("Среднее", "133/85", "мм рт. ст."),
-                StatCell("Пульс", "72", "уд/мин в среднем"),
                 StatCell("Утром", "130/83", "7 измерений"),
                 StatCell("Вечером", "138/87", "6 измерений"),
-                StatCell("Максимум", "154/94", "15 октября, четверг"),
-                StatCell("Минимум", "121/79", "14 октября, среда"),
+                StatCell("Пульс", "72", "уд/мин в среднем"),
+                StatCell("Максимум", "154/94", "15 октября"),
+                StatCell("Минимум", "121/79", "14 октября"),
             ),
             cells,
         )
@@ -152,13 +172,13 @@ class ChartsScreenTest {
     fun `plurals and empty part of the day`() {
         val stats = week.stats!!
         val morning = { n: Int ->
-            texts.cells(stats.copy(morning = stats.morning!!.copy(count = n)), now.toLocalDate())[2]
+            texts.cells(stats.copy(morning = stats.morning!!.copy(count = n)), now.toLocalDate())[1]
         }
         assertEquals("1 измерение", morning(1).caption)
         assertEquals("3 измерения", morning(3).caption)
         assertEquals("5 измерений", morning(5).caption)
         assertEquals("21 измерение", morning(21).caption)
-        val none = texts.cells(stats.copy(morning = null), now.toLocalDate())[2]
+        val none = texts.cells(stats.copy(morning = null), now.toLocalDate())[1]
         assertEquals("—" to "0 измерений", none.value to none.caption)
         assertEquals("1.11", texts.fromDate(LocalDate.of(2026, 11, 1)))
     }

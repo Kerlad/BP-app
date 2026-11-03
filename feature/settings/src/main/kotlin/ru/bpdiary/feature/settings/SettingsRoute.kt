@@ -26,10 +26,11 @@ data object AboutRoute
  */
 fun NavGraphBuilder.settingsScreen(
     onClose: () -> Unit,
+    onOpenReminders: () -> Unit,
     onOpenAbout: () -> Unit,
     onDataDeleted: () -> Unit,
 ) {
-    composable<SettingsRoute> { SettingsDestination(onClose, onOpenAbout, onDataDeleted) }
+    composable<SettingsRoute> { SettingsDestination(onClose, onOpenReminders, onOpenAbout, onDataDeleted) }
 }
 
 fun NavGraphBuilder.aboutScreen(onClose: () -> Unit) {
@@ -39,6 +40,7 @@ fun NavGraphBuilder.aboutScreen(onClose: () -> Unit) {
 @Composable
 private fun SettingsDestination(
     onClose: () -> Unit,
+    onOpenReminders: () -> Unit,
     onOpenAbout: () -> Unit,
     onDataDeleted: () -> Unit,
 ) {
@@ -58,6 +60,7 @@ private fun SettingsDestination(
     SettingsScreen(state, onEvent = { event ->
         when (event) {
             SettingsEvent.BackClicked -> onClose()
+            SettingsEvent.RemindersClicked -> onOpenReminders()
             SettingsEvent.AboutClicked -> onOpenAbout()
             else -> viewModel.onEvent(event)
         }

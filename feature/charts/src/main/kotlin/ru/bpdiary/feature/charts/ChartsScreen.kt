@@ -8,20 +8,23 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,6 +34,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -38,11 +42,19 @@ import androidx.compose.ui.unit.dp
 import ru.bpdiary.app.feature.charts.R
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.ui.BpCard
+import ru.bpdiary.core.ui.FixedScreenColumn
 import ru.bpdiary.core.ui.SegmentedToggle
+import ru.bpdiary.core.ui.flexibleHeight
 
 private const val FADE_MS = 150
+private const val PLOT_END_GAP = 2f
 private val DotWeek = 8.dp
 private val DotMonth = 4.dp
+
+/** Above this font scale three statistics do not fit a row. */
+private const val THREE_COLUMNS_MAX_FONT_SCALE = 1.15f
+private const val COLUMNS = 3
+private const val COLUMNS_LARGE_FONT = 2
 
 /** Charts (handoff screen 4). Stateless: everything comes from [state]. */
 @Composable
@@ -52,26 +64,27 @@ fun ChartsScreen(
     modifier: Modifier = Modifier,
 ) {
     val texts = rememberChartsTexts()
-    Column(
+    FixedScreenColumn(
+        gap = 14.dp,
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
         modifier =
             modifier
                 .fillMaxSize()
                 .background(BpTheme.colors.bg)
-                .verticalScroll(rememberScrollState())
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+                .windowInsetsPadding(WindowInsets.safeDrawing),
     ) {
         Header(state.period, texts, onEvent)
-        if (state.loading) return@Column
-        // Switching 7/30 fades instead of blinking (docs/05 §5.4).
-        AnimatedContent(
-            targetState = state,
-            contentKey = { it.period },
-            transitionSpec = { fadeIn(tween(FADE_MS)) togetherWith fadeOut(tween(FADE_MS)) },
-            label = "period",
-        ) { shown ->
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) { PeriodContent(shown, texts) }
+        if (!state.loading) {
+            // Switching 7/30 fades instead of blinking (docs/05 §5.4).
+            AnimatedContent(
+                targetState = state,
+                contentKey = { it.period },
+                transitionSpec = { fadeIn(tween(FADE_MS)) togetherWith fadeOut(tween(FADE_MS)) },
+                label = "period",
+                modifier = Modifier.flexibleHeight(),
+            ) { shown ->
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) { PeriodContent(shown, texts) }
+            }
         }
     }
 }
@@ -103,7 +116,7 @@ private fun Header(
 }
 
 @Composable
-private fun PeriodContent(
+private fun ColumnScope.PeriodContent(
     state: ChartsUiState,
     texts: ChartsTexts,
 ) {
@@ -119,16 +132,17 @@ private fun PeriodContent(
         }
         return
     }
-    BpCard(padding = 0.dp) {
+    BpCard(modifier = Modifier.weight(1f, fill = false), padding = 0.dp) {
         Column(
-            modifier = Modifier.padding(start = 14.dp, end = 14.dp, top = 16.dp, bottom = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Legend()
             LineChart(
                 chart = chart,
                 dot = if (state.period == Period.DAYS_7) DotWeek else DotMonth,
                 description = texts.description(state.period, stats, state.today),
+                modifier = Modifier.weight(1f, fill = false),
             )
             AxisLabels(texts.fromDate(state.from))
             if (chart.clipped) {
@@ -189,24 +203,27 @@ private fun LegendDot(color: Color) {
 /** «14.10» under the start of the plot, «Сегодня» at the right (prototype padding 0 2 0 30 in chart units). */
 @Composable
 private fun AxisLabels(from: String) {
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val unit = maxWidth / CHART_WIDTH
+    Row(Modifier.fillMaxWidth()) {
+        Spacer(Modifier.weight(PLOT_START))
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = unit * PLOT_START, end = unit * 2),
+            modifier = Modifier.weight(CHART_WIDTH - PLOT_START - PLOT_END_GAP),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(from, style = BpTheme.typography.micro, color = BpTheme.colors.mut)
             Text(stringResource(R.string.charts_today), style = BpTheme.typography.micro, color = BpTheme.colors.mut)
         }
+        Spacer(Modifier.weight(PLOT_END_GAP))
     }
 }
 
 @Composable
 private fun StatsGrid(cells: List<StatCell>) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        cells.chunked(2).forEach { pair ->
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                pair.forEach { cell -> StatCellCard(cell, Modifier.weight(1f)) }
+    val columns = if (LocalDensity.current.fontScale > THREE_COLUMNS_MAX_FONT_SCALE) COLUMNS_LARGE_FONT else COLUMNS
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        cells.chunked(columns).forEach { row ->
+            // The cards of a row are equally high when a caption takes two lines.
+            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { cell -> StatCellCard(cell, Modifier.weight(1f).fillMaxHeight()) }
             }
         }
     }
@@ -220,11 +237,11 @@ private fun StatCellCard(
     val colors = BpTheme.colors
     BpCard(modifier = modifier, padding = 0.dp) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp).semantics(true) {},
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 10.dp).semantics(true) {},
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(cell.label, style = BpTheme.typography.caption, color = colors.mut)
-            Text(cell.value, style = BpTheme.typography.numStat, color = colors.ink, maxLines = 1)
+            Text(cell.value, style = BpTheme.typography.numRow, color = colors.ink, maxLines = 1)
             Text(cell.caption, style = BpTheme.typography.micro, color = colors.mut)
         }
     }

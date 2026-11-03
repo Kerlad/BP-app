@@ -21,7 +21,7 @@ import ru.bpdiary.core.ui.BpBottomNav
 import ru.bpdiary.core.ui.BpNavItem
 
 /**
- * The frame around the destinations: the bottom navigation on the four main screens only. On those screens the
+ * The frame around the destinations: the bottom navigation on the three main screens only. On those screens the
  * navigation bar of the system sits under the bottom navigation (`sf2` all the way down), so the screens above
  * do not pad for it again; on full-screen destinations the gesture area is `bg` (docs/02 §2.4).
  * [overlay] is drawn above the destinations and above the bottom navigation, for the toast and the snackbar.

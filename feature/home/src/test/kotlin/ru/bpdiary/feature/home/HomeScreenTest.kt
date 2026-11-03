@@ -6,12 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
 import androidx.test.core.app.ApplicationProvider
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -197,7 +199,22 @@ class HomeScreenTest {
     @Test
     fun `all reminders off (D-23)`() {
         show(remindersOff)
-        rule.onNodeWithText("Напоминания выключены").performScrollTo().assertExists()
+        rule.onNodeWithText("Напоминания выключены").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the screen stands still, the week chart gives way`() {
+        show(demo)
+        rule.onAllNodes(hasScrollAction()).assertCountEquals(0)
+        rule.onNodeWithText("Следующее напоминание").assertIsDisplayed()
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h480dp-xxhdpi")
+    fun `on a small display the screen scrolls instead of cutting the content`() {
+        show(demo)
+        rule.waitForIdle()
+        rule.onAllNodes(hasScrollAction()).assertCountEquals(1)
     }
 
     @Test
@@ -206,8 +223,8 @@ class HomeScreenTest {
         show(demo) { events += it }
         rule.onNodeWithContentDescription("Уровни давления").performClick()
         rule.onNodeWithText("Записать давление").performClick()
-        rule.onNodeWithText("7 дней").performScrollTo().performClick()
-        rule.onNodeWithText("Следующее напоминание").performScrollTo().performClick()
+        rule.onNodeWithText("7 дней").performClick()
+        rule.onNodeWithText("Следующее напоминание").performClick()
         assertEquals(
             listOf(HomeEvent.LevelsClicked, HomeEvent.AddClicked, HomeEvent.WeekClicked, HomeEvent.ReminderClicked),
             events,

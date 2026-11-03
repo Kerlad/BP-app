@@ -25,14 +25,16 @@ import ru.bpdiary.core.ui.openNotificationSettings
 data object RemindersRoute
 
 fun NavGraphBuilder.remindersScreen(
+    onClose: () -> Unit,
     onAdd: () -> Unit,
     onOpen: (reminderId: Long) -> Unit,
 ) {
-    composable<RemindersRoute> { RemindersDestination(onAdd, onOpen) }
+    composable<RemindersRoute> { RemindersDestination(onClose, onAdd, onOpen) }
 }
 
 @Composable
 private fun RemindersDestination(
+    onClose: () -> Unit,
     onAdd: () -> Unit,
     onOpen: (reminderId: Long) -> Unit,
 ) {
@@ -63,6 +65,10 @@ private fun RemindersDestination(
         notificationAsk = ask,
         onEvent = { event ->
             when (event) {
+                RemindersEvent.BackClicked -> {
+                    onClose()
+                }
+
                 RemindersEvent.AddClicked -> {
                     onAdd()
                 }

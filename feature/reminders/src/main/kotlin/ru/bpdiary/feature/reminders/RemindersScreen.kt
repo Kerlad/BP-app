@@ -33,7 +33,6 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,6 +41,7 @@ import ru.bpdiary.core.designsystem.BpIcon
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.designsystem.painter
 import ru.bpdiary.core.ui.BpSwitch
+import ru.bpdiary.core.ui.BpTopBar
 
 private const val DISABLED_ALPHA = 0.5f
 private const val DASH_DP = 8
@@ -50,7 +50,7 @@ private const val GAP_DP = 6
 /** How the notification banner button behaves: ask the system, or send the user to the app settings (2nd denial). */
 enum class NotificationAsk { REQUEST, OPEN_SETTINGS }
 
-/** Reminders list (handoff screen 5). Stateless; the bottom navigation comes with the shell in Step 10.1. */
+/** Reminders list (handoff screen 5), a full-screen destination opened from Home and Settings. Stateless. */
 @Composable
 fun RemindersScreen(
     state: RemindersUiState,
@@ -67,16 +67,26 @@ fun RemindersScreen(
                 .background(colors.bg)
                 .verticalScroll(rememberScrollState())
                 .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(start = 10.dp, end = 20.dp, bottom = 24.dp),
     ) {
-        Text(
-            text = stringResource(R.string.reminders_title),
-            style = BpTheme.typography.screenTitle,
-            color = colors.ink,
-            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp).semantics { heading() },
+        BpTopBar(
+            title = stringResource(R.string.reminders_title),
+            navigationIcon = BpIcon.ArrowBack,
+            navigationDescription = stringResource(R.string.reminders_back_description),
+            onNavigate = { onEvent(RemindersEvent.BackClicked) },
         )
+        RemindersList(state, texts, notificationAsk, onEvent)
+    }
+}
+
+@Composable
+private fun RemindersList(
+    state: RemindersUiState,
+    texts: RemindersTexts,
+    notificationAsk: NotificationAsk,
+    onEvent: (RemindersEvent) -> Unit,
+) {
+    Column(modifier = Modifier.padding(start = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (state.notificationsMissing) {
             Banner(
                 text = stringResource(R.string.reminders_banner_notifications),

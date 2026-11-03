@@ -34,6 +34,8 @@ sealed interface RemindersEvent {
 
     data object AddClicked : RemindersEvent
 
+    data object BackClicked : RemindersEvent
+
     /** The screen came back to the front: the user may have changed a permission in the system settings. */
     data object PermissionsRefreshed : RemindersEvent
 

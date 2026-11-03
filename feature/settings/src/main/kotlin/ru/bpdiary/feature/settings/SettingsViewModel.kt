@@ -48,7 +48,7 @@ class SettingsViewModel
                 SettingsEvent.DeleteClicked -> dialog.value = DeleteDialog.First
                 SettingsEvent.DeleteConfirmed -> confirm()
                 SettingsEvent.DialogDismissed -> dialog.value = DeleteDialog.None
-                SettingsEvent.AboutClicked, SettingsEvent.BackClicked -> Unit
+                SettingsEvent.RemindersClicked, SettingsEvent.AboutClicked, SettingsEvent.BackClicked -> Unit
             }
         }
 

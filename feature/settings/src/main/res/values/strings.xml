@@ -7,6 +7,7 @@
     <string name="settings_theme_dark">Тёмная</string>
     <string name="settings_delete_all">Удалить все данные</string>
     <string name="settings_delete_forever">Удалить навсегда</string>
+    <string name="settings_reminders">Напоминания</string>
     <string name="settings_about">О приложении</string>
 
     <!-- About: docs/09 §9.6, word for word -->

@@ -104,12 +104,14 @@ class SettingsScreenTest {
         val events = mutableListOf<SettingsEvent>()
         show(SettingsUiState()) { events += it }
         rule.onNodeWithText("Тёмная").performClick()
+        rule.onNodeWithText("Напоминания").performClick()
         rule.onNodeWithText("О приложении").performClick()
         rule.onNodeWithText("Удалить все данные").performClick()
         rule.onNodeWithContentDescription("Назад").performClick()
         assertEquals(
             listOf(
                 SettingsEvent.ThemeSelected(ThemeMode.DARK),
+                SettingsEvent.RemindersClicked,
                 SettingsEvent.AboutClicked,
                 SettingsEvent.DeleteClicked,
                 SettingsEvent.BackClicked,

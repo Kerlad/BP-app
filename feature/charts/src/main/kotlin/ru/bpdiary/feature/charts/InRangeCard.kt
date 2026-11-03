@@ -50,8 +50,8 @@ internal fun InRangeCard(
     val colors = BpTheme.colors
     val title = stringResource(R.string.charts_in_range_title)
     val percent = texts.percent(stats.inRangePercent)
-    BpCard(padding = 16.dp) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    BpCard(padding = 14.dp) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

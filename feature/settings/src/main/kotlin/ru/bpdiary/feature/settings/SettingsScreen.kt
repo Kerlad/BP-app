@@ -35,7 +35,7 @@ import ru.bpdiary.core.ui.BpCard
 import ru.bpdiary.core.ui.BpTopBar
 import ru.bpdiary.core.ui.SegmentedToggle
 
-/** Settings (docs/05 §5.7): theme, «О приложении», «Удалить все данные». Stateless. */
+/** Settings (docs/05 §5.7): theme, «Напоминания», «О приложении», «Удалить все данные». Stateless. */
 @Composable
 fun SettingsScreen(
     state: SettingsUiState,
@@ -60,6 +60,9 @@ fun SettingsScreen(
         )
         Column(modifier = Modifier.padding(start = 10.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             ThemeSection(state.themeMode) { onEvent(SettingsEvent.ThemeSelected(it)) }
+            SettingsRow(stringResource(R.string.settings_reminders), colors.ink) {
+                onEvent(SettingsEvent.RemindersClicked)
+            }
             SettingsRow(stringResource(R.string.settings_about), colors.ink) { onEvent(SettingsEvent.AboutClicked) }
             SettingsRow(stringResource(R.string.settings_delete_all), colors.hi, showChevron = false) {
                 onEvent(SettingsEvent.DeleteClicked)

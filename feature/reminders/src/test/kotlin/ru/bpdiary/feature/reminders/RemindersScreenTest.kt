@@ -152,6 +152,7 @@ class RemindersScreenTest {
     fun `controls send their events`() {
         val events = mutableListOf<RemindersEvent>()
         show(banners) { events += it }
+        rule.onNodeWithContentDescription("Назад").performClick()
         rule.onNodeWithText("Разрешить").performClick()
         rule.onNodeWithText("Настроить").performClick()
         rule.onNodeWithContentDescription("Дневное измерение, 14:00").performScrollTo().performClick()
@@ -159,6 +160,7 @@ class RemindersScreenTest {
         rule.onNodeWithText("Добавить напоминание").performScrollTo().performClick()
         assertEquals(
             listOf(
+                RemindersEvent.BackClicked,
                 RemindersEvent.NotificationsBannerClicked,
                 RemindersEvent.ExactAlarmsBannerClicked,
                 RemindersEvent.Toggled(2, enabled = true),

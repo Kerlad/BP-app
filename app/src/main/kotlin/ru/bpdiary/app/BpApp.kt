@@ -152,10 +152,11 @@ private fun NavGraphBuilder.appGraph(
         onAddReading = { navController.navigate(EntryRoute()) },
         onOpenLevels = { navController.navigate(LevelsRoute) },
         onOpenCharts = { navController.navigateToTab(AppTab.CHARTS) },
-        onOpenReminders = { navController.navigateToTab(AppTab.REMINDERS) },
+        onOpenReminders = { navController.navigate(RemindersRoute) },
     )
     chartsScreen()
     remindersScreen(
+        onClose = { navController.popBackStack() },
         onAdd = { navController.navigate(ReminderEditRoute()) },
         onOpen = { navController.navigate(ReminderEditRoute(it)) },
     )
@@ -163,6 +164,7 @@ private fun NavGraphBuilder.appGraph(
     levelsScreen(onClose = { navController.popBackStack() }, onOpenSettings = { navController.navigate(SettingsRoute) })
     settingsScreen(
         onClose = { navController.popBackStack() },
+        onOpenReminders = { navController.navigate(RemindersRoute) },
         onOpenAbout = { navController.navigate(AboutRoute) },
         onDataDeleted = navController::restartFromOnboarding,
     )

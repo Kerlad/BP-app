@@ -79,9 +79,10 @@ class AppShellTest {
     private fun tab(label: String) = rule.onNodeWithText(label)
 
     @Test
-    fun `the four tabs are shown on the main screens, Home is selected first`() {
+    fun `the three tabs are shown on the main screens, Home is selected first`() {
         show()
-        listOf("Главная", "Дневник", "Графики", "Напоминания").forEach { tab(it).assertExists() }
+        listOf("Главная", "Дневник", "Графики").forEach { tab(it).assertExists() }
+        tab("Напоминания").assertDoesNotExist()
         tab("Главная").assertIsSelected()
         tab("Дневник").assertIsNotSelected()
         // The tabs have names and touch targets of at least 48 dp (docs/10 §10.6).
@@ -117,7 +118,6 @@ class AppShellTest {
         show()
         tab("Дневник").performClick()
         tab("Графики").performClick()
-        tab("Напоминания").performClick()
         rule.runOnUiThread { navController.popBackStack() }
         rule.waitForIdle()
         rule.onNodeWithText("Экран: главная").assertExists()
@@ -126,8 +126,8 @@ class AppShellTest {
     @Test
     fun `the tab is selected again by tapping it twice without stacking screens`() {
         show()
-        tab("Напоминания").performClick()
-        tab("Напоминания").performClick()
+        tab("Дневник").performClick()
+        tab("Дневник").performClick()
         rule.runOnUiThread { navController.popBackStack() }
         rule.waitForIdle()
         rule.onNodeWithText("Экран: главная").assertExists()
@@ -136,15 +136,19 @@ class AppShellTest {
     @Test
     fun `full-screen destinations hide the bottom navigation`() {
         show()
-        tab("Напоминания").performClick()
+        rule.runOnUiThread { navController.navigate(RemindersRoute) }
+        rule.waitForIdle()
+        rule.onNodeWithText("Экран: напоминания").assertExists()
+        tab("Главная").assertDoesNotExist()
+
         rule.runOnUiThread { navController.navigate(ReminderEditRoute()) }
         rule.waitForIdle()
         rule.onNodeWithText("Экран: правка напоминания").assertExists()
-        tab("Напоминания").assertDoesNotExist()
+        tab("Главная").assertDoesNotExist()
 
-        rule.runOnUiThread { navController.popBackStack() }
+        rule.runOnUiThread { navController.popBackStack(HomeRoute, inclusive = false) }
         rule.waitForIdle()
-        tab("Напоминания").assertIsSelected()
+        tab("Главная").assertIsSelected()
     }
 
     @Test

@@ -23,16 +23,16 @@ private val LineWidth = 1.5.dp
 fun DrawScope.drawThresholdLine(
     y: Float,
     color: Color,
-    scale: Float = 1f,
+    scale: ChartScale = ChartScale(1f),
     startX: Float = 0f,
-    endX: Float = size.width / scale,
+    endX: Float = size.width / scale.x,
 ) {
     drawLine(
         color = color.copy(alpha = LINE_ALPHA),
-        start = Offset(startX * scale, y * scale),
-        end = Offset(endX * scale, y * scale),
+        start = Offset(startX * scale.x, y * scale.y),
+        end = Offset(endX * scale.x, y * scale.y),
         strokeWidth = LineWidth.toPx(),
-        pathEffect = PathEffect.dashPathEffect(floatArrayOf(DASH_ON * scale, DASH_OFF * scale)),
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(DASH_ON * scale.x, DASH_OFF * scale.x)),
     )
 }
 
@@ -47,5 +47,13 @@ fun DashedThresholdLine(
     chartWidth: Float,
     modifier: Modifier = Modifier,
 ) {
-    Canvas(modifier = modifier.fillMaxSize()) { drawThresholdLine(y, color, scale = size.width / chartWidth) }
+    Canvas(modifier = modifier.fillMaxSize()) {
+        drawThresholdLine(y, color, scale = ChartScale(size.width / chartWidth))
+    }
 }
+
+/** From chart units to pixels: [y] differs from [x] when a chart is flatter than its design proportions. */
+data class ChartScale(
+    val x: Float,
+    val y: Float = x,
+)
