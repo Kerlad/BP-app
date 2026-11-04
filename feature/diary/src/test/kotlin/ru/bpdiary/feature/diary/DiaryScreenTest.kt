@@ -107,6 +107,15 @@ class DiaryScreenTest {
 
     private val withTagged = listOf(tagged) + demo
 
+    @Test
+    fun `import and export open from the title, also with an empty diary`() {
+        val events = ArrayList<DiaryEvent>()
+        show(emptyList(), onEvent = { events += it })
+        rule.onNodeWithText("Импорт").performClick()
+        rule.onNodeWithText("Экспорт").performClick()
+        assertEquals(listOf(DiaryEvent.ImportClicked, DiaryEvent.ExportClicked), events)
+    }
+
     private val highOnlyEmpty = DiaryUiState(filter = DiaryFilter.LOW, today = today, total = demo.size)
 
     @Test

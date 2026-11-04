@@ -49,6 +49,7 @@ include(
     ":feature:reminders",
     ":feature:levels",
     ":feature:settings",
+    ":feature:transfer",
     ":feature:onboarding",
 )
 

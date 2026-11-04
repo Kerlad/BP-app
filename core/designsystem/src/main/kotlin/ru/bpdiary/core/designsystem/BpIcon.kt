@@ -35,6 +35,8 @@ enum class BpIcon(
     ArrowBack(R.drawable.ic_arrow_back),
     DarkMode(R.drawable.ic_dark_mode),
     CheckCircle(R.drawable.ic_check_circle),
+    Download(R.drawable.ic_download),
+    Upload(R.drawable.ic_upload),
 }
 
 @Composable

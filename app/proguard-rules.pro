@@ -13,6 +13,7 @@
 # WorkManager stores the class name of a worker in its database. Obfuscated names would change with the next
 # release and orphan the daily watchdog and the reschedule job queued by the previous version.
 -keepnames class ru.bpdiary.data.reminders.*Worker
+-keepnames class ru.bpdiary.feature.transfer.*Worker
 
 # Readable stack traces in Play Console (Android vitals) come from the mapping file of the build, but a line number
 # is only there when this is kept.

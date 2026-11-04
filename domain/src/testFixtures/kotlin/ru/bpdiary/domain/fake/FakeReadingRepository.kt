@@ -10,6 +10,7 @@ import ru.bpdiary.core.common.TimeProvider
 import ru.bpdiary.core.model.Reading
 import ru.bpdiary.core.model.Status
 import ru.bpdiary.core.model.Thresholds
+import ru.bpdiary.domain.ReadingImporter
 import ru.bpdiary.domain.ReadingRepository
 import ru.bpdiary.domain.classify
 import java.time.Duration
@@ -19,7 +20,8 @@ import java.time.Instant
 class FakeReadingRepository(
     private val time: TimeProvider,
     initial: List<Reading> = emptyList(),
-) : ReadingRepository {
+) : ReadingRepository,
+    ReadingImporter {
     private data class Row(
         val reading: Reading,
         val deletedAt: Instant? = null,
@@ -82,6 +84,14 @@ class FakeReadingRepository(
 
     override suspend fun deleteAll() {
         rows.value = emptyList()
+    }
+
+    override suspend fun importAll(
+        readings: List<Reading>,
+        replaceExisting: Boolean,
+    ) {
+        val added = readings.map { Row(it.copy(id = ++lastId)) }
+        rows.value = (if (replaceExisting) emptyList() else rows.value) + added
     }
 
     private companion object {

@@ -37,6 +37,8 @@ import ru.bpdiary.feature.onboarding.OnboardingRoute
 import ru.bpdiary.feature.reminders.ReminderEditRoute
 import ru.bpdiary.feature.reminders.RemindersRoute
 import ru.bpdiary.feature.settings.SettingsRoute
+import ru.bpdiary.feature.transfer.ExportRoute
+import ru.bpdiary.feature.transfer.ImportRoute
 
 /** The shell around the real routes with plain screens inside: what is tested is the navigation, not the screens. */
 @RunWith(RobolectricTestRunner::class)
@@ -60,6 +62,8 @@ class AppShellTest {
                         composable<ReminderEditRoute> { Text("Экран: правка напоминания") }
                         composable<EntryRoute> { Text("Экран: ввод") }
                         composable<SettingsRoute> { Text("Экран: настройки") }
+                        composable<ExportRoute> { Text("Экран: экспорт") }
+                        composable<ImportRoute> { Text("Экран: импорт") }
                         composable<OnboardingRoute> { Text("Экран: онбординг") }
                         composable<DisclaimerRoute> { Text("Экран: дисклеймер") }
                     }
@@ -87,6 +91,20 @@ class AppShellTest {
         tab("Дневник").assertIsNotSelected()
         // The tabs have names and touch targets of at least 48 dp (docs/10 §10.6).
         rule.assertAccessible()
+    }
+
+    @Test
+    fun `export and import are full-screen`() {
+        show(start = DiaryRoute)
+        listOf(ExportRoute to "Экран: экспорт", ImportRoute to "Экран: импорт").forEach { (route, text) ->
+            rule.runOnUiThread { navController.navigate(route) }
+            rule.waitForIdle()
+            rule.onNodeWithText(text).assertExists()
+            tab("Дневник").assertDoesNotExist()
+            rule.runOnUiThread { navController.popBackStack() }
+            rule.waitForIdle()
+            tab("Дневник").assertIsSelected()
+        }
     }
 
     @Test

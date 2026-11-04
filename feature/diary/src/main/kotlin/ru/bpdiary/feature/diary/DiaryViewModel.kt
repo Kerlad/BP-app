@@ -82,7 +82,12 @@ class DiaryViewModel
                     }
                 }
 
-                is DiaryEvent.RowClicked, is DiaryEvent.CopyClicked, DiaryEvent.AddClicked -> {
+                is DiaryEvent.RowClicked,
+                is DiaryEvent.CopyClicked,
+                DiaryEvent.AddClicked,
+                DiaryEvent.ExportClicked,
+                DiaryEvent.ImportClicked,
+                -> {
                     Unit
                 }
             }

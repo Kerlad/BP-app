@@ -77,6 +77,10 @@ sealed interface DiaryEvent {
     ) : DiaryEvent
 
     data object AddClicked : DiaryEvent
+
+    data object ExportClicked : DiaryEvent
+
+    data object ImportClicked : DiaryEvent
 }
 
 sealed interface DiaryEffect {

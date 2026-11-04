@@ -141,6 +141,7 @@ dependencies {
     implementation(projects.feature.reminders)
     implementation(projects.feature.levels)
     implementation(projects.feature.settings)
+    implementation(projects.feature.transfer)
     implementation(projects.feature.onboarding)
 
     implementation(libs.androidx.core.ktx)

@@ -209,6 +209,16 @@ class HomeScreenTest {
         rule.onNodeWithText("Следующее напоминание").assertIsDisplayed()
     }
 
+    /** A phone of 360x780 less the status bar, the gesture area and the bottom navigation. */
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xxhdpi")
+    fun `the screen stands still in the room the shell leaves on an ordinary phone`() {
+        show(demo)
+        rule.waitForIdle()
+        rule.onAllNodes(hasScrollAction()).assertCountEquals(0)
+        rule.onNodeWithText("Следующее напоминание").assertIsDisplayed()
+    }
+
     @Test
     @Config(qualifiers = "w360dp-h480dp-xxhdpi")
     fun `on a small display the screen scrolls instead of cutting the content`() {

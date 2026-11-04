@@ -28,8 +28,10 @@ fun NavGraphBuilder.diaryScreen(
     onOpenReading: (readingId: Long) -> Unit,
     onAddReading: () -> Unit,
     onDeleted: (readingId: Long) -> Unit,
+    onOpenExport: () -> Unit,
+    onOpenImport: () -> Unit,
 ) {
-    composable<DiaryRoute> { DiaryDestination(onOpenReading, onAddReading, onDeleted) }
+    composable<DiaryRoute> { DiaryDestination(onOpenReading, onAddReading, onDeleted, onOpenExport, onOpenImport) }
 }
 
 @Composable
@@ -37,6 +39,8 @@ private fun DiaryDestination(
     onOpenReading: (readingId: Long) -> Unit,
     onAddReading: () -> Unit,
     onDeleted: (readingId: Long) -> Unit,
+    onOpenExport: () -> Unit,
+    onOpenImport: () -> Unit,
 ) {
     val viewModel = hiltViewModel<DiaryViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -64,6 +68,14 @@ private fun DiaryDestination(
 
             DiaryEvent.AddClicked -> {
                 onAddReading()
+            }
+
+            DiaryEvent.ExportClicked -> {
+                onOpenExport()
+            }
+
+            DiaryEvent.ImportClicked -> {
+                onOpenImport()
             }
 
             is DiaryEvent.CopyClicked -> {

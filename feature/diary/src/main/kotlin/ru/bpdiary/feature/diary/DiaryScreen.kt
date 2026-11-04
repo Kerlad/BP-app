@@ -3,6 +3,7 @@ package ru.bpdiary.feature.diary
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
@@ -30,6 +31,7 @@ import ru.bpdiary.app.feature.diary.R
 import ru.bpdiary.core.designsystem.BpIcon
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.ui.BpPrimaryButton
+import ru.bpdiary.core.ui.BpSecondaryButton
 import ru.bpdiary.core.ui.FilterChipRow
 
 /** Diary (handoff screen 3). Stateless: the filter comes from [state], the rows from [items]. */
@@ -50,12 +52,7 @@ fun DiaryScreen(
         contentPadding = padding,
     ) {
         item(key = "title", contentType = "title") {
-            Text(
-                text = stringResource(R.string.diary_title),
-                style = BpTheme.typography.screenTitle,
-                color = BpTheme.colors.ink,
-                modifier = Modifier.padding(top = 8.dp).semantics { heading() },
-            )
+            TitleBlock(onEvent)
         }
         item(key = "filters", contentType = "filters") {
             val filters = DiaryFilter.entries
@@ -74,6 +71,37 @@ fun DiaryScreen(
             }
         }
         rows(state, items, texts, onEvent)
+    }
+}
+
+/** The title over «Импорт» and «Экспорт»: side by side, one under the other when a large font needs the room. */
+@Composable
+private fun TitleBlock(onEvent: (DiaryEvent) -> Unit) {
+    Column(modifier = Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(R.string.diary_title),
+            style = BpTheme.typography.screenTitle,
+            color = BpTheme.colors.ink,
+            modifier = Modifier.semantics { heading() },
+        )
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            BpSecondaryButton(
+                text = stringResource(R.string.diary_import),
+                onClick = { onEvent(DiaryEvent.ImportClicked) },
+                modifier = Modifier.weight(1f),
+                icon = BpIcon.Download,
+            )
+            BpSecondaryButton(
+                text = stringResource(R.string.diary_export),
+                onClick = { onEvent(DiaryEvent.ExportClicked) },
+                modifier = Modifier.weight(1f),
+                icon = BpIcon.Upload,
+            )
+        }
     }
 }
 

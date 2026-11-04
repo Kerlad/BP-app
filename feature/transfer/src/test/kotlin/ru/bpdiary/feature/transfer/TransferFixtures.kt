@@ -1,0 +1,146 @@
+package ru.bpdiary.feature.transfer
+
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import ru.bpdiary.core.model.Arm
+import ru.bpdiary.domain.csv.ColumnRole
+import ru.bpdiary.domain.csv.CsvEncoding
+import ru.bpdiary.domain.csv.CsvInspection
+import ru.bpdiary.domain.csv.CsvOptions
+import ru.bpdiary.domain.csv.ImportReport
+import ru.bpdiary.domain.csv.RowError
+import ru.bpdiary.domain.csv.RowProblem
+import java.io.IOException
+import java.time.LocalDate
+
+internal val options =
+    CsvOptions(
+        encoding = CsvEncoding.UTF_8,
+        delimiter = ',',
+        hasHeader = false,
+        columns =
+            listOf(
+                ColumnRole.DATE_TIME,
+                ColumnRole.SYS,
+                ColumnRole.DIA,
+                ColumnRole.PULSE,
+                ColumnRole.COMMENT,
+            ),
+    )
+
+internal val inspection =
+    CsvInspection(
+        header = null,
+        preview =
+            listOf(
+                listOf("07.10.2026 06:48", "117", "77", "80", "вчера 1-й день препарата"),
+                listOf("09.10.2026 06:49", "118", "83", "70", ""),
+                listOf("09.10.2026 06:50", "121", "86", "73", "контрольное"),
+                listOf("10.10.2026 09:51", "131", "87", "84", "суббота, до приёма"),
+                listOf("11.10.2026 11:10", "146", "92", "71", "левая"),
+            ),
+        rows = 27,
+        valid = 27,
+        errors = emptyList(),
+        errorCount = 0,
+        ambiguousDayOrder = false,
+        problem = null,
+    )
+
+internal val report =
+    ImportReport(
+        imported = 27,
+        duplicates = 0,
+        errorCount = 0,
+        armFromComment = 1,
+        armDefaulted = 26,
+        defaultArm = Arm.LEFT,
+        commentsCut = 0,
+        aheadOfClock = 0,
+        withoutTime = 0,
+        from = LocalDate.of(2026, 10, 7),
+        to = LocalDate.of(2026, 10, 20),
+        errors = emptyList(),
+    )
+
+/** Bad rows on lines 1, 2, 3… */
+internal fun badRows(count: Int) = (1..count).map { RowError(it, RowProblem.SYS_NOT_GREATER) }
+
+internal class FakeImportWorkspace : ImportWorkspace {
+    var pickResult: PickResult = PickResult.Copied("davlenie.csv")
+    var detectFailure: Exception? = null
+    var progress: Flow<ImportProgress> = flowOf(ImportProgress.Done(report))
+    var badRows: List<RowError> = emptyList()
+    var saveFailure: IOException? = null
+
+    val inspected = ArrayList<CsvOptions>()
+    val runs = ArrayList<Boolean>()
+    val saved = HashMap<String, String>()
+    var cleared = 0
+
+    override suspend fun pick(uri: String): PickResult = pickResult
+
+    override suspend fun detect(
+        encoding: CsvEncoding?,
+        delimiter: Char?,
+    ): CsvOptions {
+        detectFailure?.let { throw it }
+        return options.copy(encoding = encoding ?: options.encoding, delimiter = delimiter ?: options.delimiter)
+    }
+
+    override suspend fun inspect(options: CsvOptions): CsvInspection {
+        inspected += options
+        return inspection
+    }
+
+    override fun run(
+        options: CsvOptions,
+        rows: Int,
+        replaceAll: Boolean,
+    ): Flow<ImportProgress> {
+        runs += replaceAll
+        return progress
+    }
+
+    override suspend fun errors(): List<RowError> = badRows
+
+    override suspend fun saveText(
+        uri: String,
+        text: String,
+    ) {
+        saveFailure?.let { throw it }
+        saved[uri] = text
+    }
+
+    override fun clear() {
+        cleared++
+    }
+}
+
+internal class FakeExportFiles : ExportFiles {
+    var failure: IOException? = null
+    val saved = HashMap<String, String>()
+    val shared = HashMap<String, String>()
+    var cleared = 0
+
+    override suspend fun save(
+        uri: String,
+        write: (Appendable) -> Unit,
+    ) {
+        failure?.let { throw it }
+        saved[uri] = StringBuilder().also(write).toString()
+    }
+
+    override suspend fun forShare(
+        fileName: String,
+        write: (Appendable) -> Unit,
+    ): String {
+        failure?.let { throw it }
+        shared[fileName] = StringBuilder().also(write).toString()
+        return "content://$fileName"
+    }
+
+    override fun clearShared() {
+        cleared++
+    }
+}

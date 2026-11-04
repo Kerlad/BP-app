@@ -43,3 +43,11 @@ interface ReadingRepository {
     /** "Delete all data" and import "Replace all": removes everything, soft-deleted rows included. */
     suspend fun deleteAll()
 }
+
+interface ReadingImporter {
+    /** CSV import: one transaction, so that a failure leaves the diary as it was (docs/13 §13.2). */
+    suspend fun importAll(
+        readings: List<Reading>,
+        replaceExisting: Boolean,
+    )
+}

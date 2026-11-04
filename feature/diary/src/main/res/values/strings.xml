@@ -21,7 +21,9 @@
     <string name="diary_menu_delete">Удалить</string>
     <string name="diary_menu_copy">Копировать значения</string>
 
-    <!-- PROVISIONAL, awaiting the customer: copied text, the swipe label and the pulse for TalkBack -->
+    <!-- PROVISIONAL, awaiting the customer: the entry to import and export, copied text, the swipe label and the pulse for TalkBack -->
+    <string name="diary_import">Импорт</string>
+    <string name="diary_export">Экспорт</string>
     <string name="diary_copy_with_pulse">%1$d/%2$d мм рт. ст., пульс %3$d уд/мин</string>
     <string name="diary_copy_without_pulse">%1$d/%2$d мм рт. ст.</string>
     <string name="diary_swipe_delete">Удалить</string>

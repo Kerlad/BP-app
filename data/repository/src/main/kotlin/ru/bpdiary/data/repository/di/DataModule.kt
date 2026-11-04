@@ -15,10 +15,12 @@ import ru.bpdiary.data.database.ReadingMaintenanceDao
 import ru.bpdiary.data.database.ReminderDao
 import ru.bpdiary.data.datastore.SettingsDataStore
 import ru.bpdiary.data.datastore.createSettingsDataStore
+import ru.bpdiary.data.repository.ReadingImporterImpl
 import ru.bpdiary.data.repository.ReadingRepositoryImpl
 import ru.bpdiary.data.repository.ReminderRepositoryImpl
 import ru.bpdiary.data.repository.SettingsRepositoryImpl
 import ru.bpdiary.data.repository.ThresholdsRepositoryImpl
+import ru.bpdiary.domain.ReadingImporter
 import ru.bpdiary.domain.ReadingRepository
 import ru.bpdiary.domain.ReminderRepository
 import ru.bpdiary.domain.SettingsRepository
@@ -60,6 +62,9 @@ internal object DataProvidesModule {
 internal abstract class RepositoryBindingsModule {
     @Binds
     abstract fun readings(impl: ReadingRepositoryImpl): ReadingRepository
+
+    @Binds
+    abstract fun readingImporter(impl: ReadingImporterImpl): ReadingImporter
 
     @Binds
     abstract fun reminders(impl: ReminderRepositoryImpl): ReminderRepository

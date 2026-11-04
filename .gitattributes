@@ -2,3 +2,5 @@
 gradlew text eol=lf
 *.bat text eol=crlf
 *.jar binary
+# Byte-exact test fixtures: line endings are part of the format.
+**/src/test/resources/csv/*.csv -text

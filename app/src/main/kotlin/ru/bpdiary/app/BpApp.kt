@@ -59,6 +59,10 @@ import ru.bpdiary.feature.settings.AboutRoute
 import ru.bpdiary.feature.settings.SettingsRoute
 import ru.bpdiary.feature.settings.aboutScreen
 import ru.bpdiary.feature.settings.settingsScreen
+import ru.bpdiary.feature.transfer.ExportRoute
+import ru.bpdiary.feature.transfer.ImportRoute
+import ru.bpdiary.feature.transfer.exportScreen
+import ru.bpdiary.feature.transfer.importScreen
 
 private const val TOAST_MS = 2_400L
 private const val UNDO_MS = 5_000L
@@ -173,7 +177,11 @@ private fun NavGraphBuilder.appGraph(
         onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },
         onAddReading = { navController.navigate(EntryRoute()) },
         onDeleted = onReadingDeleted,
+        onOpenExport = { navController.navigate(ExportRoute) },
+        onOpenImport = { navController.navigate(ImportRoute) },
     )
+    exportScreen(onClose = { navController.popBackStack() })
+    importScreen(onClose = { navController.popBackStack() })
     entryScreen(
         onSaved = onReadingSaved,
         onDeleted = { id ->

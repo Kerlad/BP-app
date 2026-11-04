@@ -125,6 +125,16 @@ class ChartsScreenTest {
         rule.onNodeWithText("Пониженное: 0").assertIsDisplayed()
     }
 
+    /** A phone of 360x780 less the status bar, the gesture area and the bottom navigation. */
+    @Test
+    @Config(qualifiers = "ru-w360dp-h640dp-xxhdpi")
+    fun `the whole screen fits in the room the shell leaves on an ordinary phone`() {
+        show(month)
+        rule.waitForIdle()
+        rule.onAllNodes(hasScrollAction()).assertCountEquals(0)
+        rule.onNodeWithText("Пониженное: 0").assertIsDisplayed()
+    }
+
     @Test
     fun `with a large font the screen scrolls instead of cutting the content`() {
         rule.setContent {

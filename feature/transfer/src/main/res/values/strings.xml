@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The export file, docs/13 §13.3, word for word (byte-exact test against docs/samples/export-sample.csv) -->
+    <string name="csv_meta_title">Дневник давления — экспорт %1$s</string>
+    <string name="csv_meta_period">Период: %1$s — %2$s, измерений: %3$d</string>
+    <string name="csv_meta_levels">Уровни: повышенное от %1$d/%2$d, пониженное до %3$d/%4$d, пульс в норме %5$d–%6$d</string>
+    <string name="csv_meta_status">Статус рассчитан по этим уровням на дату экспорта</string>
+    <string-array name="csv_columns">
+        <item>Дата</item>
+        <item>Время</item>
+        <item>Верхнее</item>
+        <item>Нижнее</item>
+        <item>Пульс</item>
+        <item>Рука</item>
+        <item>Статус</item>
+        <item>Самочувствие</item>
+        <item>Комментарий</item>
+        <item>Метка времени</item>
+    </string-array>
+    <string name="csv_arm_left">Левая</string>
+    <string name="csv_arm_right">Правая</string>
+
+    <!-- The words the import recognises in a file, docs/13 §13.2; not shown to the user -->
+    <string-array name="csv_words_datetime" translatable="false">
+        <item>дата и время</item>
+        <item>datetime</item>
+    </string-array>
+    <string-array name="csv_words_date" translatable="false">
+        <item>дата</item>
+        <item>date</item>
+    </string-array>
+    <string-array name="csv_words_time" translatable="false">
+        <item>время</item>
+        <item>time</item>
+    </string-array>
+    <string-array name="csv_words_timestamp" translatable="false">
+        <item>метка времени</item>
+        <item>timestamp</item>
+    </string-array>
+    <string-array name="csv_words_sys" translatable="false">
+        <item>верхнее</item>
+        <item>сад</item>
+        <item>систолическое</item>
+        <item>sys</item>
+        <item>systolic</item>
+        <item>sbp</item>
+        <item>upper</item>
+    </string-array>
+    <string-array name="csv_words_dia" translatable="false">
+        <item>нижнее</item>
+        <item>дад</item>
+        <item>диастолическое</item>
+        <item>dia</item>
+        <item>diastolic</item>
+        <item>dbp</item>
+        <item>lower</item>
+    </string-array>
+    <string-array name="csv_words_pulse" translatable="false">
+        <item>пульс</item>
+        <item>чсс</item>
+        <item>pulse</item>
+        <item>heart rate</item>
+        <item>hr</item>
+        <item>bpm</item>
+    </string-array>
+    <string-array name="csv_words_arm" translatable="false">
+        <item>рука</item>
+        <item>arm</item>
+        <item>hand</item>
+    </string-array>
+    <string-array name="csv_words_tags" translatable="false">
+        <item>самочувствие</item>
+        <item>теги</item>
+        <item>tags</item>
+        <item>symptoms</item>
+    </string-array>
+    <string-array name="csv_words_comment" translatable="false">
+        <item>комментарий</item>
+        <item>заметка</item>
+        <item>примечание</item>
+        <item>comment</item>
+        <item>note</item>
+        <item>notes</item>
+    </string-array>
+    <string-array name="csv_words_ignored" translatable="false">
+        <item>статус</item>
+        <item>status</item>
+    </string-array>
+    <string-array name="csv_words_left" translatable="false">
+        <item>левая</item>
+        <item>левой</item>
+        <item>левую</item>
+        <item>лев</item>
+        <item>left</item>
+        <item>л</item>
+    </string-array>
+    <string-array name="csv_words_right" translatable="false">
+        <item>правая</item>
+        <item>правой</item>
+        <item>правую</item>
+        <item>прав</item>
+        <item>right</item>
+        <item>п</item>
+    </string-array>
+
+    <!-- The import screen and its messages, docs/13 §13.2, §13.4, §13.5, word for word -->
+    <string name="import_title">Импорт из CSV</string>
+    <string name="import_pick_hint">Подойдёт файл из другого дневника давления или таблицы Excel.</string>
+    <string name="import_pick_button">Выбрать файл</string>
+    <string name="import_file_card">Файл</string>
+    <string name="import_change">Изменить</string>
+    <string name="import_arm_from_comment">Определять руку по комментарию</string>
+    <string name="import_day_month">День.Месяц</string>
+    <string name="import_month_day">Месяц.День</string>
+    <string name="import_local_time">Время считается местным (UTC%1$s)</string>
+    <string name="import_summary">Распознано %1$d строк, ошибок %2$d</string>
+    <string name="import_show_errors">Показать ошибки</string>
+    <string name="import_add">Добавить к имеющимся</string>
+    <string name="import_replace">Заменить все данные</string>
+    <string name="import_open_diary">Открыть дневник</string>
+    <string name="import_save_report">Сохранить отчёт</string>
+    <string name="import_role_datetime">Дата и время</string>
+    <string name="import_role_sys">Верхнее</string>
+    <string name="import_role_ignore">Не импортировать</string>
+    <string name="import_error_open">Не удалось открыть файл. Попробуйте выбрать его заново.</string>
+    <string name="import_error_empty">В файле нет данных.</string>
+    <string name="import_error_large">Файл слишком большой — больше 20 МБ.</string>
+    <string name="import_error_no_columns">Не похоже на дневник давления: не нашлись столбцы с верхним и нижним значением.</string>
+    <string name="import_error_no_dates">Не удалось распознать дату. Выберите столбец с датой вручную.</string>
+    <string name="import_error_partial">Импортировано %1$d из %2$d. %3$d строк пропущено — показать?</string>
+    <string name="import_error_all_duplicates">Эти измерения уже есть в дневнике.</string>
+    <string name="import_error_save">Не удалось сохранить. Данные не изменились.</string>
+    <plurals name="import_report_imported">
+        <item quantity="one">Импортировано %d измерение</item>
+        <item quantity="few">Импортировано %d измерения</item>
+        <item quantity="many">Импортировано %d измерений</item>
+        <item quantity="other">Импортировано %d измерения</item>
+    </plurals>
+    <string name="import_report_duplicates">Пропущено дублей: %1$d</string>
+    <string name="import_report_errors">Строк с ошибками: %1$d</string>
+    <string name="import_report_arm_comment">Рука определена по комментарию: %1$d</string>
+    <string name="import_report_arm_default">Рука не указана, проставлена «%1$s»: %2$d</string>
+    <string name="import_report_period">Период: %1$s — %2$s</string>
+
+    <!--
+        PROVISIONAL, awaiting the customer: the docs fix the words above, but not these. The entry on the Diary, the
+        export screen (docs/13 §13.3 names only the periods and the two ways of delivery), the rest of the column names,
+        the too-many-rows text, the wording of a bad row, the extra report lines and the explanations of the two
+        strategies.
+    -->
+    <string name="import_back_description">Назад</string>
+    <string name="import_error_rows">Файл слишком большой — больше 200 000 строк.</string>
+    <string name="import_encoding">Кодировка: %1$s</string>
+    <string name="import_delimiter">Разделитель: %1$s</string>
+    <string name="import_delimiter_semicolon">точка с запятой</string>
+    <string name="import_delimiter_comma">запятая</string>
+    <string name="import_delimiter_tab">табуляция</string>
+    <string name="import_delimiter_pipe">вертикальная черта</string>
+    <string name="import_encoding_label">Кодировка</string>
+    <string name="import_delimiter_label">Разделитель</string>
+    <string name="import_columns_label">Столбцы файла</string>
+    <string name="import_role_date">Дата</string>
+    <string name="import_role_time">Время</string>
+    <string name="import_role_timestamp">Метка времени</string>
+    <string name="import_role_dia">Нижнее</string>
+    <string name="import_role_pulse">Пульс</string>
+    <string name="import_role_arm">Рука</string>
+    <string name="import_role_tags">Самочувствие</string>
+    <string name="import_role_comment">Комментарий</string>
+    <string name="import_day_order">Порядок в дате</string>
+    <string name="import_next">Далее</string>
+    <string name="import_more_errors">И ещё строк с ошибками: %1$d</string>
+    <string name="import_strategy_title">Как добавить измерения?</string>
+    <string name="import_add_hint">Рекомендуется. Измерения, которые уже есть в дневнике, не добавятся повторно.</string>
+    <string name="import_replace_hint">Все измерения в дневнике будут удалены. Настройки и напоминания останутся.</string>
+    <string name="import_replace_confirm_title">Заменить все данные?</string>
+    <string name="import_replace_confirm_text">Все измерения в дневнике будут удалены и заменены измерениями из файла. Это нельзя отменить.</string>
+    <string name="import_replace_confirm">Заменить</string>
+    <string name="import_cancel">Отмена</string>
+    <string name="import_running">Импортируем измерения…</string>
+    <string name="import_report_saved">Отчёт сохранён</string>
+    <string name="import_report_cut">Комментарий обрезан до 120 символов: %1$d</string>
+    <string name="import_report_ahead">Время позже текущего: %1$d</string>
+    <string name="import_report_no_time">Без времени, проставлено 12:00: %1$d</string>
+    <string name="import_row_error">Строка %1$d: %2$s</string>
+    <string name="import_problem_columns">не хватает столбцов</string>
+    <string name="import_problem_date">не удалось распознать дату</string>
+    <string name="import_problem_sys">верхнее значение не подходит</string>
+    <string name="import_problem_dia">нижнее значение не подходит</string>
+    <string name="import_problem_pulse">пульс не подходит</string>
+    <string name="import_problem_order">верхнее значение не больше нижнего</string>
+    <string name="import_problem_ahead">дата слишком далеко в будущем</string>
+
+    <string name="export_title">Экспорт в CSV</string>
+    <string name="export_period_title">Период</string>
+    <string name="export_period_7">7 дней</string>
+    <string name="export_period_30">30 дней</string>
+    <string name="export_period_90">90 дней</string>
+    <string name="export_period_all">Всё время</string>
+    <string name="export_period_custom">Период…</string>
+    <string name="export_range">%1$s — %2$s</string>
+    <plurals name="export_count">
+        <item quantity="one">%d измерение</item>
+        <item quantity="few">%d измерения</item>
+        <item quantity="many">%d измерений</item>
+        <item quantity="other">%d измерения</item>
+    </plurals>
+    <string name="export_empty">За этот период измерений нет</string>
+    <string name="export_save">Сохранить файл</string>
+    <string name="export_share">Поделиться</string>
+    <string name="export_saved">Файл сохранён</string>
+    <string name="export_failed">Не удалось сохранить файл. Попробуйте ещё раз.</string>
+    <string name="export_range_ok">Готово</string>
+</resources>
