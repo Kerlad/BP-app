@@ -22,6 +22,8 @@ data class EntryUiState(
     val time: LocalTime = LocalTime.MIDNIGHT,
     val liveStatus: LiveStatus = LiveStatus.Empty,
     val error: ValidationError? = null,
+    /** Field to highlight after Save on incomplete data. */
+    val missing: Field? = null,
     val canSave: Boolean = false,
     val dialog: EntryDialog? = null,
 )

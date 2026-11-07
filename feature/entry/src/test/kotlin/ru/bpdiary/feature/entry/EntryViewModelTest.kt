@@ -154,6 +154,51 @@ class EntryViewModelTest {
         }
 
     @Test
+    fun `habitual arrow after auto advance keeps focus on dia`() =
+        runTest {
+            val vm = viewModel()
+            vm.type("142")
+            vm.onEvent(EntryEvent.KeyPressed(Key.Next))
+            vm.type("9176")
+            val s = vm.state.value
+            assertEquals("142", s.draft.sys)
+            assertEquals("91", s.draft.dia)
+            assertEquals("76", s.draft.pulse)
+        }
+
+    @Test
+    fun `digit after tapping a filled field replaces it`() =
+        runTest {
+            readings.save(stored)
+            val vm = viewModel(readingId = 7)
+            vm.state.first { !it.loading }
+            vm.onEvent(EntryEvent.FieldTapped(Field.SYS))
+            vm.type("1")
+            assertEquals("1", vm.state.value.draft.sys)
+            vm.type("40")
+            assertEquals("140", vm.state.value.draft.sys)
+            assertEquals(Field.DIA, vm.state.value.draft.field)
+        }
+
+    @Test
+    fun `save on incomplete data highlights the empty field and focuses it`() =
+        runTest {
+            val vm = viewModel()
+            vm.effects.test {
+                vm.type("142")
+                vm.onEvent(EntryEvent.FieldTapped(Field.PULSE))
+                vm.onEvent(EntryEvent.SaveClicked)
+                val s = vm.state.value
+                assertEquals(Field.DIA, s.missing)
+                assertEquals(Field.DIA, s.draft.field)
+                expectNoEvents()
+                vm.type("9")
+                assertNull(vm.state.value.missing)
+            }
+            assertEquals(0, readings.storedCount)
+        }
+
+    @Test
     fun `sys not greater than dia is shown as an error and nothing is saved`() =
         runTest {
             val vm = viewModel()

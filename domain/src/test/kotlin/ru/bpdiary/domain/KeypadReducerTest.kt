@@ -69,9 +69,64 @@ class KeypadReducerTest {
     }
 
     @Test
-    fun `next on sys and dia moves focus`() {
-        assertEquals(Field.DIA, press("n").first.field)
-        assertEquals(Field.PULSE, press("nn").first.field)
+    fun `next on filled sys and dia moves focus`() {
+        assertEquals(Field.DIA, press("12n").first.field)
+        assertEquals(Field.PULSE, press("12n8n").first.field)
+    }
+
+    @Test
+    fun `next on empty required field does nothing`() {
+        assertEquals(DraftResult.Ignored, press("n").second)
+        assertEquals(Field.SYS, press("n").first.field)
+        // 142 auto-advances to DIA; a habitual arrow must not skip it.
+        val (draft, result) = press("142n")
+        assertEquals(DraftResult.Ignored, result)
+        assertEquals(Draft("142", "", "", Field.DIA), draft)
+    }
+
+    @Test
+    fun `scenario from test run gives 142 over 91 and pulse 76`() {
+        assertEquals(Draft("142", "91", "76", Field.PULSE), press("142n9176").first)
+    }
+
+    @Test
+    fun `next on empty pulse still saves`() {
+        assertEquals(DraftResult.Save, press("12882n").second)
+    }
+
+    @Test
+    fun `digit after tapping a filled field replaces its value`() {
+        val draft = Draft(sys = "142", dia = "91", pulse = "76", field = Field.PULSE).focus(Field.SYS)
+        val after = (reduce(draft, Key.Digit('1')) as DraftResult.Updated).draft
+        assertEquals("1", after.sys)
+        assertEquals(Field.SYS, after.field)
+        // Further digits append and auto-advance as usual.
+        val done = (reduce(after, Key.Digit('3')) as DraftResult.Updated).draft
+        assertEquals("13", done.sys)
+        val full = (reduce(done, Key.Digit('0')) as DraftResult.Updated).draft
+        assertEquals(Draft("130", "91", "76", Field.DIA), full)
+    }
+
+    @Test
+    fun `replace works on a full field and on the pulse`() {
+        val draft = Draft(pulse = "104", field = Field.SYS).focus(Field.PULSE)
+        assertEquals("7", (reduce(draft, Key.Digit('7')) as DraftResult.Updated).draft.pulse)
+    }
+
+    @Test
+    fun `del after tapping edits without replacing`() {
+        val draft = Draft(sys = "142").focus(Field.SYS)
+        val after = (reduce(draft, Key.Del) as DraftResult.Updated).draft
+        assertEquals("14", after.sys)
+        assertEquals("145", (reduce(after, Key.Digit('5')) as DraftResult.Updated).draft.sys)
+    }
+
+    @Test
+    fun `auto advance into a filled field appends instead of replacing`() {
+        val draft = Draft(sys = "14", dia = "9", field = Field.SYS)
+        val after = (reduce(draft, Key.Digit('2')) as DraftResult.Updated).draft
+        assertEquals(false, after.replace)
+        assertEquals(Field.DIA, after.field)
     }
 
     @Test
@@ -82,9 +137,11 @@ class KeypadReducerTest {
     }
 
     @Test
-    fun `typing in refocused field continues its value`() {
+    fun `typing after a refocus replaces, then continues`() {
         val draft = Draft(sys = "12", field = Field.DIA).focus(Field.SYS)
-        assertEquals("128", (reduce(draft, Key.Digit('8')) as DraftResult.Updated).draft.sys)
+        val first = (reduce(draft, Key.Digit('8')) as DraftResult.Updated).draft
+        assertEquals("8", first.sys)
+        assertEquals("80", (reduce(first, Key.Digit('0')) as DraftResult.Updated).draft.sys)
     }
 
     @Test

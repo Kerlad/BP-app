@@ -3,7 +3,7 @@ package ru.bpdiary.feature.entry
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -156,10 +156,10 @@ class EntryScreenTest {
     }
 
     @Test
-    fun `empty state asks for values and save is disabled`() {
+    fun `empty state asks for values and save stays clickable to highlight the gap`() {
         show(empty)
         rule.onNodeWithText("Введите значения").assertExists()
-        rule.onNodeWithText("Сохранить").assertIsNotEnabled()
+        rule.onNodeWithText("Сохранить").assertHasClickAction()
         rule.onNodeWithText("Удалить").assertDoesNotExist()
     }
 

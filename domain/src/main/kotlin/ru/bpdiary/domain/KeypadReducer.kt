@@ -4,11 +4,16 @@ import ru.bpdiary.core.model.Field
 
 private const val MAX_DIGITS = 3
 
+/**
+ * Entry draft. [replace] is true while the focused field was chosen by tapping it (not by an
+ * auto-advance): the next digit then replaces the field's value instead of being appended.
+ */
 data class Draft(
     val sys: String = "",
     val dia: String = "",
     val pulse: String = "",
     val field: Field = Field.SYS,
+    val replace: Boolean = false,
 ) {
     fun value(f: Field): String =
         when (f) {
@@ -27,7 +32,11 @@ data class Draft(
             Field.PULSE -> copy(pulse = v)
         }
 
-    fun focus(f: Field): Draft = copy(field = f)
+    /** Focus by a tap on the field: the first digit typed replaces its value (deviation from docs/06 §6.2). */
+    fun focus(f: Field): Draft = copy(field = f, replace = true)
+
+    /** Focus moved by the keypad itself (auto-advance, Del): digits append as usual. */
+    internal fun advanceTo(f: Field): Draft = copy(field = f, replace = false)
 }
 
 sealed interface Key {
@@ -64,6 +73,13 @@ private fun Field.next(): Field =
         Field.PULSE -> Field.PULSE
     }
 
+/**
+ * Keypad rules of docs/06 §6.2 with three deviations from the test run of 2026-11-07:
+ * 1. Next on an empty required field (SYS, DIA) does nothing ([DraftResult.Ignored]), so a habitual
+ *    «→» after an auto-advance cannot skip DIA and push its digits into the pulse.
+ * 2. A field chosen by tapping ([Draft.replace]) takes the first digit as a replacement of its value.
+ * 3. (UI side) Save with incomplete data highlights the first empty field and focuses it.
+ */
 fun reduce(
     state: Draft,
     key: Key,
@@ -74,22 +90,26 @@ fun reduce(
             if (cur.isEmpty() && state.field != Field.SYS) {
                 // Move to the previous field and erase its last digit.
                 val prev = state.field.previous()
-                DraftResult.Updated(state.set(prev, state.value(prev).dropLast(1)).focus(prev))
+                DraftResult.Updated(state.set(prev, state.value(prev).dropLast(1)).advanceTo(prev))
             } else {
-                DraftResult.Updated(state.set(state.field, cur.dropLast(1)))
+                DraftResult.Updated(state.set(state.field, cur.dropLast(1)).copy(replace = false))
             }
         }
 
         is Key.Next -> {
             if (state.field != Field.PULSE) {
-                DraftResult.Updated(state.focus(state.field.next()))
+                if (state.value(state.field).isEmpty()) {
+                    DraftResult.Ignored
+                } else {
+                    DraftResult.Updated(state.advanceTo(state.field.next()))
+                }
             } else {
                 DraftResult.Save
             }
         }
 
         is Key.Digit -> {
-            val cur = state.value(state.field)
+            val cur = if (state.replace) "" else state.value(state.field)
             if (cur.length >= MAX_DIGITS) {
                 DraftResult.Ignored
             } else {
@@ -99,7 +119,8 @@ fun reduce(
                     state.field != Field.PULSE &&
                         (new.length == MAX_DIGITS || (new.length == 2 && new[0] != '1'))
                 val updated = state.set(state.field, new)
-                DraftResult.Updated(if (advance) updated.focus(state.field.next()) else updated)
+                val result = if (advance) updated.advanceTo(state.field.next()) else updated.copy(replace = false)
+                DraftResult.Updated(result)
             }
         }
     }

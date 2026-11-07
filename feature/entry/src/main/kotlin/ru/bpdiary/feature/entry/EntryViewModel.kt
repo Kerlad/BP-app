@@ -134,7 +134,8 @@ class EntryViewModel
                 }
 
                 is EntryEvent.FieldTapped -> {
-                    updateForm { it.copy(field = event.field) }
+                    updateForm { it.withDraft(it.draft().focus(event.field)) }
+                    transient.update { it.copy(missing = null) }
                 }
 
                 is EntryEvent.ArmSelected -> {
@@ -192,7 +193,7 @@ class EntryViewModel
             when (val result = reduce(current.draft(), event.key)) {
                 is DraftResult.Updated -> {
                     setForm(current.withDraft(result.draft))
-                    transient.update { it.copy(error = null) }
+                    transient.update { it.copy(error = null, missing = null) }
                 }
 
                 DraftResult.Ignored -> {
@@ -226,7 +227,15 @@ class EntryViewModel
 
         private fun save() {
             val current = form.value ?: return
-            if (busy || !current.complete(pulseRequired)) return
+            if (busy || !current.complete(pulseRequired)) {
+                // Incomplete data: highlight the first empty required field and move focus to it.
+                val empty = current.firstEmpty(pulseRequired)
+                if (!busy && empty != null) {
+                    setForm(current.withDraft(current.draft().focus(empty)))
+                    transient.update { it.copy(missing = empty, error = null) }
+                }
+                return
+            }
             busy = true
             viewModelScope.launch {
                 val reading = current.toReading(original)
@@ -286,6 +295,7 @@ class EntryViewModel
                 time = takenAt.atOffset(offset).toLocalTime(),
                 liveStatus = liveStatus(th),
                 error = t.error,
+                missing = t.missing,
                 canSave = complete(pulseRequired),
                 dialog = t.dialog,
             )
@@ -296,6 +306,8 @@ class EntryViewModel
 private data class Transient(
     val error: ValidationError? = null,
     val dialog: EntryDialog? = null,
+    /** Empty required field the user tried to skip with Save. */
+    val missing: Field? = null,
 )
 
 @Serializable
@@ -304,18 +316,27 @@ internal data class Form(
     val dia: String = "",
     val pulse: String = "",
     val field: Field = Field.SYS,
+    val replace: Boolean = false,
     val arm: Arm = Arm.LEFT,
     val tags: Set<Tag> = emptySet(),
     val comment: String = "",
     val takenAtMillis: Long,
     val offsetSeconds: Int,
 ) {
-    fun draft() = Draft(sys = sys, dia = dia, pulse = pulse, field = field)
+    fun draft() = Draft(sys = sys, dia = dia, pulse = pulse, field = field, replace = replace)
 
-    fun withDraft(d: Draft) = copy(sys = d.sys, dia = d.dia, pulse = d.pulse, field = d.field)
+    fun withDraft(d: Draft) = copy(sys = d.sys, dia = d.dia, pulse = d.pulse, field = d.field, replace = d.replace)
 
     /** Everything the user can change except the focused field. */
-    fun content() = copy(field = Field.SYS)
+    fun content() = copy(field = Field.SYS, replace = false)
+
+    fun firstEmpty(pulseRequired: Boolean): Field? =
+        when {
+            sys.isEmpty() -> Field.SYS
+            dia.isEmpty() -> Field.DIA
+            pulse.isEmpty() && pulseRequired -> Field.PULSE
+            else -> null
+        }
 
     fun hasInput() =
         sys.isNotEmpty() || dia.isNotEmpty() || pulse.isNotEmpty() || tags.isNotEmpty() || comment.isNotEmpty()

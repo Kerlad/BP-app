@@ -206,7 +206,7 @@ private fun FieldGrid(
                 field = field,
                 value = state.draft.value(field),
                 active = state.draft.field == field,
-                invalid = state.error?.field == field,
+                invalid = state.error?.field == field || state.missing == field,
                 onClick = { onEvent(EntryEvent.FieldTapped(field)) },
             )
         }
@@ -406,7 +406,7 @@ private fun SaveButton(
                 .alpha(if (enabled) 1f else DISABLED_ALPHA)
                 .clip(RoundedCornerShape(BpTheme.shapes.card))
                 .background(colors.ac)
-                .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
+                .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
