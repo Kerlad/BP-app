@@ -380,6 +380,8 @@ internal data class Form(
     companion object {
         fun of(reading: Reading) =
             Form(
+                // Opening an edit behaves like tapping the focused field: the first digit replaces it.
+                replace = true,
                 sys = reading.sys.toString(),
                 dia = reading.dia.toString(),
                 pulse = reading.pulse?.toString().orEmpty(),

@@ -181,6 +181,17 @@ class EntryViewModelTest {
         }
 
     @Test
+    fun `first digit right after opening an edit replaces the sys value`() =
+        runTest {
+            readings.save(stored)
+            val vm = viewModel(readingId = 7)
+            vm.state.first { !it.loading }
+            vm.type("1")
+            assertEquals("1", vm.state.value.draft.sys)
+            assertEquals("82", vm.state.value.draft.dia)
+        }
+
+    @Test
     fun `save on incomplete data highlights the empty field and focuses it`() =
         runTest {
             val vm = viewModel()
