@@ -1,0 +1,102 @@
+package ru.bpdiary.feature.transfer
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import androidx.test.core.app.ApplicationProvider
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import ru.bpdiary.core.common.FixedTimeProvider
+import ru.bpdiary.core.model.Arm
+import ru.bpdiary.core.model.Reading
+import ru.bpdiary.core.model.Tag
+import ru.bpdiary.core.model.Thresholds
+import ru.bpdiary.domain.report.buildDoctorReport
+import java.io.File
+import java.time.ZoneOffset
+
+@RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = "ru")
+class PdfReportRendererTest {
+    private val time = FixedTimeProvider.default()
+    private val resources = ApplicationProvider.getApplicationContext<Context>().resources
+    private val today = time.now().atZone(time.zone()).toLocalDate()
+
+    private fun readings(count: Int) =
+        (1..count).map {
+            Reading(
+                takenAt = time.now().minusSeconds(it * 3_600L),
+                zoneOffset = ZoneOffset.ofHours(3),
+                sys = 110 + it % 50,
+                dia = 70 + it % 30,
+                pulse = if (it % 7 == 0) null else 60 + it % 30,
+                arm = if (it % 2 == 0) Arm.LEFT else Arm.RIGHT,
+                tags = if (it % 5 == 0) setOf(Tag.HEADACHE, Tag.AFTER_MEDICINE) else emptySet(),
+                comment = if (it % 3 == 0) "после прогулки, " + "очень длинный комментарий ".repeat(8) else "",
+            )
+        }
+
+    private fun report(count: Int) =
+        buildDoctorReport(readings(count), Thresholds(), today.minusDays(29)..today, time.now(), time.zone())
+
+    /** Bitmap sheets; with BP_DUMP_REPORT set to a folder, the pages are written there as PNG. */
+    private class BitmapSheets : Sheets {
+        val bitmaps = ArrayList<Bitmap>()
+
+        override fun start(number: Int): Canvas {
+            val bitmap = Bitmap.createBitmap(PAGE_WIDTH, PAGE_HEIGHT, Bitmap.Config.ARGB_8888)
+            bitmap.eraseColor(Color.WHITE)
+            bitmaps += bitmap
+            return Canvas(bitmap)
+        }
+
+        override fun finish() = Unit
+    }
+
+    private fun sheets(count: Int): BitmapSheets {
+        val sheets = BitmapSheets()
+        drawReport(resources, report(count), sheets)
+        dump(count, sheets)
+        return sheets
+    }
+
+    private fun dump(
+        count: Int,
+        sheets: BitmapSheets,
+    ) {
+        val dir = System.getenv("BP_DUMP_REPORT") ?: return
+        sheets.bitmaps.forEachIndexed { i, bitmap ->
+            File(dir, "report_${count}_page_${i + 1}.png").outputStream().use {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+            }
+        }
+    }
+
+    private fun pages(count: Int): Int = sheets(count).bitmaps.size
+
+    @Test
+    fun `a sheet is drawn for every page of the report`() {
+        // The first page holds 25 rows, the next ones 50 (docs/08 §8.2: no more than 50 on a page).
+        assertEquals(1, pages(0))
+        assertEquals(1, pages(1))
+        assertEquals(2, pages(50))
+        assertEquals(2, pages(51))
+        assertEquals(5, pages(200))
+    }
+
+    @Test
+    fun `the sheets are A4`() {
+        assertTrue(sheets(60).bitmaps.all { it.width == 595 && it.height == 842 })
+    }
+
+    @Test
+    fun `a report with long comments and every tag is drawn without failing`() {
+        // What the page looks like is checked by eye on a device: Robolectric draws no text.
+        assertEquals(3, pages(80))
+    }
+}

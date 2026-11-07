@@ -33,6 +33,7 @@ import java.time.ZoneOffset
 class ExportViewModelTest {
     private val time = FixedTimeProvider.default()
     private val files = FakeExportFiles()
+    private val renderer = FakeReportRenderer()
     private val resources = ApplicationProvider.getApplicationContext<Context>().resources
     private val today = LocalDate.of(2026, 10, 20)
 
@@ -56,12 +57,16 @@ class ExportViewModelTest {
             arm = Arm.LEFT,
         )
 
+    private fun csv(vararg readings: Reading) =
+        viewModel(*readings).also { it.onEvent(ExportEvent.FormatSelected(ExportFormat.CSV)) }
+
     private fun viewModel(vararg readings: Reading) =
         ExportViewModel(
             FakeReadingRepository(time, readings.toList()),
             FakeThresholdsRepository(),
             files,
             resources,
+            renderer,
             time,
         )
 
@@ -90,6 +95,8 @@ class ExportViewModelTest {
         val vm = viewModel(daysAgo(400), daysAgo(1))
         vm.onEvent(ExportEvent.PeriodSelected(ExportPeriod.ALL))
         assertEquals(today.minusDays(400), vm.state.value.from)
+        assertEquals("davlenie_2025-09-15_2026-10-20.pdf", vm.state.value.fileName)
+        vm.onEvent(ExportEvent.FormatSelected(ExportFormat.CSV))
         assertEquals("davlenie_2025-09-15_2026-10-20.csv", vm.state.value.fileName)
     }
 
@@ -120,7 +127,7 @@ class ExportViewModelTest {
 
     @Test
     fun `save writes the period to the chosen place`() {
-        val vm = viewModel(daysAgo(1), daysAgo(40))
+        val vm = csv(daysAgo(1), daysAgo(40))
         vm.onEvent(ExportEvent.SaveTargetChosen("content://target"))
 
         val text = files.saved.getValue("content://target")
@@ -132,7 +139,7 @@ class ExportViewModelTest {
     @Test
     fun `a failed save says so and a new period clears the message`() {
         files.failure = IOException()
-        val vm = viewModel(daysAgo(1))
+        val vm = csv(daysAgo(1))
         vm.onEvent(ExportEvent.SaveTargetChosen("content://target"))
         assertTrue(vm.state.value.failed)
         assertFalse(vm.state.value.saved)
@@ -144,11 +151,11 @@ class ExportViewModelTest {
     @Test
     fun `share hands over a temporary file with the Latin name`() =
         runTest {
-            val vm = viewModel(daysAgo(1))
+            val vm = csv(daysAgo(1))
             vm.effects.test {
                 vm.onEvent(ExportEvent.ShareClicked)
                 val name = "davlenie_2026-09-21_2026-10-20.csv"
-                assertEquals(ExportEffect.Share("content://$name"), awaitItem())
+                assertEquals(ExportEffect.Share("content://$name", "text/csv"), awaitItem())
                 assertTrue(files.shared.containsKey(name))
             }
         }
@@ -165,5 +172,62 @@ class ExportViewModelTest {
     fun `what an earlier share left behind is removed at the start`() {
         viewModel()
         assertEquals(1, files.cleared)
+    }
+
+    // --- the report for the doctor ---------------------------------------------------------------
+
+    @Test
+    fun `the doctor's report is the default format`() {
+        assertEquals(ExportFormat.PDF, viewModel().state.value.format)
+    }
+
+    @Test
+    fun `save writes the pdf of the period and builds the report from the same readings`() {
+        val vm = viewModel(daysAgo(1), daysAgo(2), daysAgo(40))
+        vm.onEvent(ExportEvent.SaveTargetChosen("content://target"))
+
+        assertEquals("pdf:1", files.saved.getValue("content://target"))
+        val report = renderer.reports.single()
+        assertEquals(2, report.count)
+        assertEquals(today.minusDays(29), report.from)
+        assertEquals(today, report.to)
+        assertTrue(vm.state.value.saved)
+    }
+
+    @Test
+    fun `share sends the pdf with its type and the Latin name`() =
+        runTest {
+            val vm = viewModel(daysAgo(1))
+            vm.effects.test {
+                vm.onEvent(ExportEvent.ShareClicked)
+                val name = "davlenie_2026-09-21_2026-10-20.pdf"
+                assertEquals(ExportEffect.Share("content://$name", "application/pdf"), awaitItem())
+                assertTrue(files.sharedBytes.containsKey(name))
+            }
+        }
+
+    @Test
+    fun `print hands the pdf and its page count over without touching the files`() =
+        runTest {
+            val vm = viewModel(daysAgo(1))
+            vm.effects.test {
+                vm.onEvent(ExportEvent.PrintClicked)
+                val job = (awaitItem() as ExportEffect.Print).job
+                assertEquals("davlenie_2026-09-21_2026-10-20.pdf", job.name)
+                assertEquals(1, job.pages)
+                assertEquals("pdf:1", job.pdf.toString(Charsets.UTF_8))
+                assertTrue(files.sharedBytes.isEmpty())
+                assertTrue(files.savedBytes.isEmpty())
+            }
+        }
+
+    @Test
+    fun `a format change clears the message`() {
+        files.failure = IOException()
+        val vm = viewModel(daysAgo(1))
+        vm.onEvent(ExportEvent.ShareClicked)
+        assertTrue(vm.state.value.failed)
+        vm.onEvent(ExportEvent.FormatSelected(ExportFormat.CSV))
+        assertFalse(vm.state.value.failed)
     }
 }

@@ -1,7 +1,11 @@
 package ru.bpdiary.feature.transfer
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
+import android.print.PrintAttributes
+import android.print.PrintManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,37 +52,75 @@ private fun ExportDestination(onClose: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val saver =
-        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(CSV_MIME)) { uri ->
+    val csvSaver =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.CSV.mime)) { uri ->
+            if (uri != null) viewModel.onEvent(ExportEvent.SaveTargetChosen(uri.toString()))
+        }
+    val pdfSaver =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.PDF.mime)) { uri ->
             if (uri != null) viewModel.onEvent(ExportEvent.SaveTargetChosen(uri.toString()))
         }
     LaunchedEffect(viewModel, lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             viewModel.effects.collect { effect ->
                 when (effect) {
-                    is ExportEffect.Share -> context.shareFile(effect.uri)
+                    is ExportEffect.Share -> context.shareFile(effect.uri, effect.mime)
+                    is ExportEffect.Print -> context.printReport(effect.job)
                 }
             }
         }
     }
     ExportScreen(state, onEvent = { event ->
         when (event) {
-            ExportEvent.BackClicked -> onClose()
-            ExportEvent.SaveClicked -> saver.launch(state.fileName)
-            else -> viewModel.onEvent(event)
+            ExportEvent.BackClicked -> {
+                onClose()
+            }
+
+            ExportEvent.SaveClicked -> {
+                if (state.format ==
+                    ExportFormat.PDF
+                ) {
+                    pdfSaver.launch(state.fileName)
+                } else {
+                    csvSaver.launch(state.fileName)
+                }
+            }
+
+            else -> {
+                viewModel.onEvent(event)
+            }
         }
     })
 }
 
-private fun Context.shareFile(uri: String) {
+private fun Context.shareFile(
+    uri: String,
+    mime: String,
+) {
     val send =
         Intent(Intent.ACTION_SEND).apply {
-            type = CSV_MIME
+            type = mime
             putExtra(Intent.EXTRA_STREAM, uri.toUri())
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
     startActivity(Intent.createChooser(send, null))
 }
+
+/** Hands the report to the system print dialog, which also offers «Сохранить как PDF». */
+private fun Context.printReport(job: PrintJob) {
+    // PrintManager prints only from an activity itself, not from a wrapper of it.
+    val activity = findActivity() ?: return
+    val manager = activity.getSystemService(Context.PRINT_SERVICE) as PrintManager
+    val a4 = PrintAttributes.Builder().setMediaSize(PrintAttributes.MediaSize.ISO_A4).build()
+    manager.print(job.name, PdfPrintAdapter(job), a4)
+}
+
+private tailrec fun Context.findActivity(): Activity? =
+    when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> null
+    }
 
 @Composable
 private fun ImportDestination(onClose: () -> Unit) {

@@ -84,7 +84,8 @@ internal fun Arm.labelRes(): Int = if (this == Arm.LEFT) R.string.csv_arm_left e
 internal fun exportFileName(
     from: LocalDate,
     to: LocalDate,
-): String = "davlenie_${from}_$to.csv"
+    format: ExportFormat = ExportFormat.CSV,
+): String = "davlenie_${from}_$to.${format.extension}"
 
 /** Formatted texts of the import that are not plain string resources. */
 class ImportTexts(

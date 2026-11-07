@@ -27,8 +27,10 @@ class MainActivity : ComponentActivity() {
      * on an English phone they would come out wrong. Language splits are off in the bundle for the same reason.
      */
     override fun attachBaseContext(newBase: Context) {
-        val config = Configuration(newBase.resources.configuration).apply { setLocale(RUSSIAN) }
-        super.attachBaseContext(newBase.createConfigurationContext(config))
+        super.attachBaseContext(newBase)
+        // Not createConfigurationContext(): its context is not the activity's own, and PrintManager then refuses to
+        // print («Can print only from an activity»). The override keeps the base context, so «Печать» works.
+        applyOverrideConfiguration(Configuration().apply { setLocale(RUSSIAN) })
     }
 
     private val shell: ShellViewModel by viewModels()

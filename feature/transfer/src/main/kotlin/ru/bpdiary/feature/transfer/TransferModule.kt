@@ -56,4 +56,7 @@ internal abstract class TransferBindingsModule {
 
     @Binds
     abstract fun exportFiles(impl: AndroidExportFiles): ExportFiles
+
+    @Binds
+    abstract fun reportRenderer(impl: PdfReportRenderer): ReportRenderer
 }
