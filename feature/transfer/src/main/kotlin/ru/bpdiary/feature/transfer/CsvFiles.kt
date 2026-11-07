@@ -30,7 +30,6 @@ import ru.bpdiary.domain.csv.RowProblem
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.OutputStreamWriter
 import javax.inject.Inject
 
 private const val BUFFER_BYTES = 64 * 1024
@@ -223,13 +222,13 @@ class AndroidImportWorkspace
 interface ExportFiles {
     suspend fun save(
         uri: String,
-        write: (Appendable) -> Unit,
+        bytes: ByteArray,
     )
 
     /** A content address that the app receiving the file may read. */
     suspend fun forShare(
         fileName: String,
-        write: (Appendable) -> Unit,
+        bytes: ByteArray,
     ): String
 
     /** Nothing about readings stays in the cache (docs/09 §9.2). */
@@ -243,12 +242,12 @@ class AndroidExportFiles
     ) : ExportFiles {
         override suspend fun save(
             uri: String,
-            write: (Appendable) -> Unit,
+            bytes: ByteArray,
         ) = withContext(Dispatchers.IO) {
             try {
                 val out =
                     context.contentResolver.openOutputStream(uri.toUri(), "wt") ?: throw FileNotFoundException(uri)
-                OutputStreamWriter(out, Charsets.UTF_8).use { write(it) }
+                out.use { it.write(bytes) }
             } catch (e: SecurityException) {
                 throw IOException(e)
             }
@@ -256,14 +255,14 @@ class AndroidExportFiles
 
         override suspend fun forShare(
             fileName: String,
-            write: (Appendable) -> Unit,
+            bytes: ByteArray,
         ): String =
             withContext(Dispatchers.IO) {
                 clearShared()
                 val dir = File(context.cacheDir, EXPORT_DIR)
                 dir.mkdirs()
                 val file = File(dir, fileName)
-                file.writer(Charsets.UTF_8).use { write(it) }
+                file.writeBytes(bytes)
                 FileProvider.getUriForFile(context, "${context.packageName}.csvfiles", file).toString()
             }
 

@@ -105,6 +105,12 @@ class TransferScreensTest {
     }
 
     @Test
+    fun exportCsvSageLight() {
+        showExport(export.copy(format = ExportFormat.CSV))
+        capture("export_csv_sage_light")
+    }
+
+    @Test
     fun exportEmptySageLight() {
         showExport(export.copy(count = 0))
         capture("export_empty_sage_light")
@@ -229,12 +235,42 @@ class TransferScreensTest {
     }
 
     @Test
-    fun `save, share and back send their events`() {
+    fun `save, share, print and back send their events`() {
         showExport(export)
-        rule.onNodeWithText("Сохранить файл").performClick()
-        rule.onNodeWithText("Поделиться").performClick()
+        rule.onNodeWithText("Сохранить файл").performScrollTo().performClick()
+        rule.onNodeWithText("Поделиться").performScrollTo().performClick()
+        rule.onNodeWithText("Печать").performScrollTo().performClick()
         rule.onNodeWithContentDescription("Назад").performClick()
-        assertEquals(listOf(ExportEvent.SaveClicked, ExportEvent.ShareClicked, ExportEvent.BackClicked), events)
+        assertEquals(
+            listOf(
+                ExportEvent.SaveClicked,
+                ExportEvent.ShareClicked,
+                ExportEvent.PrintClicked,
+                ExportEvent.BackClicked,
+            ),
+            events,
+        )
+    }
+
+    @Test
+    fun `both formats are offered, the report first, and a choice sends its event`() {
+        showExport(export)
+        rule.onNodeWithText("Отчёт для врача (PDF)").assertExists()
+        rule.onNodeWithText("Таблица (CSV)").performScrollTo().performClick()
+        assertEquals(listOf<Any>(ExportEvent.FormatSelected(ExportFormat.CSV)), events)
+    }
+
+    @Test
+    fun `printing is for the report only`() {
+        showExport(export.copy(format = ExportFormat.CSV))
+        rule.onNodeWithText("Печать").assertDoesNotExist()
+        rule.onNodeWithText("Сохранить файл").assertExists()
+    }
+
+    @Test
+    fun `an empty period cannot be printed`() {
+        showExport(export.copy(count = 0))
+        rule.onNodeWithText("Печать").assertIsNotEnabled()
     }
 
     @Test

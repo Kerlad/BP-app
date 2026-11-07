@@ -10,6 +10,7 @@ import ru.bpdiary.domain.csv.CsvOptions
 import ru.bpdiary.domain.csv.ImportReport
 import ru.bpdiary.domain.csv.RowError
 import ru.bpdiary.domain.csv.RowProblem
+import ru.bpdiary.domain.report.DoctorReport
 import java.io.IOException
 import java.time.LocalDate
 
@@ -119,28 +120,40 @@ internal class FakeImportWorkspace : ImportWorkspace {
 
 internal class FakeExportFiles : ExportFiles {
     var failure: IOException? = null
-    val saved = HashMap<String, String>()
-    val shared = HashMap<String, String>()
+    val savedBytes = HashMap<String, ByteArray>()
+    val sharedBytes = HashMap<String, ByteArray>()
+    val saved: Map<String, String> get() = savedBytes.mapValues { it.value.toString(Charsets.UTF_8) }
+    val shared: Map<String, String> get() = sharedBytes.mapValues { it.value.toString(Charsets.UTF_8) }
     var cleared = 0
 
     override suspend fun save(
         uri: String,
-        write: (Appendable) -> Unit,
+        bytes: ByteArray,
     ) {
         failure?.let { throw it }
-        saved[uri] = StringBuilder().also(write).toString()
+        savedBytes[uri] = bytes
     }
 
     override suspend fun forShare(
         fileName: String,
-        write: (Appendable) -> Unit,
+        bytes: ByteArray,
     ): String {
         failure?.let { throw it }
-        shared[fileName] = StringBuilder().also(write).toString()
+        sharedBytes[fileName] = bytes
         return "content://$fileName"
     }
 
     override fun clearShared() {
         cleared++
+    }
+}
+
+/** Remembers the reports it was given and answers with the page count as the "PDF". */
+internal class FakeReportRenderer : ReportRenderer {
+    val reports = ArrayList<DoctorReport>()
+
+    override suspend fun render(report: DoctorReport): ByteArray {
+        reports += report
+        return "pdf:${report.pageCount}".toByteArray()
     }
 }

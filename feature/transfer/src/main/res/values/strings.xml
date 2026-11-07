@@ -191,7 +191,7 @@
     <string name="import_problem_order">верхнее значение не больше нижнего</string>
     <string name="import_problem_ahead">дата слишком далеко в будущем</string>
 
-    <string name="export_title">Экспорт в CSV</string>
+    <string name="export_title">Экспорт</string>
     <string name="export_period_title">Период</string>
     <string name="export_period_7">7 дней</string>
     <string name="export_period_30">30 дней</string>
@@ -211,4 +211,39 @@
     <string name="export_saved">Файл сохранён</string>
     <string name="export_failed">Не удалось сохранить файл. Попробуйте ещё раз.</string>
     <string name="export_range_ok">Готово</string>
+    <string name="export_format_title">Формат</string>
+    <string name="export_format_pdf">Отчёт для врача (PDF)</string>
+    <string name="export_format_csv">Таблица (CSV)</string>
+    <string name="export_print">Печать</string>
+
+    <!-- The doctor's report (docs/08 §8.2): the words of the Charts screen and of the export file are copied from them -->
+    <string name="report_title">Дневник давления</string>
+    <string name="report_chart_title">Давление за период</string>
+    <string name="report_legend_sys">Верхнее</string>
+    <string name="report_legend_dia">Нижнее</string>
+    <string name="report_legend_threshold">Ваш порог</string>
+    <string name="report_stats_title">Статистика</string>
+    <string name="report_stat_average">Среднее</string>
+    <string name="report_stat_pulse">Пульс</string>
+    <string name="report_stat_morning">Утром</string>
+    <string name="report_stat_evening">Вечером</string>
+    <string name="report_stat_max">Максимум</string>
+    <string name="report_stat_min">Минимум</string>
+    <string name="report_stat_in_range">В пределах ваших уровней</string>
+    <string name="report_pressure">%1$d/%2$d</string>
+    <!-- «Disclaimer», word for word as in docs/09 §9.6 (the same text is in onboarding and About) -->
+    <string name="report_disclaimer">Дневник давления помогает вести записи и не является медицинским прибором. Он не ставит диагноз и не заменяет консультацию врача. Все решения о лечении принимает врач.</string>
+
+    <!--
+        PROVISIONAL, awaiting the customer: the format names of the export screen (given in the task, not in the docs),
+        «Печать» and the report's own wording: the line with the date of creation, the chart
+        title, the statistics title, the line «В пределах ваших уровней» as a table of counts, the lines with a date
+        or a count, «уд/мин», and the page number.
+    -->
+    <string name="report_generated">Сформирован %1$s</string>
+    <string name="report_stat_on_day">%1$s, %2$s</string>
+    <string name="report_stat_with_count">%1$s (измерений: %2$d)</string>
+    <string name="report_stat_beats">%1$d уд/мин</string>
+    <string name="report_stat_share">%1$d%% (повышенное: %2$d, норма: %3$d, пониженное: %4$d)</string>
+    <string name="report_page">Страница %1$d из %2$d</string>
 </resources>

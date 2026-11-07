@@ -1,29 +1,38 @@
 package ru.bpdiary.feature.transfer
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ru.bpdiary.app.feature.transfer.R
@@ -78,6 +87,7 @@ fun ExportScreen(
 ) {
     val colors = BpTheme.colors
     TransferFrame(stringResource(R.string.export_title), { onEvent(ExportEvent.BackClicked) }, modifier) {
+        FormatCard(state.format, onEvent)
         PeriodCard(state, onEvent)
         val ready = (state.count ?: 0) > 0
         BpPrimaryButton(
@@ -91,6 +101,14 @@ fun ExportScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = ready,
         )
+        if (state.format == ExportFormat.PDF) {
+            BpSecondaryButton(
+                text = stringResource(R.string.export_print),
+                onClick = { onEvent(ExportEvent.PrintClicked) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = ready,
+            )
+        }
         val message =
             when {
                 state.saved -> stringResource(R.string.export_saved)
@@ -102,6 +120,59 @@ fun ExportScreen(
         }
     }
     if (state.choosingRange) RangeDialog(onEvent, state.to)
+}
+
+@Composable
+private fun FormatCard(
+    format: ExportFormat,
+    onEvent: (ExportEvent) -> Unit,
+) {
+    BpCard {
+        Text(
+            text = stringResource(R.string.export_format_title),
+            style = BpTheme.typography.secondary.copy(fontWeight = FontWeight.W700),
+            color = BpTheme.colors.ink,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+        // Two long names: stacked as a radio list, they are never cut off, whatever the font size.
+        Column(modifier = Modifier.selectableGroup()) {
+            FormatOption(R.string.export_format_pdf, format == ExportFormat.PDF) {
+                onEvent(ExportEvent.FormatSelected(ExportFormat.PDF))
+            }
+            FormatOption(R.string.export_format_csv, format == ExportFormat.CSV) {
+                onEvent(ExportEvent.FormatSelected(ExportFormat.CSV))
+            }
+        }
+    }
+}
+
+@Composable
+private fun FormatOption(
+    @StringRes label: Int,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val colors = BpTheme.colors
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = null,
+            colors = RadioButtonDefaults.colors(selectedColor = colors.ac, unselectedColor = colors.mut),
+        )
+        Text(
+            text = stringResource(label),
+            style = BpTheme.typography.body,
+            color = colors.ink,
+            modifier = Modifier.padding(start = 12.dp),
+        )
+    }
 }
 
 @Composable
