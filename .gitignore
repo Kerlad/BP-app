@@ -21,3 +21,6 @@ Thumbs.db
 
 # Claude Code local state
 .claude/settings.local.json
+
+# Local release outputs (bundle, APKs, mapping)
+release-out/
