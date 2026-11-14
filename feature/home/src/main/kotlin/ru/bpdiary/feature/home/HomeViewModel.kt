@@ -137,6 +137,7 @@ private fun Reading.toUi(
     today: LocalDate,
     th: Thresholds,
 ) = LastReadingUi(
+    id = id,
     dayLabel = dayLabel(localDay(this), today),
     time = takenAt.atOffset(zoneOffset).toLocalTime(),
     sys = sys,

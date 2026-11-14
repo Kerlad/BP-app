@@ -155,6 +155,10 @@ class HomeScreenTest {
     @Test
     fun remindersOffSageDark() = snapshot("home_reminders_off_sage_dark", remindersOff, dark = true)
 
+    /** The largest app boost (1.3) on top of the system font scale 1.3. */
+    @Test
+    fun demoSageLightBoostedFontScale() = snapshot("home_demo_sage_light_fs169", demo, fontScale = 1.3f * 1.3f)
+
     @Test
     fun demoSageLightFontScale2() = snapshot("home_demo_sage_light_fs2", demo, fontScale = 2f)
 
@@ -266,13 +270,49 @@ class HomeScreenTest {
         val events = mutableListOf<HomeEvent>()
         show(demo) { events += it }
         rule.onNodeWithContentDescription("Уровни давления").performClick()
+        rule.onNodeWithContentDescription("Настройки").performClick()
         rule.onNodeWithText("Записать давление").performClick()
         rule.onNodeWithText("7 дней").performClick()
         rule.onNodeWithText("Следующее напоминание").performClick()
         assertEquals(
-            listOf(HomeEvent.LevelsClicked, HomeEvent.AddClicked, HomeEvent.WeekClicked, HomeEvent.ReminderClicked),
+            listOf(
+                HomeEvent.LevelsClicked,
+                HomeEvent.SettingsClicked,
+                HomeEvent.AddClicked,
+                HomeEvent.WeekClicked,
+                HomeEvent.ReminderClicked,
+            ),
             events,
         )
+    }
+
+    @Test
+    fun `the last reading card opens that reading`() {
+        val events = mutableListOf<HomeEvent>()
+        val reading = one.single().copy(id = 42)
+        show(state(listOf(reading))) { events += it }
+        rule.assertAccessible()
+        rule.onNodeWithContentDescription("128 на 82 миллиметра ртутного столба").performClick()
+        assertEquals(listOf(HomeEvent.LastReadingClicked(42)), events)
+    }
+
+    @Test
+    fun `the welcome card does not react to taps`() {
+        val events = mutableListOf<HomeEvent>()
+        show(empty) { events += it }
+        rule.onNodeWithText("Запишите первое измерение, и здесь появится ваша динамика").performClick()
+        assertEquals(emptyList<HomeEvent>(), events)
+    }
+
+    @Test
+    fun `at the largest boost on top of the system scale nothing is cut, both header buttons stay`() {
+        show(demo, fontScale = 1.3f * 1.3f)
+        rule.waitForIdle()
+        rule.assertAccessible()
+        rule.onNodeWithContentDescription("Настройки").assertIsDisplayed()
+        rule.onNodeWithContentDescription("Уровни давления").assertIsDisplayed()
+        rule.onNodeWithText("Записать давление").assertIsDisplayed()
+        rule.onNodeWithText("Следующее напоминание").performScrollTo().assertIsDisplayed()
     }
 
     @Test

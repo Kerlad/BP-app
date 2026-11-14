@@ -71,10 +71,17 @@ private fun HomeContent(
         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
         modifier = modifier.windowInsetsPadding(WindowInsets.safeDrawing),
     ) {
-        Header(texts.dates.weekdayDayMonth(state.today), texts.greeting(state.greeting)) {
-            onEvent(HomeEvent.LevelsClicked)
+        Header(
+            date = texts.dates.weekdayDayMonth(state.today),
+            greeting = texts.greeting(state.greeting),
+            onLevels = { onEvent(HomeEvent.LevelsClicked) },
+            onSettings = { onEvent(HomeEvent.SettingsClicked) },
+        )
+        if (state.last != null) {
+            LastReadingCard(state.last, texts) { onEvent(HomeEvent.LastReadingClicked(state.last.id)) }
+        } else {
+            EmptyCard()
         }
-        if (state.last != null) LastReadingCard(state.last, texts) else EmptyCard()
         BpPrimaryButton(stringResource(R.string.home_add_reading), { onEvent(HomeEvent.AddClicked) }, icon = BpIcon.Add)
         state.week?.let { WeekCard(it, texts, Modifier.flexibleHeight()) { onEvent(HomeEvent.WeekClicked) } }
         ReminderCard(state.nextReminder, texts) { onEvent(HomeEvent.ReminderClicked) }
@@ -93,6 +100,7 @@ private fun Header(
     date: String,
     greeting: String,
     onLevels: () -> Unit,
+    onSettings: () -> Unit,
 ) {
     val colors = BpTheme.colors
     Row(
@@ -108,12 +116,20 @@ private fun Header(
                 modifier = Modifier.semantics { heading() },
             )
         }
-        RoundIconButton(
-            icon = BpIcon.Tune,
-            description = stringResource(R.string.home_levels_description),
-            onClick = onLevels,
-            filled = true,
-        )
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            RoundIconButton(
+                icon = BpIcon.Settings,
+                description = stringResource(R.string.home_settings_description),
+                onClick = onSettings,
+                filled = true,
+            )
+            RoundIconButton(
+                icon = BpIcon.Tune,
+                description = stringResource(R.string.home_levels_description),
+                onClick = onLevels,
+                filled = true,
+            )
+        }
     }
 }
 
@@ -121,9 +137,10 @@ private fun Header(
 private fun LastReadingCard(
     last: LastReadingUi,
     texts: HomeTexts,
+    onClick: () -> Unit,
 ) {
     val colors = BpTheme.colors
-    BpCard {
+    BpCard(onClick = onClick) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             // Wraps the chip below the time at large font scales instead of breaking «Сегодня» mid-word.
             FlowRow(

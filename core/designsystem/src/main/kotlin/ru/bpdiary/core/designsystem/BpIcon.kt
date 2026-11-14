@@ -37,6 +37,7 @@ enum class BpIcon(
     CheckCircle(R.drawable.ic_check_circle),
     Download(R.drawable.ic_download),
     Upload(R.drawable.ic_upload),
+    Settings(R.drawable.ic_settings),
 }
 
 @Composable

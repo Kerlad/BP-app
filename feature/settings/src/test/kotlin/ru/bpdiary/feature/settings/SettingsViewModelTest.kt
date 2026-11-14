@@ -79,6 +79,29 @@ class SettingsViewModelTest {
         }
 
     @Test
+    fun `the text size is shown and a choice stores the boost`() =
+        runTest {
+            val vm = viewModel()
+            assertEquals(TextSize.NORMAL, vm.state.value.textSize)
+            vm.onEvent(SettingsEvent.TextSizeSelected(TextSize.EXTRA_LARGE))
+            assertEquals(1.3f, settings.fontScaleBoost.first())
+            assertEquals(TextSize.EXTRA_LARGE, vm.state.value.textSize)
+            vm.onEvent(SettingsEvent.TextSizeSelected(TextSize.LARGE))
+            assertEquals(1.15f, settings.fontScaleBoost.first())
+            vm.onEvent(SettingsEvent.TextSizeSelected(TextSize.NORMAL))
+            assertEquals(1.0f, settings.fontScaleBoost.first())
+            assertEquals(TextSize.NORMAL, vm.state.value.textSize)
+        }
+
+    @Test
+    fun `a stored boost between the steps shows the closest one`() =
+        runTest {
+            settings.setFontScaleBoost(1.2f)
+            val vm = viewModel()
+            assertEquals(TextSize.LARGE, vm.state.value.textSize)
+        }
+
+    @Test
     fun `no dialog at first, the button opens the first one`() =
         runTest {
             val vm = viewModel()

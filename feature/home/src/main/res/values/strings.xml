@@ -25,7 +25,8 @@
     <string name="home_reminders_off">Напоминания выключены</string>
 
     <!-- Accessibility. PROVISIONAL, awaiting the customer: the tune button is named after the Levels
-         screen, the chart summary is the start of the docs/04 §4.8 example (without the maximum). -->
+         screen, the gear button after the Settings title («Настройки»), the chart summary is the start of the docs/04 §4.8 example (without the maximum). -->
     <string name="home_levels_description">Уровни давления</string>
+    <string name="home_settings_description">Настройки</string>
     <string name="home_week_chart_description">График за 7 дней, среднее %1$d на %2$d</string>
 </resources>

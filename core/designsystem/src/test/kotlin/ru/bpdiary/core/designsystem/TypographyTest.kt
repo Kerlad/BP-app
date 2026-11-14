@@ -129,7 +129,7 @@ class TypographyTest {
                                 "$1_$2",
                             ).lowercase()
                 }.toSet()
-        assertEquals(22, BpIcon.entries.size)
+        assertEquals(23, BpIcon.entries.size)
         assertEquals(files, fromEnum)
         assertTrue(
             BpIcon.entries

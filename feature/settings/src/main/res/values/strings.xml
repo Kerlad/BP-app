@@ -17,10 +17,15 @@
 
     <!--
         PROVISIONAL, awaiting the customer: the docs fix the words above, but not these.
-        The name of the theme section, both dialogs (title, text, «Продолжить», «Отмена»), the paragraph about a new
+        The name of the theme section, the text size section and its three steps, both dialogs (title, text, «Продолжить», «Отмена»), the paragraph about a new
         phone (made from docs/08 §8.4), «Версия», «Политика конфиденциальности» and the back button description.
     -->
     <string name="settings_theme_section">Тема</string>
+    <!-- V1.8 (T4): the section name and the three steps; docs/04 §4.7 gives only the multipliers. -->
+    <string name="settings_text_size_section">Размер текста</string>
+    <string name="settings_text_size_normal">Обычный</string>
+    <string name="settings_text_size_large">Крупный</string>
+    <string name="settings_text_size_extra_large">Очень крупный</string>
     <string name="settings_delete_first_title">Удалить все данные?</string>
     <string name="settings_delete_first_text">Все измерения, напоминания и настройки будут удалены с этого телефона.</string>
     <string name="settings_delete_first_confirm">Продолжить</string>

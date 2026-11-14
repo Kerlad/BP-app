@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 private const val STOP_TIMEOUT_MS = 5_000L
 
-/** Theme and «Удалить все данные» behind two dialogs (docs/05 §5.7, D-26). */
+/** Theme, text size and «Удалить все данные» behind two dialogs (docs/05 §5.7, D-26). */
 @HiltViewModel
 class SettingsViewModel
     @Inject
@@ -45,17 +45,39 @@ class SettingsViewModel
         val effects: Flow<SettingsEffect> = effectChannel.receiveAsFlow()
 
         val state: StateFlow<SettingsUiState> =
-            combine(settings.themeMode, dialog, ::SettingsUiState)
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), SettingsUiState())
+            combine(settings.themeMode, settings.fontScaleBoost, dialog) { theme, boost, dialog ->
+                SettingsUiState(theme, TextSize.fromBoost(boost), dialog)
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), SettingsUiState())
 
         fun onEvent(event: SettingsEvent) {
             when (event) {
-                is SettingsEvent.ThemeSelected -> viewModelScope.launch { settings.setThemeMode(event.mode) }
-                SettingsEvent.DeleteClicked -> dialog.value = DeleteDialog.First
-                SettingsEvent.DeleteFirstConfirmed -> showSecond()
-                SettingsEvent.DeleteForeverConfirmed -> deleteForever()
-                SettingsEvent.DialogDismissed -> dialog.value = DeleteDialog.None
-                SettingsEvent.RemindersClicked, SettingsEvent.AboutClicked, SettingsEvent.BackClicked -> Unit
+                is SettingsEvent.ThemeSelected -> {
+                    viewModelScope.launch { settings.setThemeMode(event.mode) }
+                }
+
+                is SettingsEvent.TextSizeSelected -> {
+                    viewModelScope.launch { settings.setFontScaleBoost(event.size.boost) }
+                }
+
+                SettingsEvent.DeleteClicked -> {
+                    dialog.value = DeleteDialog.First
+                }
+
+                SettingsEvent.DeleteFirstConfirmed -> {
+                    showSecond()
+                }
+
+                SettingsEvent.DeleteForeverConfirmed -> {
+                    deleteForever()
+                }
+
+                SettingsEvent.DialogDismissed -> {
+                    dialog.value = DeleteDialog.None
+                }
+
+                SettingsEvent.RemindersClicked, SettingsEvent.AboutClicked, SettingsEvent.BackClicked -> {
+                    Unit
+                }
             }
         }
 

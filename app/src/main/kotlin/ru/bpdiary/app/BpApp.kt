@@ -158,6 +158,8 @@ private fun NavGraphBuilder.appGraph(
     homeScreen(
         onAddReading = { navController.navigate(EntryRoute()) },
         onOpenLevels = { navController.navigate(LevelsRoute) },
+        onOpenSettings = { navController.navigate(SettingsRoute) },
+        onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },
         onOpenCharts = { navController.navigateToTab(AppTab.CHARTS) },
         onOpenReminders = { navController.navigate(RemindersRoute) },
     )

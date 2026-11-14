@@ -12,14 +12,18 @@ import ru.bpdiary.core.ui.DayChangeEffect
 @Serializable
 data object HomeRoute
 
+/** One callback per tap target, so the app graph decides where each one goes. */
+@Suppress("LongParameterList")
 fun NavGraphBuilder.homeScreen(
     onAddReading: () -> Unit,
     onOpenLevels: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenReading: (Long) -> Unit,
     onOpenCharts: () -> Unit,
     onOpenReminders: () -> Unit,
 ) {
     composable<HomeRoute> {
-        HomeDestination(onAddReading, onOpenLevels, onOpenCharts, onOpenReminders)
+        HomeDestination(onAddReading, onOpenLevels, onOpenSettings, onOpenReading, onOpenCharts, onOpenReminders)
     }
 }
 
@@ -27,6 +31,8 @@ fun NavGraphBuilder.homeScreen(
 private fun HomeDestination(
     onAddReading: () -> Unit,
     onOpenLevels: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenReading: (Long) -> Unit,
     onOpenCharts: () -> Unit,
     onOpenReminders: () -> Unit,
 ) {
@@ -37,6 +43,8 @@ private fun HomeDestination(
         when (event) {
             HomeEvent.AddClicked -> onAddReading()
             HomeEvent.LevelsClicked -> onOpenLevels()
+            HomeEvent.SettingsClicked -> onOpenSettings()
+            is HomeEvent.LastReadingClicked -> onOpenReading(event.readingId)
             HomeEvent.WeekClicked -> onOpenCharts()
             HomeEvent.ReminderClicked -> onOpenReminders()
         }

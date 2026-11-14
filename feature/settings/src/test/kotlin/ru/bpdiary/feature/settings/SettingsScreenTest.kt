@@ -1,13 +1,17 @@
 package ru.bpdiary.feature.settings
 
 import android.view.View
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Density
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -34,11 +38,15 @@ class SettingsScreenTest {
     private fun show(
         state: SettingsUiState,
         dark: Boolean = false,
+        fontScale: Float = 1f,
         onEvent: (SettingsEvent) -> Unit = {},
     ) {
         rule.setContent {
             view = LocalView.current
-            BpTheme(Direction.SAGE, dark) { SettingsScreen(state, onEvent) }
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) {
+                BpTheme(Direction.SAGE, dark) { SettingsScreen(state, onEvent) }
+            }
         }
     }
 
@@ -46,8 +54,9 @@ class SettingsScreenTest {
         name: String,
         state: SettingsUiState,
         dark: Boolean = false,
+        fontScale: Float = 1f,
     ) {
-        show(state, dark)
+        show(state, dark, fontScale)
         // A short screen was sometimes captured blank: draw the window once more before capturing.
         rule.runOnUiThread { view?.rootView?.invalidate() }
         rule.waitForIdle()
@@ -62,6 +71,18 @@ class SettingsScreenTest {
     fun darkThemeSageDark() = snapshot("settings_dark_sage_dark", SettingsUiState(ThemeMode.DARK), dark = true)
 
     @Test
+    fun textSizeLargeSageLight() =
+        snapshot("settings_text_size_large_sage_light", SettingsUiState(textSize = TextSize.LARGE))
+
+    @Test
+    fun textSizeExtraLargeBoostedSageLight() =
+        snapshot(
+            "settings_text_size_extra_large_fs169_sage_light",
+            SettingsUiState(textSize = TextSize.EXTRA_LARGE),
+            fontScale = 1.3f * 1.3f,
+        )
+
+    @Test
     fun secondDialogSageLight() =
         snapshot("settings_second_dialog_sage_light", SettingsUiState(dialog = DeleteDialog.Second))
 
@@ -74,6 +95,15 @@ class SettingsScreenTest {
         rule.onNodeWithText("Тёмная").assertExists()
         rule.onNodeWithText("О приложении").assertExists()
         rule.onNodeWithText("Удалить все данные").assertExists()
+    }
+
+    @Test
+    fun `the text size section shows the three steps and the current one is selected`() {
+        show(SettingsUiState(textSize = TextSize.LARGE))
+        rule.onNodeWithText("Размер текста").assertExists()
+        rule.onNodeWithText("Обычный").assertIsNotSelected()
+        rule.onNodeWithText("Крупный").assertIsSelected()
+        rule.onNodeWithText("Очень крупный").assertIsNotSelected()
     }
 
     @Test
@@ -104,6 +134,9 @@ class SettingsScreenTest {
         val events = mutableListOf<SettingsEvent>()
         show(SettingsUiState()) { events += it }
         rule.onNodeWithText("Тёмная").performClick()
+        rule.onNodeWithText("Крупный").performClick()
+        rule.onNodeWithText("Очень крупный").performClick()
+        rule.onNodeWithText("Обычный").performClick()
         rule.onNodeWithText("Напоминания").performClick()
         rule.onNodeWithText("О приложении").performClick()
         rule.onNodeWithText("Удалить все данные").performClick()
@@ -111,6 +144,9 @@ class SettingsScreenTest {
         assertEquals(
             listOf(
                 SettingsEvent.ThemeSelected(ThemeMode.DARK),
+                SettingsEvent.TextSizeSelected(TextSize.LARGE),
+                SettingsEvent.TextSizeSelected(TextSize.EXTRA_LARGE),
+                SettingsEvent.TextSizeSelected(TextSize.NORMAL),
                 SettingsEvent.RemindersClicked,
                 SettingsEvent.AboutClicked,
                 SettingsEvent.DeleteClicked,

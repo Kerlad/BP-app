@@ -29,6 +29,8 @@ sealed interface HomeUiState {
 }
 
 data class LastReadingUi(
+    /** Opens the reading for editing, like a Diary row. */
+    val id: Long,
     /** «Сегодня», «Вчера» or «18 октября»; the day and [time] are in the offset of the measurement. */
     val dayLabel: DayLabel,
     val time: LocalTime,
@@ -45,6 +47,12 @@ sealed interface HomeEvent {
     data object AddClicked : HomeEvent
 
     data object LevelsClicked : HomeEvent
+
+    data object SettingsClicked : HomeEvent
+
+    data class LastReadingClicked(
+        val readingId: Long,
+    ) : HomeEvent
 
     data object WeekClicked : HomeEvent
 

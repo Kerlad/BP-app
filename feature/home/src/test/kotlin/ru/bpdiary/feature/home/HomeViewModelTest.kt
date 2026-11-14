@@ -186,6 +186,21 @@ class HomeViewModelTest {
         }
 
     @Test
+    fun `the last reading card carries the id of the reading it shows`() =
+        runTest {
+            val (vm, repo) =
+                viewModel(
+                    listOf(
+                        reading("2026-10-19T21:10", sys = 128, dia = 82),
+                        reading("2026-10-20T07:24", sys = 130, dia = 84),
+                    ),
+                )
+            assertEquals(2L, vm.content().last!!.id)
+            val newest = repo.save(reading("2026-10-20T09:00", sys = 150, dia = 95))
+            assertEquals(newest, vm.content().last!!.id)
+        }
+
+    @Test
     fun `new and deleted readings update the card`() =
         runTest {
             val (vm, repo) = viewModel(listOf(reading("2026-10-19T21:10", sys = 128, dia = 82)))
