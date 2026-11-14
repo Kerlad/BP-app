@@ -52,6 +52,16 @@ class KeypadReducerTest {
     }
 
     @Test
+    fun `two digits wait for a third while they can still grow`() {
+        val (crisis, _) = press("2 1 0 1 1 0 7 0")
+        assertEquals(Draft("210", "110", "70", Field.PULSE), crisis)
+        val (max, _) = press("3 0 0 9 5")
+        assertEquals(Draft("300", "95", "", Field.PULSE), max)
+        val (waiting, _) = press("2 0")
+        assertEquals(Draft("20", "", "", Field.SYS), waiting)
+    }
+
+    @Test
     fun `fourth digit in pulse is ignored`() {
         assertEquals(DraftResult.Ignored, press("128821047").second)
     }

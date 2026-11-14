@@ -3,6 +3,7 @@ package ru.bpdiary.domain
 import ru.bpdiary.core.model.Field
 
 private const val MAX_DIGITS = 3
+private const val DIGIT_STEP = 10
 
 /**
  * Entry draft. [replace] is true while the focused field was chosen by tapping it (not by an
@@ -66,6 +67,14 @@ private fun Field.previous(): Field =
         Field.PULSE -> Field.DIA
     }
 
+private fun Field.canGrow(twoDigits: String): Boolean =
+    twoDigits.toInt() * DIGIT_STEP <=
+        when (this) {
+            Field.SYS -> ValidationRules.SYS_MAX
+            Field.DIA -> ValidationRules.DIA_MAX
+            Field.PULSE -> 0
+        }
+
 private fun Field.next(): Field =
     when (this) {
         Field.SYS -> Field.DIA
@@ -79,6 +88,10 @@ private fun Field.next(): Field =
  *    «→» after an auto-advance cannot skip DIA and push its digits into the pulse.
  * 2. A field chosen by tapping ([Draft.replace]) takes the first digit as a replacement of its value.
  * 3. (UI side) Save with incomplete data highlights the first empty field and focuses it.
+ *
+ * Deviation from docs/06 §6.2 after the 2026-11-14 review: after two digits the field waits for a third while
+ * the two digits can still grow into a valid three-digit value (twoDigits * 10 <= the field's maximum), so
+ * 2,1,0 gives 210 and not 21 + 0. The pulse has no auto-advance.
  */
 fun reduce(
     state: Draft,
@@ -114,10 +127,10 @@ fun reduce(
                 DraftResult.Ignored
             } else {
                 val new = cur + key.d
-                // 3 digits, or 2 digits when the first is not '1' (95 is complete, 12x is not).
+                // 3 digits, or 2 digits that cannot grow into a valid 3-digit value (95 is complete, 12x is not).
                 val advance =
                     state.field != Field.PULSE &&
-                        (new.length == MAX_DIGITS || (new.length == 2 && new[0] != '1'))
+                        (new.length == MAX_DIGITS || (new.length == 2 && !state.field.canGrow(new)))
                 val updated = state.set(state.field, new)
                 val result = if (advance) updated.advanceTo(state.field.next()) else updated.copy(replace = false)
                 DraftResult.Updated(result)

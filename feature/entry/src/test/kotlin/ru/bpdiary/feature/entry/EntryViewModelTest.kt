@@ -229,7 +229,10 @@ class EntryViewModelTest {
     fun `out of range values are reported per field`() =
         runTest {
             val vm = viewModel()
-            vm.type("3020")
+            // "30" and "20" can still grow into 300 and 200, so the fields are switched by tapping (A-01).
+            vm.type("30")
+            vm.onEvent(EntryEvent.FieldTapped(Field.DIA))
+            vm.type("20")
             vm.onEvent(EntryEvent.FieldTapped(Field.PULSE))
             vm.type("70")
             vm.onEvent(EntryEvent.SaveClicked)
