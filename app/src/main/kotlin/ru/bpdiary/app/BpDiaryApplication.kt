@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
+import ru.bpdiary.data.reminders.NotificationReminderNotifier
 import ru.bpdiary.data.reminders.ReminderWork
 import javax.inject.Inject
 
@@ -19,7 +20,9 @@ class BpDiaryApplication :
 
     override fun onCreate() {
         super.onCreate()
-        // Initial reminder schedule after the database is created, then a daily watchdog (docs/07 §7.3).
+        // The channel exists from the start, so its settings are visible before the first reminder (review B-05).
+        NotificationReminderNotifier.ensureChannel(this)
+        // Initial reminder schedule after the database is created, then the watchdog (docs/07 §7.3).
         ReminderWork.start(this)
     }
 }
