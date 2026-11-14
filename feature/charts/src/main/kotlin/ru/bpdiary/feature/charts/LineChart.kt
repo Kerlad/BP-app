@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -50,7 +51,7 @@ private const val DIA_ALPHA = 0.8f
 
 /** Grid step, in label heights, below which only every other Y label is drawn. */
 private const val LABEL_ROOM = 1.1f
-private val LabelSize = 10.sp
+private val LabelSize = 12.sp
 private val LabelGap = 4.dp
 private val SysWidth = 2.5.dp
 private val DiaWidth = 2.dp
@@ -58,7 +59,7 @@ private val GridWidth = 1.dp
 private val MinChartHeight = 96.dp
 
 /**
- * SYS (`ac`) and DIA (`mut`) lines with dots, grid at 60…160 and the high SYS and DIA dashes.
+ * SYS (`ac`, round dots) and DIA (`mut`, square dots) lines, grid at 60…160 and the high SYS and DIA dashes.
  * A SYS dot of a HIGH reading is drawn in `hi`, one dp larger (D-20). Values outside 50…180 sit on the border.
  */
 @Composable
@@ -108,7 +109,12 @@ internal fun LineChart(
         drawSeries(points, map, { it.ySys }, colors.ac, SysWidth)
         val radius = dot.toPx() / 2
         points.forEach { p ->
-            drawCircle(colors.mut, radius, Offset(map.x(p.x), map.y(p.yDia)))
+            // DIA dots are squares, so the two lines differ by shape too, not only by colour (review C-07).
+            drawRect(
+                colors.mut,
+                topLeft = Offset(map.x(p.x) - radius, map.y(p.yDia) - radius),
+                size = Size(2 * radius, 2 * radius),
+            )
             drawCircle(colors.ac, radius, Offset(map.x(p.x), map.y(p.ySys)))
         }
         val highRadius = (dot + 1.dp).toPx() / 2

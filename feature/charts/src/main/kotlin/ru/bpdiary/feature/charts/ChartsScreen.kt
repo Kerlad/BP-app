@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -167,7 +168,7 @@ private fun Legend() {
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
         LegendItem(stringResource(R.string.charts_legend_sys)) { LegendDot(colors.ac) }
-        LegendItem(stringResource(R.string.charts_legend_dia)) { LegendDot(colors.mut) }
+        LegendItem(stringResource(R.string.charts_legend_dia)) { LegendDot(colors.mut, square = true) }
         LegendItem(stringResource(R.string.charts_legend_threshold)) {
             Box(
                 Modifier.size(width = 14.dp, height = 2.dp).drawBehind {
@@ -196,8 +197,12 @@ private fun LegendItem(
 }
 
 @Composable
-private fun LegendDot(color: Color) {
-    Box(Modifier.size(10.dp).clip(CircleShape).background(color))
+private fun LegendDot(
+    color: Color,
+    square: Boolean = false,
+) {
+    // The same shapes as the chart dots: round for SYS, square for DIA (review C-07).
+    Box(Modifier.size(10.dp).clip(if (square) RectangleShape else CircleShape).background(color))
 }
 
 /** «14.10» under the start of the plot, «Сегодня» at the right (prototype padding 0 2 0 30 in chart units). */
