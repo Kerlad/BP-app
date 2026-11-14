@@ -25,6 +25,7 @@ import ru.bpdiary.domain.THRESHOLD_STEP
 import ru.bpdiary.domain.ThresholdField
 import ru.bpdiary.domain.ThresholdPreset
 import ru.bpdiary.domain.fake.FakeReadingRepository
+import ru.bpdiary.domain.fake.FakeReminderPermissions
 import ru.bpdiary.domain.fake.FakeReminderRepository
 import ru.bpdiary.domain.fake.FakeSettingsRepository
 import ru.bpdiary.domain.fake.FakeThresholdsRepository
@@ -149,7 +150,13 @@ class LevelsViewModelTest {
                     arm = Arm.LEFT,
                 )
             val home =
-                HomeViewModel(FakeReadingRepository(time, listOf(reading)), thresholds, FakeReminderRepository(), time)
+                HomeViewModel(
+                    FakeReadingRepository(time, listOf(reading)),
+                    thresholds,
+                    FakeReminderRepository(),
+                    FakeReminderPermissions(),
+                    time,
+                )
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { home.state.collect {} }
             val status = { (home.state.value as HomeUiState.Content).last!!.status }
             assertEquals(Status.HIGH, status())

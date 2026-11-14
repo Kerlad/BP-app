@@ -70,4 +70,7 @@
     <string name="weekday_day_month">%1$s, %2$s</string>
     <!-- A write to the phone storage failed (review A-03, ROADMAP §9 9.1). PROVISIONAL, awaiting the owner. -->
     <string name="save_failed">Не удалось сохранить. Проверьте, есть ли свободное место на телефоне.</string>
+    <!-- Banner on Home and Reminders: notifications are off (docs/05 §5.5; moved from feature:reminders) -->
+    <string name="banner_notifications">Чтобы напоминания приходили, разрешите уведомления</string>
+    <string name="banner_notifications_allow">Разрешить</string>
 </resources>

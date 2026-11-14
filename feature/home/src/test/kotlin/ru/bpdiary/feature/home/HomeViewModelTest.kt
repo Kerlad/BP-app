@@ -28,6 +28,7 @@ import ru.bpdiary.domain.DayLabel
 import ru.bpdiary.domain.GreetingSlot
 import ru.bpdiary.domain.NextReminderLabel
 import ru.bpdiary.domain.fake.FakeReadingRepository
+import ru.bpdiary.domain.fake.FakeReminderPermissions
 import ru.bpdiary.domain.fake.FakeReminderRepository
 import ru.bpdiary.domain.fake.FakeThresholdsRepository
 import java.time.Duration
@@ -44,6 +45,7 @@ class HomeViewModelTest {
     private val moscow = ZoneOffset.ofHours(3)
     private val thresholds = FakeThresholdsRepository()
     private val reminders = FakeReminderRepository()
+    private val permissions = FakeReminderPermissions()
 
     @Before
     fun setUp() {
@@ -77,7 +79,7 @@ class HomeViewModelTest {
         time: TimeProvider = FixedTimeProvider.default(),
     ): Pair<HomeViewModel, FakeReadingRepository> {
         val repo = FakeReadingRepository(time, readings.mapIndexed { i, r -> r.copy(id = i + 1L) })
-        val vm = HomeViewModel(repo, thresholds, reminders, time)
+        val vm = HomeViewModel(repo, thresholds, reminders, permissions, time)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.state.collect {} }
         return vm to repo
     }
@@ -241,5 +243,41 @@ class HomeViewModelTest {
             vm.refresh()
             assertEquals(GreetingSlot.DAY, vm.content().greeting)
             assertEquals(NextReminderLabel.Today(LocalTime.of(21, 0), "Вечернее измерение"), vm.content().nextReminder)
+        }
+
+    @Test
+    fun `banner when notifications are denied and a reminder is on`() =
+        runTest {
+            permissions.notifications = false
+            val (vm, _) = viewModel()
+            assertTrue(vm.content().notificationsBanner)
+        }
+
+    @Test
+    fun `no banner when every reminder is off`() =
+        runTest {
+            permissions.notifications = false
+            val (vm, _) = viewModel()
+            reminders.getAll().forEach { reminders.save(it.copy(enabled = false)) }
+            assertFalse(vm.content().notificationsBanner)
+        }
+
+    @Test
+    fun `no banner when notifications are allowed`() =
+        runTest {
+            val (vm, _) = viewModel()
+            assertFalse(vm.content().notificationsBanner)
+        }
+
+    @Test
+    fun `refresh reads the permission again`() =
+        runTest {
+            permissions.notifications = false
+            val (vm, _) = viewModel()
+            assertTrue(vm.content().notificationsBanner)
+            permissions.notifications = true
+            assertTrue(vm.content().notificationsBanner)
+            vm.refresh()
+            assertFalse(vm.content().notificationsBanner)
         }
 }

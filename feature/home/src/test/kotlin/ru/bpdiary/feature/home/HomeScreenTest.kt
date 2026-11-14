@@ -57,12 +57,13 @@ class HomeScreenTest {
     private fun state(
         readings: List<Reading>,
         reminders: List<Reminder> = this.reminders,
+        notificationsAllowed: Boolean = true,
     ) = homeContent(
         now = now,
         last = readings.maxByOrNull { it.takenAt },
         window = WeekWindow(now.toLocalDate(), readings),
         th = Thresholds(),
-        reminders = reminders,
+        info = ReminderInfo(reminders, notificationsAllowed),
     )
 
     private val one =
@@ -81,6 +82,8 @@ class HomeScreenTest {
     private val single = state(one)
     private val demo = state(DemoData.readings(time))
     private val remindersOff = state(DemoData.readings(time), reminders.map { it.copy(enabled = false) })
+
+    private val banner = state(DemoData.readings(time), notificationsAllowed = false)
 
     private fun show(
         state: HomeUiState,
@@ -156,6 +159,28 @@ class HomeScreenTest {
 
     @Test
     fun emptySageDarkFontScale2() = snapshot("home_empty_sage_dark_fs2", empty, dark = true, fontScale = 2f)
+
+    @Test
+    fun bannerSageLight() = snapshot("home_banner_sage_light", banner)
+
+    @Test
+    fun bannerSageDark() = snapshot("home_banner_sage_dark", banner, dark = true)
+
+    @Test
+    fun `banner is shown with the flag and opens the reminders`() {
+        val events = mutableListOf<HomeEvent>()
+        show(banner) { events += it }
+        rule.onNodeWithText("Чтобы напоминания приходили, разрешите уведомления").assertExists()
+        rule.assertAccessible()
+        rule.onNodeWithText("Разрешить").performClick()
+        assertEquals(listOf(HomeEvent.ReminderClicked), events)
+    }
+
+    @Test
+    fun `no banner without the flag`() {
+        show(demo)
+        rule.onNodeWithText("Разрешить").assertDoesNotExist()
+    }
 
     @Test
     fun `texts of the demo state`() {

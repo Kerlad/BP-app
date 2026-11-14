@@ -7,8 +7,6 @@
     <string name="reminders_add">Добавить напоминание</string>
     <string name="reminders_days_daily">Ежедневно</string>
     <string name="reminders_days_workdays">Пн – Пт</string>
-    <string name="reminders_banner_notifications">Чтобы напоминания приходили, разрешите уведомления</string>
-    <string name="reminders_banner_notifications_allow">Разрешить</string>
     <string name="reminders_banner_exact">Напоминания могут приходить с задержкой</string>
 
     <!-- Reminder edit (docs/05 §5.5) -->

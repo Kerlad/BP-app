@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -34,14 +33,15 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ru.bpdiary.app.feature.reminders.R
 import ru.bpdiary.core.designsystem.BpIcon
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.designsystem.painter
+import ru.bpdiary.core.ui.BpBanner
 import ru.bpdiary.core.ui.BpSwitch
 import ru.bpdiary.core.ui.BpTopBar
+import ru.bpdiary.app.core.ui.R as CoreR
 
 private const val DISABLED_ALPHA = 0.5f
 private const val DASH_DP = 8
@@ -88,12 +88,12 @@ private fun RemindersList(
 ) {
     Column(modifier = Modifier.padding(start = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (state.notificationsMissing) {
-            Banner(
-                text = stringResource(R.string.reminders_banner_notifications),
+            BpBanner(
+                text = stringResource(CoreR.string.banner_notifications),
                 action =
                     stringResource(
                         if (notificationAsk == NotificationAsk.REQUEST) {
-                            R.string.reminders_banner_notifications_allow
+                            CoreR.string.banner_notifications_allow
                         } else {
                             R.string.reminders_banner_open_settings
                         },
@@ -102,7 +102,7 @@ private fun RemindersList(
             )
         }
         if (state.exactAlarmsMissing) {
-            Banner(
+            BpBanner(
                 text = stringResource(R.string.reminders_banner_exact),
                 action = stringResource(R.string.reminders_banner_exact_action),
                 onClick = { onEvent(RemindersEvent.ExactAlarmsBannerClicked) },
@@ -112,38 +112,6 @@ private fun RemindersList(
             items.forEach { item -> ReminderCard(item, texts, onEvent) }
             AddButton { onEvent(RemindersEvent.AddClicked) }
         }
-    }
-}
-
-@Composable
-private fun Banner(
-    text: String,
-    action: String,
-    onClick: () -> Unit,
-) {
-    val colors = BpTheme.colors
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(BpTheme.shapes.card))
-                .background(colors.acs)
-                .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Text(text, style = BpTheme.typography.body, color = colors.ink)
-        Text(
-            text = action,
-            style = BpTheme.typography.secondary.copy(fontWeight = FontWeight.W700),
-            color = colors.aci,
-            modifier =
-                Modifier
-                    .heightIn(min = 48.dp)
-                    .clip(CircleShape)
-                    .background(colors.ac)
-                    .clickable(role = Role.Button, onClick = onClick)
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-        )
     }
 }
 

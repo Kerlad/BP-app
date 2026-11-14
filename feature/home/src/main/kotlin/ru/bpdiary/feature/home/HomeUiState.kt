@@ -23,6 +23,8 @@ sealed interface HomeUiState {
         val week: WeekBars?,
         /** Null: every reminder is off (D-23). */
         val nextReminder: NextReminderLabel?,
+        /** A reminder is on but the system does not allow notifications: it would never ring (ROADMAP B-04). */
+        val notificationsBanner: Boolean = false,
     ) : HomeUiState
 }
 

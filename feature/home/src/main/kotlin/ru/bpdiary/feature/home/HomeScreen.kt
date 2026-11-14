@@ -32,6 +32,7 @@ import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.designsystem.painter
 import ru.bpdiary.core.ui.BigReading
 import ru.bpdiary.core.ui.BigReadingSize
+import ru.bpdiary.core.ui.BpBanner
 import ru.bpdiary.core.ui.BpCard
 import ru.bpdiary.core.ui.BpPrimaryButton
 import ru.bpdiary.core.ui.FixedScreenColumn
@@ -40,6 +41,7 @@ import ru.bpdiary.core.ui.RoundIconButton
 import ru.bpdiary.core.ui.StatusChip
 import ru.bpdiary.core.ui.flexibleHeight
 import ru.bpdiary.domain.NextReminderLabel
+import ru.bpdiary.app.core.ui.R as CoreR
 
 private val CardGap = 14.dp
 
@@ -76,6 +78,13 @@ private fun HomeContent(
         BpPrimaryButton(stringResource(R.string.home_add_reading), { onEvent(HomeEvent.AddClicked) }, icon = BpIcon.Add)
         state.week?.let { WeekCard(it, texts, Modifier.flexibleHeight()) { onEvent(HomeEvent.WeekClicked) } }
         ReminderCard(state.nextReminder, texts) { onEvent(HomeEvent.ReminderClicked) }
+        if (state.notificationsBanner) {
+            BpBanner(
+                text = stringResource(CoreR.string.banner_notifications),
+                action = stringResource(CoreR.string.banner_notifications_allow),
+                onClick = { onEvent(HomeEvent.ReminderClicked) },
+            )
+        }
     }
 }
 

@@ -18,6 +18,7 @@ import ru.bpdiary.core.model.Reading
 import ru.bpdiary.core.model.Reminder
 import ru.bpdiary.core.model.Thresholds
 import ru.bpdiary.domain.ReadingRepository
+import ru.bpdiary.domain.ReminderPermissions
 import ru.bpdiary.domain.ReminderRepository
 import ru.bpdiary.domain.ThresholdsRepository
 import ru.bpdiary.domain.classify
@@ -53,6 +54,7 @@ class HomeViewModel
         readings: ReadingRepository,
         thresholds: ThresholdsRepository,
         reminders: ReminderRepository,
+        private val permissions: ReminderPermissions,
         private val time: TimeProvider,
     ) : ViewModel() {
         private val now = MutableStateFlow(currentMoment())
@@ -68,19 +70,26 @@ class HomeViewModel
                     readings.observeRange(from, to).map { WeekWindow(key.today, it) }
                 }
 
+        /** Read again on [refresh] (`ON_RESUME`): the user may have changed it in the system settings. */
+        private val notificationsAllowed = MutableStateFlow(permissions.notificationsAllowed())
+
+        private val reminderInfo: Flow<ReminderInfo> =
+            combine(reminders.observeAll(), notificationsAllowed) { list, allowed -> ReminderInfo(list, allowed) }
+
         val state: StateFlow<HomeUiState> =
-            combine(now, readings.observeLast(), week, thresholds.observe(), reminders.observeAll()) {
+            combine(now, readings.observeLast(), week, thresholds.observe(), reminderInfo) {
                 moment,
                 last,
                 window,
                 th,
-                list,
+                info,
                 ->
-                homeContent(moment, last, window, th, list)
+                homeContent(moment, last, window, th, info)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), HomeUiState.Loading)
 
         fun refresh() {
             now.value = currentMoment()
+            notificationsAllowed.value = permissions.notificationsAllowed()
         }
 
         private fun currentMoment(): ZonedDateTime = time.now().atZone(time.zone())
@@ -99,13 +108,19 @@ internal data class WeekWindow(
     val readings: List<Reading>,
 )
 
+/** The reminders and whether the system lets their notifications through. */
+internal data class ReminderInfo(
+    val reminders: List<Reminder>,
+    val notificationsAllowed: Boolean = true,
+)
+
 /** Pure state assembly; also used by the screenshot tests to build states from demo data. */
 internal fun homeContent(
     now: ZonedDateTime,
     last: Reading?,
     window: WeekWindow,
     th: Thresholds,
-    reminders: List<Reminder>,
+    info: ReminderInfo,
 ): HomeUiState.Content {
     val today = now.toLocalDate()
     return HomeUiState.Content(
@@ -113,7 +128,8 @@ internal fun homeContent(
         greeting = greetingSlot(now.toLocalTime()),
         last = last?.toUi(today, th),
         week = if (last == null) null else weekBars(window.readings, th, window.today),
-        nextReminder = nextReminder(reminders, now)?.let { nextReminderLabel(it, now) },
+        nextReminder = nextReminder(info.reminders, now)?.let { nextReminderLabel(it, now) },
+        notificationsBanner = !info.notificationsAllowed && info.reminders.any { it.enabled },
     )
 }
 
