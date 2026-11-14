@@ -11,13 +11,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.bpdiary.core.common.TimeProvider
 import ru.bpdiary.domain.DeleteAllDataUseCase
 import ru.bpdiary.domain.ReadingRepository
 import ru.bpdiary.domain.ReminderRepository
 import ru.bpdiary.domain.ReminderScheduler
 import ru.bpdiary.domain.SettingsRepository
+import java.time.Duration
+import java.time.Instant
 import javax.inject.Inject
 
 private const val STOP_TIMEOUT_MS = 5_000L
@@ -31,9 +33,13 @@ class SettingsViewModel
         reminders: ReminderRepository,
         private val settings: SettingsRepository,
         scheduler: ReminderScheduler,
+        private val time: TimeProvider,
     ) : ViewModel() {
         private val deleteAll = DeleteAllDataUseCase(readings, reminders, settings, scheduler)
         private val dialog = MutableStateFlow(DeleteDialog.None)
+
+        /** When the second dialog appeared; taps within [SECOND_DIALOG_GUARD] of it are ignored (review A-07). */
+        private var secondShownAt: Instant = Instant.MIN
 
         private val effectChannel = Channel<SettingsEffect>(Channel.BUFFERED)
         val effects: Flow<SettingsEffect> = effectChannel.receiveAsFlow()
@@ -46,29 +52,30 @@ class SettingsViewModel
             when (event) {
                 is SettingsEvent.ThemeSelected -> viewModelScope.launch { settings.setThemeMode(event.mode) }
                 SettingsEvent.DeleteClicked -> dialog.value = DeleteDialog.First
-                SettingsEvent.DeleteConfirmed -> confirm()
+                SettingsEvent.DeleteFirstConfirmed -> showSecond()
+                SettingsEvent.DeleteForeverConfirmed -> deleteForever()
                 SettingsEvent.DialogDismissed -> dialog.value = DeleteDialog.None
                 SettingsEvent.RemindersClicked, SettingsEvent.AboutClicked, SettingsEvent.BackClicked -> Unit
             }
         }
 
-        private fun confirm() {
-            when (dialog.value) {
-                DeleteDialog.None -> {
-                    Unit
-                }
+        private fun showSecond() {
+            if (dialog.value != DeleteDialog.First) return
+            secondShownAt = time.now()
+            dialog.value = DeleteDialog.Second
+        }
 
-                DeleteDialog.First -> {
-                    dialog.update { DeleteDialog.Second }
-                }
-
-                DeleteDialog.Second -> {
-                    dialog.value = DeleteDialog.None
-                    viewModelScope.launch {
-                        deleteAll()
-                        effectChannel.send(SettingsEffect.DataDeleted)
-                    }
-                }
+        private fun deleteForever() {
+            if (dialog.value != DeleteDialog.Second) return
+            if (Duration.between(secondShownAt, time.now()) < SECOND_DIALOG_GUARD) return
+            dialog.value = DeleteDialog.None
+            viewModelScope.launch {
+                deleteAll()
+                effectChannel.send(SettingsEffect.DataDeleted)
             }
+        }
+
+        private companion object {
+            val SECOND_DIALOG_GUARD: Duration = Duration.ofSeconds(1)
         }
     }

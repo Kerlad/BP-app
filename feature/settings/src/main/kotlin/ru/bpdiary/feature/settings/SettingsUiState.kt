@@ -17,8 +17,14 @@ sealed interface SettingsEvent {
 
     data object DeleteClicked : SettingsEvent
 
-    /** «Продолжить» in the first dialog, «Удалить навсегда» in the second. */
-    data object DeleteConfirmed : SettingsEvent
+    /** «Продолжить» in the first dialog. */
+    data object DeleteFirstConfirmed : SettingsEvent
+
+    /**
+     * «Удалить навсегда» in the second dialog. A separate event, so a double tap on «Продолжить» (the buttons
+     * sit in the same place) cannot pass both dialogs (review A-07).
+     */
+    data object DeleteForeverConfirmed : SettingsEvent
 
     data object DialogDismissed : SettingsEvent
 

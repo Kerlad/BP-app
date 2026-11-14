@@ -126,6 +126,6 @@ class SettingsScreenTest {
         show(SettingsUiState(dialog = DeleteDialog.Second)) { events += it }
         rule.onNodeWithText("Отмена").performClick()
         rule.onNodeWithText("Удалить навсегда").performClick()
-        assertEquals(listOf(SettingsEvent.DialogDismissed, SettingsEvent.DeleteConfirmed), events)
+        assertEquals(listOf(SettingsEvent.DialogDismissed, SettingsEvent.DeleteForeverConfirmed), events)
     }
 }

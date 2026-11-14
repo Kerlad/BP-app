@@ -139,7 +139,7 @@ private fun FirstDialog(onEvent: (SettingsEvent) -> Unit) {
         title = { Text(stringResource(R.string.settings_delete_first_title)) },
         text = { Text(stringResource(R.string.settings_delete_first_text)) },
         confirmButton = {
-            TextButton(onClick = { onEvent(SettingsEvent.DeleteConfirmed) }) {
+            TextButton(onClick = { onEvent(SettingsEvent.DeleteFirstConfirmed) }) {
                 Text(stringResource(R.string.settings_delete_first_confirm))
             }
         },
@@ -159,7 +159,7 @@ private fun SecondDialog(onEvent: (SettingsEvent) -> Unit) {
         title = { Text(stringResource(R.string.settings_delete_second_title)) },
         text = { Text(stringResource(R.string.settings_delete_second_text)) },
         confirmButton = {
-            TextButton(onClick = { onEvent(SettingsEvent.DeleteConfirmed) }) {
+            TextButton(onClick = { onEvent(SettingsEvent.DeleteForeverConfirmed) }) {
                 Text(stringResource(R.string.settings_delete_forever), color = BpTheme.colors.hi)
             }
         },
