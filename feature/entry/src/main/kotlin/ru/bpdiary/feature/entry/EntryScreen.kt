@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -76,7 +77,7 @@ private const val DISABLED_ALPHA = 0.4f
 private const val FIELD_LINE_HEIGHT = 1.1f
 private val MinFieldFont = 18.sp
 private val MinLabelFont = 9.sp
-private val Gap = 12.dp
+internal val Gap = 12.dp
 
 /** Full-screen entry and edit of a reading (handoff screen 2). Stateless: everything comes from [state]. */
 @Composable
@@ -102,10 +103,7 @@ fun EntryScreen(
             onNavigate = { onEvent(EntryEvent.CloseClicked) },
             trailing = { if (state.isEdit) DeleteAction { onEvent(EntryEvent.DeleteClicked) } },
         )
-        Column(
-            modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Gap),
-        ) {
+        val form: @Composable ColumnScope.() -> Unit = {
             TimeAndArmRow(state, onEvent)
             FieldGrid(state, onEvent)
             state.error?.let { ErrorLine(stringResource(it.reason.textRes())) }
@@ -120,13 +118,16 @@ fun EntryScreen(
             )
             CommentField(state.comment) { onEvent(EntryEvent.CommentChanged(it)) }
         }
-        Spacer(Modifier.height(Gap))
-        NumPad(
-            onKey = { onEvent(EntryEvent.KeyPressed(it)) },
-            action = if (state.draft.field == Field.PULSE) NumPadAction.Save else NumPadAction.Next,
-        )
-        Spacer(Modifier.height(Gap))
-        SaveButton(enabled = state.canSave) { onEvent(EntryEvent.SaveClicked) }
+        val keys: @Composable () -> Unit = {
+            Spacer(Modifier.height(Gap))
+            NumPad(
+                onKey = { onEvent(EntryEvent.KeyPressed(it)) },
+                action = if (state.draft.field == Field.PULSE) NumPadAction.Save else NumPadAction.Next,
+            )
+            Spacer(Modifier.height(Gap))
+            SaveButton(enabled = state.canSave) { onEvent(EntryEvent.SaveClicked) }
+        }
+        AdaptiveEntryLayout(form, keys, Modifier.weight(1f))
     }
     when (state.dialog) {
         EntryDialog.Discard -> DiscardDialog(onEvent)

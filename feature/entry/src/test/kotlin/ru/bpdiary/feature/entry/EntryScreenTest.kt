@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -206,6 +207,21 @@ class EntryScreenTest {
         rule.onNodeWithText("Не сохранять").performClick()
         assertEquals(listOf(EntryEvent.DialogDismissed, EntryEvent.DiscardConfirmed), events)
     }
+
+    /** Landscape or split screen: 360 dp tall. Fields, keypad and Save must all be reachable (review A-05). */
+    @Test
+    @Config(qualifiers = "w640dp-h360dp-xxhdpi")
+    fun `on a low screen the fields, keypad and save scroll into view`() {
+        show(filled)
+        rule.onNodeWithText("Верхнее").performScrollTo().assertIsDisplayed()
+        rule.onNodeWithText("7").performScrollTo().assertIsDisplayed()
+        rule.onNodeWithText("Сохранить").performScrollTo().assertIsDisplayed()
+        rule.assertAccessible()
+    }
+
+    @Test
+    @Config(qualifiers = "w640dp-h360dp-xxhdpi")
+    fun lowScreenSageLight() = snapshot("entry_low_screen_sage_light", filled)
 }
 
 @Composable

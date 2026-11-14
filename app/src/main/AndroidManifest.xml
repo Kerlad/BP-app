@@ -18,12 +18,16 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.BpDiary">
+        <!-- Portrait only (review A-05): the audience is 50+ and the entry screen with its keypad is laid out
+             for portrait. Large screens on Android 16+ may ignore this, so EntryScreen also scrolls when low. -->
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:exported="true"
             android:theme="@style/Theme.BpDiary.Starting"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
