@@ -31,32 +31,18 @@ internal fun AdaptiveEntryLayout(
 ) {
     val imeVisible = WindowInsets.isImeVisible
     BoxWithConstraints(modifier) {
-        when {
-            imeVisible -> {
-                Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(Gap),
-                    content = form,
-                )
-            }
-
-            maxHeight < CompactHeight -> {
-                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                    Column(verticalArrangement = Arrangement.spacedBy(Gap), content = form)
-                    keys()
-                }
-            }
-
-            else -> {
-                Column(Modifier.fillMaxSize()) {
-                    Column(
-                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(Gap),
-                        content = form,
-                    )
-                    keys()
-                }
-            }
+        // One tree for every mode, only the modifiers change: moving the form to another branch would recreate the
+        // comment field, drop its focus and close the keyboard it has just opened.
+        val scrollAll = !imeVisible && maxHeight < CompactHeight
+        val outerScroll = rememberScrollState()
+        val formScroll = rememberScrollState()
+        Column(Modifier.fillMaxSize().then(if (scrollAll) Modifier.verticalScroll(outerScroll) else Modifier)) {
+            Column(
+                modifier = if (scrollAll) Modifier else Modifier.weight(1f).verticalScroll(formScroll),
+                verticalArrangement = Arrangement.spacedBy(Gap),
+                content = form,
+            )
+            if (!imeVisible) keys()
         }
     }
 }

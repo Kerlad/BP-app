@@ -114,7 +114,7 @@ private val SHORT_DATE: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM")
 private val TIME: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 // Column widths of the table, in points; they add up to CONTENT_WIDTH.
-// Tags get 150: two of them joined by SEPARATOR must fit (A-10); the rest gave way to it.
+// Tags get 143: two of them joined by SEPARATOR must fit (A-10, widest pair 137 pt); the comment gets the rest.
 private const val COL_DATE = 50f
 private const val COL_TIME = 34f
 private const val COL_SYS = 44f
@@ -122,8 +122,8 @@ private const val COL_DIA = 42f
 private const val COL_PULSE = 34f
 private const val COL_ARM = 34f
 private const val COL_STATUS = 58f
-internal const val COL_TAGS = 150f
-private const val COL_COMMENT = 77f
+internal const val COL_TAGS = 143f
+private const val COL_COMMENT = 84f
 internal val COLUMNS =
     floatArrayOf(COL_DATE, COL_TIME, COL_SYS, COL_DIA, COL_PULSE, COL_ARM, COL_STATUS, COL_TAGS, COL_COMMENT)
 
