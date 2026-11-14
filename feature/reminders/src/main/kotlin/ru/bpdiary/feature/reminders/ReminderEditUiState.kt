@@ -18,6 +18,10 @@ data class ReminderEditUiState(
     val label: String = "",
     val days: Set<DayOfWeek> = DayOfWeek.entries.toSet(),
     val confirmDelete: Boolean = false,
+    /** «Закрыть» with unsaved changes: ask before dropping them (review C-04). */
+    val confirmDiscard: Boolean = false,
+    /** Another enabled reminder already rings at this time on one of these days (review B-06). */
+    val sameTimeTaken: Boolean = false,
 ) {
     /** An empty set of days is not allowed: «Готово» stays inactive (docs/05 §5.5). */
     val canSave: Boolean get() = days.isNotEmpty()
@@ -53,7 +57,10 @@ sealed interface ReminderEditEvent {
 
     data object DeleteConfirmed : ReminderEditEvent
 
+    /** Either dialog closed without its action: delete is not done, editing goes on. */
     data object DialogDismissed : ReminderEditEvent
+
+    data object DiscardConfirmed : ReminderEditEvent
 
     data object CloseClicked : ReminderEditEvent
 }

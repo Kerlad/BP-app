@@ -1,5 +1,6 @@
 package ru.bpdiary.feature.reminders
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,7 +41,10 @@ class ReminderEditViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(id: Long? = null) = ReminderEditViewModel(id, repository, scheduler)
+    private fun viewModel(
+        id: Long? = null,
+        handle: SavedStateHandle = SavedStateHandle(),
+    ) = ReminderEditViewModel(id, handle, repository, scheduler)
 
     @Test
     fun `a new reminder starts at noon, every day, ready to edit`() {
@@ -163,16 +167,92 @@ class ReminderEditViewModelTest {
         }
 
     @Test
-    fun `close does not save`() =
+    fun `close with changes asks first and saves nothing when confirmed`() =
         runTest {
             val vm = viewModel()
             vm.effects.test {
                 vm.onEvent(ReminderEditEvent.LabelChanged("Не сохранять"))
                 vm.onEvent(ReminderEditEvent.CloseClicked)
+                assertTrue(vm.state.value.confirmDiscard)
+                expectNoEvents()
+                vm.onEvent(ReminderEditEvent.DiscardConfirmed)
                 assertEquals(ReminderEditEffect.Closed, awaitItem())
             }
             assertEquals(3, repository.getAll().size)
             assertEquals(0, scheduler.rescheduleCount)
+        }
+
+    @Test
+    fun `close without changes closes at once, also for an existing reminder`() =
+        runTest {
+            val vm = viewModel(id = 1)
+            vm.effects.test {
+                vm.onEvent(ReminderEditEvent.CloseClicked)
+                assertEquals(ReminderEditEffect.Closed, awaitItem())
+            }
+            assertFalse(vm.state.value.confirmDiscard)
+        }
+
+    @Test
+    fun `continue editing keeps the form`() {
+        val vm = viewModel(id = 1)
+        vm.onEvent(ReminderEditEvent.TimeChanged(LocalTime.of(7, 15)))
+        vm.onEvent(ReminderEditEvent.CloseClicked)
+        vm.onEvent(ReminderEditEvent.DialogDismissed)
+        assertFalse(vm.state.value.confirmDiscard)
+        assertEquals(LocalTime.of(7, 15), vm.state.value.time)
+    }
+
+    @Test
+    fun `the form survives a new view model on the same saved state`() {
+        val handle = SavedStateHandle()
+        val first = viewModel(id = 1, handle = handle)
+        first.onEvent(ReminderEditEvent.TimeChanged(LocalTime.of(6, 45)))
+        first.onEvent(ReminderEditEvent.LabelChanged("После сна"))
+        first.onEvent(ReminderEditEvent.DayToggled(DayOfWeek.SUNDAY))
+        val again = viewModel(id = 1, handle = handle).state.value
+        assertTrue(again.loaded)
+        assertFalse(again.isNew)
+        assertEquals(LocalTime.of(6, 45), again.time)
+        assertEquals("После сна", again.label)
+        assertEquals(EVERY_DAY - DayOfWeek.SUNDAY, again.days)
+    }
+
+    @Test
+    fun `a second enabled reminder at the same time on a shared day is not saved`() =
+        runTest {
+            val vm = viewModel()
+            vm.effects.test {
+                vm.onEvent(ReminderEditEvent.TimeChanged(LocalTime.of(8, 0)))
+                vm.onEvent(ReminderEditEvent.PresetSelected(DaysSummary.Workdays))
+                vm.onEvent(ReminderEditEvent.DoneClicked("Измерение"))
+                expectNoEvents()
+            }
+            assertTrue(vm.state.value.sameTimeTaken)
+            assertEquals(3, repository.getAll().size)
+            assertEquals(0, scheduler.rescheduleCount)
+            vm.onEvent(ReminderEditEvent.TimeChanged(LocalTime.of(8, 5)))
+            assertFalse(vm.state.value.sameTimeTaken)
+        }
+
+    @Test
+    fun `the same time is fine when the other reminder is off or on other days`() =
+        runTest {
+            // Reminder 2 (14:00, workdays) is off, so another 14:00 is allowed.
+            val vm = viewModel()
+            vm.onEvent(ReminderEditEvent.TimeChanged(LocalTime.of(14, 0)))
+            vm.onEvent(ReminderEditEvent.DoneClicked("Измерение"))
+            assertEquals(4, repository.getAll().size)
+        }
+
+    @Test
+    fun `an existing reminder saved at its own time does not clash with itself`() =
+        runTest {
+            val vm = viewModel(id = 1)
+            vm.onEvent(ReminderEditEvent.LabelChanged("Утро"))
+            vm.onEvent(ReminderEditEvent.DoneClicked("Измерение"))
+            assertFalse(vm.state.value.sameTimeTaken)
+            assertEquals("Утро", repository.getById(1)?.label)
         }
 
     @Test

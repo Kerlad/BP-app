@@ -1,5 +1,6 @@
 package ru.bpdiary.feature.reminders
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -40,9 +41,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -71,6 +75,8 @@ fun ReminderEditScreen(
 ) {
     val colors = BpTheme.colors
     val defaultLabel = stringResource(R.string.reminders_default_label)
+    // System back asks like «Закрыть» when something was changed (review C-04).
+    BackHandler { onEvent(ReminderEditEvent.CloseClicked) }
     Column(
         modifier =
             modifier
@@ -100,6 +106,7 @@ fun ReminderEditScreen(
                 if (!state.isNew) DeleteButton { onEvent(ReminderEditEvent.DeleteClicked) }
             }
         }
+        if (state.sameTimeTaken) SameTimeError()
         BpPrimaryButton(
             text = stringResource(R.string.reminders_edit_done),
             onClick = { onEvent(ReminderEditEvent.DoneClicked(defaultLabel)) },
@@ -109,6 +116,23 @@ fun ReminderEditScreen(
         )
     }
     if (state.confirmDelete) DeleteDialog(onEvent)
+    if (state.confirmDiscard) DiscardDialog(onEvent)
+}
+
+/** Shown above «Готово» while another enabled reminder already rings at this time (review B-06). */
+@Composable
+private fun SameTimeError() {
+    val text = stringResource(R.string.reminders_edit_same_time)
+    Text(
+        text = text,
+        style = BpTheme.typography.caption.copy(fontWeight = FontWeight.W600),
+        color = BpTheme.colors.hi,
+        modifier =
+            Modifier.padding(top = 8.dp).semantics {
+                error(text)
+                liveRegion = LiveRegionMode.Polite
+            },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -283,6 +307,25 @@ private fun DeleteDialog(onEvent: (ReminderEditEvent) -> Unit) {
         dismissButton = {
             TextButton(onClick = { onEvent(ReminderEditEvent.DialogDismissed) }) {
                 Text(stringResource(R.string.reminders_delete_cancel))
+            }
+        },
+    )
+}
+
+/** The entry screen's «Не сохранять» dialog, for the reminder form (review C-04). */
+@Composable
+private fun DiscardDialog(onEvent: (ReminderEditEvent) -> Unit) {
+    AlertDialog(
+        onDismissRequest = { onEvent(ReminderEditEvent.DialogDismissed) },
+        title = { Text(stringResource(R.string.reminders_discard_title)) },
+        confirmButton = {
+            TextButton(onClick = { onEvent(ReminderEditEvent.DiscardConfirmed) }) {
+                Text(stringResource(R.string.reminders_discard_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onEvent(ReminderEditEvent.DialogDismissed) }) {
+                Text(stringResource(R.string.reminders_discard_continue))
             }
         },
     )

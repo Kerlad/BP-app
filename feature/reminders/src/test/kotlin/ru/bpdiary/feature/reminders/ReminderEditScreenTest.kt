@@ -159,4 +159,20 @@ class ReminderEditScreenTest {
         rule.onNodeWithText("Готово").assertIsNotEnabled()
         rule.onNodeWithText("Ежедневно").assertDoesNotExist()
     }
+
+    @Test
+    fun `a clash with another reminder is shown above Done`() {
+        show(new.copy(sameTimeTaken = true))
+        rule.onNodeWithText("Напоминание на это время уже есть.").assertExists()
+    }
+
+    @Test
+    fun `closing with changes asks, both answers reach the view model`() {
+        val events = mutableListOf<ReminderEditEvent>()
+        show(new.copy(confirmDiscard = true)) { events += it }
+        rule.onNodeWithText("Не сохранять напоминание?").assertExists()
+        rule.onNodeWithText("Продолжить ввод").performClick()
+        rule.onNodeWithText("Не сохранять").performClick()
+        assertEquals(listOf(ReminderEditEvent.DialogDismissed, ReminderEditEvent.DiscardConfirmed), events)
+    }
 }

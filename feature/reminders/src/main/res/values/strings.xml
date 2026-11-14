@@ -30,4 +30,10 @@
     <string name="reminders_delete_cancel">Отмена</string>
     <string name="reminders_edit_close_description">Закрыть</string>
     <string name="reminders_switch_description">%1$s, %2$s</string>
+    <!-- PROVISIONAL (ROADMAP 9.2, B-06) -->
+    <string name="reminders_edit_same_time">Напоминание на это время уже есть.</string>
+    <!-- PROVISIONAL (C-04): buttons copied from the entry screen's discard dialog; the title is new -->
+    <string name="reminders_discard_title">Не сохранять напоминание?</string>
+    <string name="reminders_discard_confirm">Не сохранять</string>
+    <string name="reminders_discard_continue">Продолжить ввод</string>
 </resources>
