@@ -39,6 +39,11 @@ class ShellViewModel
             combine(settings.onboardingDone, settings.disclaimerAck, ::gateFor)
                 .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+        init {
+            // D-17: readings deleted more than 24 hours ago are removed at app start (and daily by the watchdog).
+            viewModelScope.launch { runCatching { readings.purgeExpired() } }
+        }
+
         fun undoDelete(readingId: Long) {
             viewModelScope.launch { readings.restore(readingId) }
         }

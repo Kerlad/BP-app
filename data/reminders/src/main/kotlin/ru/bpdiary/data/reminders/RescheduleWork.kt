@@ -13,6 +13,8 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
+import ru.bpdiary.domain.ReadingRepository
 import ru.bpdiary.domain.ReminderScheduler
 import java.time.Duration
 
@@ -31,7 +33,10 @@ class RescheduleWorker
         }
     }
 
-/** Daily "watchdog": puts the alarm back if the system or a vendor battery saver dropped it (docs/07 §7.1). */
+/**
+ * Daily "watchdog": puts the alarm back if the system or a vendor battery saver dropped it (docs/07 §7.1),
+ * and removes readings deleted more than 24 hours ago (D-17). A failed purge never blocks the alarms.
+ */
 @HiltWorker
 class ReminderWatchdogWorker
     @AssistedInject
@@ -39,8 +44,17 @@ class ReminderWatchdogWorker
         @Assisted context: Context,
         @Assisted params: WorkerParameters,
         private val scheduler: ReminderScheduler,
+        private val readings: ReadingRepository,
     ) : CoroutineWorker(context, params) {
+        @Suppress("TooGenericExceptionCaught") // any storage failure must leave the alarms intact
         override suspend fun doWork(): Result {
+            try {
+                readings.purgeExpired()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Retried on the next daily run and at the next app start.
+            }
             scheduler.rescheduleAll()
             return Result.success()
         }
