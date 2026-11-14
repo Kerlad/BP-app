@@ -105,7 +105,7 @@ class DiaryScreenTest {
         rule.onRoot().captureRoboImage("src/test/snapshots/$name.png")
     }
 
-    private val withTagged = listOf(tagged) + demo
+    private val withTagged = (listOf(tagged) + demo).sortedByDescending { it.takenAt }
 
     @Test
     fun `import and export open from the title, also with an empty diary`() {
