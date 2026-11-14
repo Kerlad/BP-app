@@ -31,6 +31,7 @@ import ru.bpdiary.core.model.Thresholds
 import ru.bpdiary.domain.Draft
 import ru.bpdiary.domain.DraftResult
 import ru.bpdiary.domain.ReadingRepository
+import ru.bpdiary.domain.Reason
 import ru.bpdiary.domain.SaveReadingUseCase
 import ru.bpdiary.domain.SaveResult
 import ru.bpdiary.domain.SettingsRepository
@@ -41,6 +42,7 @@ import ru.bpdiary.domain.dayLabel
 import ru.bpdiary.domain.isCritical
 import ru.bpdiary.domain.reduce
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 
 /** Max comment length (FR-1, docs/05 §5.2). */
@@ -183,8 +185,10 @@ class EntryViewModel
                     delete()
                 }
 
-                EntryEvent.DialogDismissed -> {
-                    transient.update { it.copy(dialog = null) }
+                EntryEvent.DialogDismissed, is EntryEvent.Picker -> {
+                    val (t, f) = pick(event, transient.value, form.value, time)
+                    f?.let(::setForm)
+                    transient.value = t
                 }
             }
         }
@@ -305,6 +309,8 @@ class EntryViewModel
                 comment = comment,
                 dayLabel = dayLabel(day, today),
                 time = takenAt.atOffset(offset).toLocalTime(),
+                date = day,
+                today = today,
                 liveStatus = liveStatus(th),
                 error = t.error,
                 missing = t.missing,
@@ -330,6 +336,52 @@ private suspend fun <T : Any> attempt(
         null
     }
 
+/**
+ * Any dialog closed, or the pickers of the time chip: date, then time. The day and time are read in the device
+ * zone; a moment in the future is refused with [Reason.FUTURE_TIME] (docs/05 §5.2).
+ */
+private fun pick(
+    event: EntryEvent,
+    t: Transient,
+    form: Form?,
+    time: TimeProvider,
+): Pair<Transient, Form?> =
+    when (event) {
+        EntryEvent.TimeClicked -> {
+            t.copy(dialog = EntryDialog.PickDate) to form
+        }
+
+        is EntryEvent.DateChosen -> {
+            t.copy(dialog = EntryDialog.PickTime, pickedDate = event.date) to form
+        }
+
+        is EntryEvent.TimeChosen -> {
+            val closed = t.copy(dialog = null, pickedDate = null)
+            val day = t.pickedDate
+            val at = day?.atTime(event.time)?.atZone(time.zone())?.toInstant()
+            when {
+                at == null || form == null -> {
+                    closed to form
+                }
+
+                at.isAfter(time.now()) -> {
+                    closed.copy(error = ValidationError(null, Reason.FUTURE_TIME)) to form
+                }
+
+                else -> {
+                    val offset = time.zone().rules.getOffset(at)
+                    closed.copy(error = null) to
+                        form.copy(takenAtMillis = at.toEpochMilli(), offsetSeconds = offset.totalSeconds)
+                }
+            }
+        }
+
+        // DialogDismissed: whatever was open closes, a half-done pick is dropped.
+        else -> {
+            t.copy(dialog = null, pickedDate = null) to form
+        }
+    }
+
 /** UI-only state that is not worth restoring after process death. */
 private data class Transient(
     val error: ValidationError? = null,
@@ -337,6 +389,8 @@ private data class Transient(
     /** Empty required field the user tried to skip with Save. */
     val missing: Field? = null,
     val saveFailed: Boolean = false,
+    /** Chosen in the date picker, waiting for the time picker. */
+    val pickedDate: LocalDate? = null,
 )
 
 @Serializable
@@ -373,7 +427,7 @@ internal data class Form(
     fun complete(pulseRequired: Boolean) =
         sys.isNotEmpty() && dia.isNotEmpty() && (pulse.isNotEmpty() || !pulseRequired)
 
-    /** Edits keep the original time, offset and profile. */
+    /** Edits keep the profile; the time is the one on the chip, changed or not (V1.1). */
     fun toReading(original: Reading?): Reading {
         val base =
             original ?: Reading(
@@ -385,6 +439,8 @@ internal data class Form(
                 arm = arm,
             )
         return base.copy(
+            takenAt = Instant.ofEpochMilli(takenAtMillis),
+            zoneOffset = ZoneOffset.ofTotalSeconds(offsetSeconds),
             sys = sys.toInt(),
             dia = dia.toInt(),
             pulse = pulse.toIntOrNull(),

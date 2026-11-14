@@ -8,6 +8,7 @@ import ru.bpdiary.domain.DayLabel
 import ru.bpdiary.domain.Draft
 import ru.bpdiary.domain.Key
 import ru.bpdiary.domain.ValidationError
+import java.time.LocalDate
 import java.time.LocalTime
 
 data class EntryUiState(
@@ -20,6 +21,10 @@ data class EntryUiState(
     val comment: String = "",
     val dayLabel: DayLabel = DayLabel.Today,
     val time: LocalTime = LocalTime.MIDNIGHT,
+    /** Day of the measurement in its own offset; the date picker opens on it. */
+    val date: LocalDate = LocalDate.ofEpochDay(0),
+    /** The last day the date picker allows (no future readings, docs/05 §5.2). */
+    val today: LocalDate = LocalDate.ofEpochDay(0),
     val liveStatus: LiveStatus = LiveStatus.Empty,
     val error: ValidationError? = null,
     /** Field to highlight after Save on incomplete data. */
@@ -57,7 +62,7 @@ sealed interface Hint {
     data object Within : Hint
 }
 
-enum class EntryDialog { Discard, Delete }
+enum class EntryDialog { Discard, Delete, PickDate, PickTime }
 
 sealed interface EntryEvent {
     data class KeyPressed(
@@ -92,6 +97,20 @@ sealed interface EntryEvent {
     data object DeleteConfirmed : EntryEvent
 
     data object DialogDismissed : EntryEvent
+
+    /** The date and time pickers of the «Сегодня, 09:12» chip (V1.1, docs/05 §5.2). */
+    sealed interface Picker : EntryEvent
+
+    /** Opens the date picker, then the time picker. */
+    data object TimeClicked : Picker
+
+    data class DateChosen(
+        val date: LocalDate,
+    ) : Picker
+
+    data class TimeChosen(
+        val time: LocalTime,
+    ) : Picker
 }
 
 sealed interface EntryEffect {

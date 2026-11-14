@@ -35,6 +35,7 @@ import ru.bpdiary.domain.fake.FakeReadingRepository
 import ru.bpdiary.domain.fake.FakeSettingsRepository
 import ru.bpdiary.domain.fake.FakeThresholdsRepository
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneOffset
 
@@ -461,5 +462,70 @@ class EntryViewModelTest {
                 assertEquals(EntryEffect.Saved(readingId = 1, edited = false, critical = false), awaitItem())
             }
             assertFalse(vm.state.value.saveFailed)
+        }
+
+    @Test
+    fun `the time chip picks a date, then a time (V1-1)`() =
+        runTest {
+            val vm = viewModel()
+            vm.onEvent(EntryEvent.TimeClicked)
+            assertEquals(EntryDialog.PickDate, vm.state.value.dialog)
+            assertEquals(LocalDate.of(2026, 10, 20), vm.state.value.today)
+            vm.onEvent(EntryEvent.DateChosen(LocalDate.of(2026, 10, 19)))
+            assertEquals(EntryDialog.PickTime, vm.state.value.dialog)
+            vm.onEvent(EntryEvent.TimeChosen(LocalTime.of(21, 40)))
+            val s = vm.state.value
+            assertNull(s.dialog)
+            assertEquals(DayLabel.Yesterday, s.dayLabel)
+            assertEquals(LocalTime.of(21, 40), s.time)
+
+            vm.effects.test {
+                vm.type("1288271")
+                vm.onEvent(EntryEvent.SaveClicked)
+                awaitItem()
+            }
+            val saved = readings.getById(1)!!
+            assertEquals(Instant.parse("2026-10-19T18:40:00Z"), saved.takenAt)
+            assertEquals(moscow, saved.zoneOffset)
+        }
+
+    @Test
+    fun `a time in the future is refused with the future time error`() =
+        runTest {
+            val vm = viewModel()
+            vm.onEvent(EntryEvent.TimeClicked)
+            vm.onEvent(EntryEvent.DateChosen(LocalDate.of(2026, 10, 20)))
+            vm.onEvent(EntryEvent.TimeChosen(LocalTime.of(10, 0)))
+            val s = vm.state.value
+            assertNull(s.dialog)
+            assertEquals(LocalTime.of(9, 12), s.time)
+            assertEquals(Reason.FUTURE_TIME, s.error?.reason)
+        }
+
+    @Test
+    fun `dismissing the pickers keeps the time`() =
+        runTest {
+            val vm = viewModel()
+            vm.onEvent(EntryEvent.TimeClicked)
+            vm.onEvent(EntryEvent.DateChosen(LocalDate.of(2026, 10, 18)))
+            vm.onEvent(EntryEvent.DialogDismissed)
+            assertNull(vm.state.value.dialog)
+            assertEquals(DayLabel.Today, vm.state.value.dayLabel)
+            assertEquals(LocalTime.of(9, 12), vm.state.value.time)
+        }
+
+    @Test
+    fun `an edit moves the reading to the chosen moment`() =
+        runTest {
+            readings.save(stored)
+            val vm = viewModel(readingId = 7)
+            vm.onEvent(EntryEvent.TimeClicked)
+            vm.onEvent(EntryEvent.DateChosen(LocalDate.of(2026, 10, 18)))
+            vm.onEvent(EntryEvent.TimeChosen(LocalTime.of(8, 0)))
+            vm.effects.test {
+                vm.onEvent(EntryEvent.SaveClicked)
+                assertEquals(EntryEffect.Saved(readingId = 7, edited = true, critical = false), awaitItem())
+            }
+            assertEquals(Instant.parse("2026-10-18T05:00:00Z"), readings.getById(7)!!.takenAt)
         }
 }

@@ -41,9 +41,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -108,6 +110,7 @@ fun EntryScreen(
             FieldGrid(state, onEvent)
             state.error?.let { ErrorLine(stringResource(it.reason.textRes())) }
             if (state.saveFailed) ErrorLine(stringResource(UiR.string.save_failed))
+            if (state.missing != null) ErrorLine(stringResource(R.string.entry_status_empty))
             LiveStatusRow(state.liveStatus)
             val tags = Tag.entries
             FilterChipRow(
@@ -132,6 +135,8 @@ fun EntryScreen(
     when (state.dialog) {
         EntryDialog.Discard -> DiscardDialog(onEvent)
         EntryDialog.Delete -> DeleteDialog(onEvent)
+        EntryDialog.PickDate -> DatePickDialog(state.date, state.today, onEvent)
+        EntryDialog.PickTime -> TimePickDialog(state.time, onEvent)
         null -> Unit
     }
 }
@@ -165,13 +170,15 @@ private fun TimeAndArmRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // Not clickable in MVP: the date and time picker comes in v1.1 (FR-1.9).
+        // Opens the date, then the time picker (V1.1, FR-1.9); a button, so at least 48 dp tall.
         Box(Modifier.padding(end = 8.dp)) {
             Row(
                 modifier =
                     Modifier
                         .clip(CircleShape)
                         .background(colors.sf)
+                        .clickable(role = Role.Button) { onEvent(EntryEvent.TimeClicked) }
+                        .heightIn(min = 48.dp)
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -203,13 +210,21 @@ private fun FieldGrid(
     state: EntryUiState,
     onEvent: (EntryEvent) -> Unit,
 ) {
+    val errorText = state.error?.let { stringResource(it.reason.textRes()) }
+    val emptyText = stringResource(R.string.entry_status_empty)
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Field.entries.forEach { field ->
             FieldCard(
                 field = field,
                 value = state.draft.value(field),
                 active = state.draft.field == field,
-                invalid = state.error?.field == field || state.missing == field,
+                // TalkBack reads the problem on the field itself, not only as a red border (review C-02).
+                errorText =
+                    when (field) {
+                        state.error?.field -> errorText
+                        state.missing -> emptyText
+                        else -> null
+                    },
                 onClick = { onEvent(EntryEvent.FieldTapped(field)) },
             )
         }
@@ -221,9 +236,10 @@ private fun RowScope.FieldCard(
     field: Field,
     value: String,
     active: Boolean,
-    invalid: Boolean,
+    errorText: String?,
     onClick: () -> Unit,
 ) {
+    val invalid = errorText != null
     val colors = BpTheme.colors
     val shape = RoundedCornerShape(BpTheme.shapes.card)
     val border =
@@ -246,8 +262,10 @@ private fun RowScope.FieldCard(
                 .background(colors.sf)
                 .border(BorderStroke(2.dp, border), shape)
                 .clickable(role = Role.Button, onClick = onClick)
-                .semantics { selected = active }
-                .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 10.dp),
+                .semantics {
+                    selected = active
+                    if (errorText != null) error(errorText)
+                }.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         FittedText(
@@ -290,7 +308,12 @@ private fun ErrorLine(text: String) {
         text = text,
         style = BpTheme.typography.caption.copy(fontWeight = FontWeight.W600),
         color = BpTheme.colors.hi,
-        modifier = Modifier.semantics { error(text) },
+        modifier =
+            Modifier.semantics {
+                error(text)
+                // Announced by TalkBack as soon as it appears (review C-02).
+                liveRegion = LiveRegionMode.Polite
+            },
     )
 }
 

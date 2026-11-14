@@ -3,8 +3,13 @@ package ru.bpdiary.feature.entry
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -12,7 +17,9 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
+import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.github.takahirom.roborazzi.captureScreenRoboImage
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -32,6 +39,7 @@ import ru.bpdiary.domain.Draft
 import ru.bpdiary.domain.Key
 import ru.bpdiary.domain.Reason
 import ru.bpdiary.domain.ValidationError
+import java.time.LocalDate
 import java.time.LocalTime
 
 /** `./gradlew recordRoborazziDebug` re-records, `verifyRoborazziDebug` compares. */
@@ -206,6 +214,62 @@ class EntryScreenTest {
         rule.onNodeWithText("Продолжить ввод").performClick()
         rule.onNodeWithText("Не сохранять").performClick()
         assertEquals(listOf(EntryEvent.DialogDismissed, EntryEvent.DiscardConfirmed), events)
+    }
+
+    @Test
+    fun `the time chip opens the pickers and they send their events (V1-1)`() {
+        val events = mutableListOf<EntryEvent>()
+        show(empty) { events += it }
+        rule.onNodeWithText("Сегодня, 09:12").performClick()
+        assertEquals(listOf<EntryEvent>(EntryEvent.TimeClicked), events)
+    }
+
+    @Test
+    fun `the time picker returns the typed time`() {
+        val events = mutableListOf<EntryEvent>()
+        show(empty.copy(dialog = EntryDialog.PickTime)) { events += it }
+        rule.onNodeWithText("Готово").performClick()
+        rule.onNodeWithText("Отмена").performClick()
+        assertEquals(listOf(EntryEvent.TimeChosen(LocalTime.of(9, 12)), EntryEvent.DialogDismissed), events)
+    }
+
+    @Test
+    fun `the date picker returns the shown day`() {
+        val events = mutableListOf<EntryEvent>()
+        val day = LocalDate.of(2026, 10, 19)
+        show(empty.copy(dialog = EntryDialog.PickDate, date = day, today = LocalDate.of(2026, 10, 20))) {
+            events += it
+        }
+        rule.onNodeWithText("Готово").performClick()
+        assertEquals(listOf<EntryEvent>(EntryEvent.DateChosen(day)), events)
+    }
+
+    @OptIn(ExperimentalRoborazziApi::class)
+    @Test
+    @Config(qualifiers = "ru-w360dp-h780dp-xxhdpi")
+    fun timePickerSageLight() {
+        show(empty.copy(dialog = EntryDialog.PickTime))
+        captureScreenRoboImage("src/test/snapshots/entry_time_picker_sage_light.png")
+    }
+
+    @OptIn(ExperimentalRoborazziApi::class)
+    @Test
+    @Config(qualifiers = "ru-w360dp-h780dp-xxhdpi")
+    fun datePickerSageLight() {
+        val today = LocalDate.of(2026, 10, 20)
+        show(empty.copy(dialog = EntryDialog.PickDate, date = today, today = today))
+        captureScreenRoboImage("src/test/snapshots/entry_date_picker_sage_light.png")
+    }
+
+    @Test
+    fun `an empty field after save is marked for TalkBack, not only by colour (C-02)`() {
+        show(empty.copy(draft = Draft(sys = "128"), missing = Field.DIA))
+        rule
+            .onNode(hasText("Нижнее") and hasClickAction())
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Error, "Введите значения"))
+        rule
+            .onNode(hasText("Введите значения") and SemanticsMatcher.keyIsDefined(SemanticsProperties.LiveRegion))
+            .assertExists()
     }
 
     /** Landscape or split screen: 360 dp tall. Fields, keypad and Save must all be reachable (review A-05). */
