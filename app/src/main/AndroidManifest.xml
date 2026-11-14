@@ -20,6 +20,7 @@
         android:theme="@style/Theme.BpDiary">
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleTop"
             android:exported="true"
             android:theme="@style/Theme.BpDiary.Starting"
             android:windowSoftInputMode="adjustResize">

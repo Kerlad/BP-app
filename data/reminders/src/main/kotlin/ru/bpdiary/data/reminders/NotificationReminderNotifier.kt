@@ -63,9 +63,12 @@ class NotificationReminderNotifier
         /** The launcher activity, explicitly; this module does not know `MainActivity` by name. */
         private fun openEntry(reminderId: Long): PendingIntent? {
             val launch = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: return null
-            launch
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                .putExtra(EXTRA_OPEN, OPEN_ENTRY_NEW)
+            launch.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP,
+            )
+            launch.putExtra(EXTRA_OPEN, OPEN_ENTRY_NEW)
             return PendingIntent.getActivity(
                 context,
                 REQ_OPEN_BASE + reminderId.toInt(),
