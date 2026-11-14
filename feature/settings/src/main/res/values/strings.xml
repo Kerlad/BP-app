@@ -36,6 +36,6 @@
     <string name="about_new_phone">Чтобы не потерять записи при смене телефона, перенесите данные при настройке нового телефона через мастер Android (кабель или «Быстрый перенос»). Из облачной копии записи не восстанавливаются.</string>
     <string name="about_version">Версия %1$s</string>
     <string name="about_privacy">Политика конфиденциальности</string>
-    <!-- The address is not known yet (the customer has to give it): while empty, the line is not shown. -->
-    <string name="about_privacy_url" translatable="false"></string>
+    <!-- Public page without sign-in (store requirement); PRIVACY.md in the public GitHub repository. -->
+    <string name="about_privacy_url" translatable="false">https://github.com/Kerlad/BP-app/blob/main/PRIVACY.md</string>
 </resources>

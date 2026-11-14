@@ -2,6 +2,7 @@ package ru.bpdiary.feature.settings
 
 import android.view.View
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -75,9 +76,9 @@ class AboutScreenTest {
     }
 
     @Test
-    fun `the privacy policy line is left out while its address is not known`() {
+    fun `the privacy policy is a link to the public page`() {
         show()
-        rule.onNodeWithText("Политика конфиденциальности", substring = true).assertDoesNotExist()
+        rule.onNodeWithText("Политика конфиденциальности").assertHasClickAction()
     }
 
     @Test

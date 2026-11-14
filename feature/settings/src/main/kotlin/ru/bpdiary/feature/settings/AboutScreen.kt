@@ -1,20 +1,26 @@
 package ru.bpdiary.feature.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import ru.bpdiary.app.feature.settings.R
 import ru.bpdiary.core.designsystem.BpIcon
@@ -65,10 +71,17 @@ fun AboutScreen(
                 color = colors.mut,
             )
             if (privacyUrl.isNotBlank()) {
+                val uriHandler = LocalUriHandler.current
+                // Opens the page in a browser; the app itself has no INTERNET permission.
                 Text(
-                    text = stringResource(R.string.about_privacy) + ": " + privacyUrl,
-                    style = BpTheme.typography.secondary,
+                    text = stringResource(R.string.about_privacy),
+                    style = BpTheme.typography.secondary.copy(textDecoration = TextDecoration.Underline),
                     color = colors.ac,
+                    modifier =
+                        Modifier
+                            .heightIn(min = 48.dp)
+                            .wrapContentHeight()
+                            .clickable(role = Role.Button) { runCatching { uriHandler.openUri(privacyUrl) } },
                 )
             }
         }
