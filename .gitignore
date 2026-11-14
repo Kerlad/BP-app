@@ -24,3 +24,7 @@ Thumbs.db
 
 # Local release outputs (bundle, APKs, mapping)
 release-out/
+
+# Kotlin daemon state, local test APKs
+.kotlin/
+apk-for-testing/
