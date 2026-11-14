@@ -36,8 +36,14 @@ data class Draft(
     /** Focus by a tap on the field: the first digit typed replaces its value (deviation from docs/06 §6.2). */
     fun focus(f: Field): Draft = copy(field = f, replace = true)
 
-    /** Focus moved by the keypad itself (auto-advance, Del): digits append as usual. */
-    internal fun advanceTo(f: Field): Draft = copy(field = f, replace = false)
+    /** Focus moved back by Del: digits append, so Del then a digit corrects the last digit. */
+    internal fun backTo(f: Field): Draft = copy(field = f, replace = false)
+
+    /**
+     * Focus moved forward by the keypad (auto-advance, Next). A filled field is then replaced by the first digit, as
+     * after a tap (review D-11): editing 142/91 by typing 1,3,0,8,5 gives 130/85, not 130/918.
+     */
+    internal fun advanceTo(f: Field): Draft = copy(field = f, replace = value(f).isNotEmpty())
 }
 
 sealed interface Key {
@@ -86,7 +92,8 @@ private fun Field.next(): Field =
  * Keypad rules of docs/06 §6.2 with three deviations from the test run of 2026-11-07:
  * 1. Next on an empty required field (SYS, DIA) does nothing ([DraftResult.Ignored]), so a habitual
  *    «→» after an auto-advance cannot skip DIA and push its digits into the pulse.
- * 2. A field chosen by tapping ([Draft.replace]) takes the first digit as a replacement of its value.
+ * 2. A field chosen by tapping ([Draft.replace]) takes the first digit as a replacement of its value; since D-11
+ *    the same holds for a filled field reached by auto-advance or Next.
  * 3. (UI side) Save with incomplete data highlights the first empty field and focuses it.
  *
  * Deviation from docs/06 §6.2 after the 2026-11-14 review: after two digits the field waits for a third while
@@ -103,7 +110,7 @@ fun reduce(
             if (cur.isEmpty() && state.field != Field.SYS) {
                 // Move to the previous field and erase its last digit.
                 val prev = state.field.previous()
-                DraftResult.Updated(state.set(prev, state.value(prev).dropLast(1)).advanceTo(prev))
+                DraftResult.Updated(state.set(prev, state.value(prev).dropLast(1)).backTo(prev))
             } else {
                 DraftResult.Updated(state.set(state.field, cur.dropLast(1)).copy(replace = false))
             }

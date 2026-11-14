@@ -114,7 +114,8 @@ class KeypadReducerTest {
         val done = (reduce(after, Key.Digit('3')) as DraftResult.Updated).draft
         assertEquals("13", done.sys)
         val full = (reduce(done, Key.Digit('0')) as DraftResult.Updated).draft
-        assertEquals(Draft("130", "91", "76", Field.DIA), full)
+        // DIA is filled, so its first digit replaces it (D-11).
+        assertEquals(Draft("130", "91", "76", Field.DIA, replace = true), full)
     }
 
     @Test
@@ -131,12 +132,42 @@ class KeypadReducerTest {
         assertEquals("145", (reduce(after, Key.Digit('5')) as DraftResult.Updated).draft.sys)
     }
 
+    /** Review D-11 (approved by the owner 2026-11-14): moving forward into a filled field replaces its value. */
     @Test
-    fun `auto advance into a filled field appends instead of replacing`() {
+    fun `auto advance into a filled field replaces its value`() {
         val draft = Draft(sys = "14", dia = "9", field = Field.SYS)
         val after = (reduce(draft, Key.Digit('2')) as DraftResult.Updated).draft
-        assertEquals(false, after.replace)
+        assertEquals(true, after.replace)
         assertEquals(Field.DIA, after.field)
+    }
+
+    @Test
+    fun `editing 142 over 91 by typing 1 3 0 8 5 gives 130 over 85`() {
+        var draft = Draft(sys = "142", dia = "91", pulse = "76").focus(Field.SYS)
+        "13085".forEach { draft = (reduce(draft, Key.Digit(it)) as DraftResult.Updated).draft }
+        assertEquals("130", draft.sys)
+        assertEquals("85", draft.dia)
+        assertEquals("76", draft.pulse)
+        assertEquals(Field.PULSE, draft.field)
+        // The pulse is next in line, so its first digit replaces it too.
+        assertEquals("7", (reduce(draft, Key.Digit('7')) as DraftResult.Updated).draft.pulse)
+    }
+
+    @Test
+    fun `next into a filled field replaces, into an empty one appends`() {
+        val filled = (reduce(Draft(sys = "142", dia = "91"), Key.Next) as DraftResult.Updated).draft
+        assertEquals(true, filled.replace)
+        assertEquals("8", (reduce(filled, Key.Digit('8')) as DraftResult.Updated).draft.dia)
+        val empty = (reduce(Draft(sys = "142"), Key.Next) as DraftResult.Updated).draft
+        assertEquals(false, empty.replace)
+    }
+
+    @Test
+    fun `del back into the previous field still edits its last digit`() {
+        val draft = Draft(sys = "142", dia = "", field = Field.DIA)
+        val back = (reduce(draft, Key.Del) as DraftResult.Updated).draft
+        assertEquals(Draft("14", "", "", Field.SYS), back)
+        assertEquals("145", (reduce(back, Key.Digit('5')) as DraftResult.Updated).draft.sys)
     }
 
     @Test
