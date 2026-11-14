@@ -1,10 +1,14 @@
 package ru.bpdiary.data.datastore
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -17,6 +21,7 @@ import ru.bpdiary.core.model.Arm
 import ru.bpdiary.core.model.Direction
 import ru.bpdiary.core.model.ThemeMode
 import ru.bpdiary.core.model.Thresholds
+import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsDataStoreTest {
@@ -125,5 +130,18 @@ class SettingsDataStoreTest {
             assertEquals(false, settings.onboardingDone.first())
             assertEquals(0, settings.disclaimerAck.first())
             assertEquals(ThemeMode.SYSTEM, settings.themeMode.first())
+        }
+
+    @Test
+    fun `an unreadable file gives the defaults instead of a crash`() =
+        runTest {
+            val broken =
+                object : DataStore<Preferences> by InMemoryPreferencesStore() {
+                    override val data: Flow<Preferences> = flow { throw IOException("corrupted") }
+                }
+            val settings = SettingsDataStore(broken)
+            assertEquals(Thresholds(), settings.thresholds.first())
+            assertEquals(ThemeMode.SYSTEM, settings.themeMode.first())
+            assertEquals(false, settings.onboardingDone.first())
         }
 }

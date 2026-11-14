@@ -158,4 +158,20 @@ class LevelsViewModelTest {
             advanceTimeBy(WRITE_DEBOUNCE_MS + 1)
             assertEquals(Status.NORMAL, status())
         }
+
+    @Test
+    fun `a failed write keeps the screen open and reports it`() =
+        runTest {
+            val vm = viewModel()
+            vm.step(ThresholdField.PULSE_HIGH, times = 1)
+            thresholds.failWrites = true
+            vm.effects.test {
+                vm.onEvent(LevelsEvent.BackClicked)
+                assertEquals(LevelsEffect.SaveFailed, awaitItem())
+                thresholds.failWrites = false
+                vm.onEvent(LevelsEvent.BackClicked)
+                assertEquals(LevelsEffect.Closed, awaitItem())
+            }
+            assertEquals(95, thresholds.observe().first().pulseHigh)
+        }
 }

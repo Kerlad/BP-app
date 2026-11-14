@@ -34,4 +34,7 @@ sealed interface LevelsEvent {
 
 sealed interface LevelsEffect {
     data object Closed : LevelsEffect
+
+    /** The thresholds could not be stored; the app shows «Не удалось сохранить…». */
+    data object SaveFailed : LevelsEffect
 }

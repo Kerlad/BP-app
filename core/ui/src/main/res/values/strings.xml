@@ -68,4 +68,6 @@
     <string name="day_month_weekday">%1$s, %2$s</string>
     <!-- «Вторник, 20 октября»: weekday, then «20 октября» -->
     <string name="weekday_day_month">%1$s, %2$s</string>
+    <!-- A write to the phone storage failed (review A-03, ROADMAP §9 9.1). PROVISIONAL, awaiting the owner. -->
+    <string name="save_failed">Не удалось сохранить. Проверьте, есть ли свободное место на телефоне.</string>
 </resources>

@@ -87,4 +87,7 @@ sealed interface DiaryEffect {
     data class Deleted(
         val id: Long,
     ) : DiaryEffect
+
+    /** The delete could not be stored; the app shows «Не удалось сохранить…». */
+    data object SaveFailed : DiaryEffect
 }

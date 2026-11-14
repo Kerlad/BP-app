@@ -444,4 +444,22 @@ class EntryViewModelTest {
                 assertEquals(EntryEffect.Closed, awaitItem())
             }
         }
+
+    @Test
+    fun `a failed write shows the error and Save works again`() =
+        runTest {
+            val vm = viewModel()
+            readings.failWrites = true
+            vm.effects.test {
+                vm.type("1288271")
+                vm.onEvent(EntryEvent.SaveClicked)
+                assertTrue(vm.state.value.saveFailed)
+                expectNoEvents()
+
+                readings.failWrites = false
+                vm.onEvent(EntryEvent.SaveClicked)
+                assertEquals(EntryEffect.Saved(readingId = 1, edited = false, critical = false), awaitItem())
+            }
+            assertFalse(vm.state.value.saveFailed)
+        }
 }

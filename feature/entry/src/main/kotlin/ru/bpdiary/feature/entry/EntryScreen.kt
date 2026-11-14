@@ -68,6 +68,7 @@ import ru.bpdiary.core.ui.StatusChip
 import ru.bpdiary.core.ui.labelRes
 import ru.bpdiary.core.ui.rememberDateFormatter
 import ru.bpdiary.domain.Reason
+import ru.bpdiary.app.core.ui.R as UiR
 
 /** The comment counter appears from this length on (docs/05 §5.2). */
 private const val COMMENT_COUNTER_FROM = 100
@@ -107,7 +108,8 @@ fun EntryScreen(
         ) {
             TimeAndArmRow(state, onEvent)
             FieldGrid(state, onEvent)
-            state.error?.let { ErrorLine(it.reason) }
+            state.error?.let { ErrorLine(stringResource(it.reason.textRes())) }
+            if (state.saveFailed) ErrorLine(stringResource(UiR.string.save_failed))
             LiveStatusRow(state.liveStatus)
             val tags = Tag.entries
             FilterChipRow(
@@ -282,18 +284,7 @@ private fun FittedText(
 }
 
 @Composable
-private fun ErrorLine(reason: Reason) {
-    val text =
-        stringResource(
-            when (reason) {
-                Reason.SYS_NOT_GREATER -> R.string.entry_error_sys_not_greater
-                Reason.SYS_RANGE -> R.string.entry_error_sys_range
-                Reason.DIA_RANGE -> R.string.entry_error_dia_range
-                Reason.PULSE_RANGE -> R.string.entry_error_pulse_range
-                Reason.PULSE_MISSING -> R.string.entry_error_pulse_missing
-                Reason.FUTURE_TIME -> R.string.entry_error_future_time
-            },
-        )
+private fun ErrorLine(text: String) {
     Text(
         text = text,
         style = BpTheme.typography.caption.copy(fontWeight = FontWeight.W600),

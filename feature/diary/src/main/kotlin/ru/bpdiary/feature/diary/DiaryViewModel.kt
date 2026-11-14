@@ -8,6 +8,7 @@ import androidx.paging.cachedIn
 import androidx.paging.insertSeparators
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -68,6 +69,18 @@ class DiaryViewModel
                     DiaryUiState(today = today.value),
                 )
 
+        /** False when the storage refused the delete (review A-03): the row stays. */
+        @Suppress("TooGenericExceptionCaught") // any storage failure is shown the same way
+        private suspend fun tryDelete(id: Long): Boolean =
+            try {
+                readings.softDelete(id)
+                true
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                false
+            }
+
         /** Delete and the filter; navigation and copying are handled by the screen's destination. */
         fun onEvent(event: DiaryEvent) {
             when (event) {
@@ -77,8 +90,9 @@ class DiaryViewModel
 
                 is DiaryEvent.DeleteClicked -> {
                     viewModelScope.launch {
-                        readings.softDelete(event.id)
-                        effectChannel.send(DiaryEffect.Deleted(event.id))
+                        effectChannel.send(
+                            if (tryDelete(event.id)) DiaryEffect.Deleted(event.id) else DiaryEffect.SaveFailed,
+                        )
                     }
                 }
 

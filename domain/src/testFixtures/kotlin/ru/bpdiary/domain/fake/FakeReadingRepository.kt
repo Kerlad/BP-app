@@ -13,6 +13,7 @@ import ru.bpdiary.core.model.Thresholds
 import ru.bpdiary.domain.ReadingImporter
 import ru.bpdiary.domain.ReadingRepository
 import ru.bpdiary.domain.classify
+import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 
@@ -33,6 +34,9 @@ class FakeReadingRepository(
     /** Live readings, newest first. */
     private val live: Flow<List<Reading>> =
         rows.map { list -> list.filter { it.deletedAt == null }.map { it.reading }.sortedByDescending { it.takenAt } }
+
+    /** Test switch: [save] and [softDelete] fail like a full disk. */
+    var failWrites = false
 
     /** Test helper: everything stored, soft-deleted rows included. */
     val storedCount: Int get() = rows.value.size
@@ -62,6 +66,7 @@ class FakeReadingRepository(
         rows.value.firstOrNull { it.reading.id == id && it.deletedAt == null }?.reading
 
     override suspend fun save(reading: Reading): Long {
+        if (failWrites) throw IOException("disk full")
         val id = if (reading.id == 0L) ++lastId else reading.id
         val saved = reading.copy(id = id)
         rows.value = rows.value.filterNot { it.reading.id == id } + Row(saved)
@@ -69,6 +74,7 @@ class FakeReadingRepository(
     }
 
     override suspend fun softDelete(id: Long) {
+        if (failWrites) throw IOException("disk full")
         val now = time.now()
         rows.value = rows.value.map { if (it.reading.id == id) it.copy(deletedAt = now) else it }
     }

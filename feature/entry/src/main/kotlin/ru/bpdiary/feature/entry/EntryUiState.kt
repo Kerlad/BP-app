@@ -24,6 +24,8 @@ data class EntryUiState(
     val error: ValidationError? = null,
     /** Field to highlight after Save on incomplete data. */
     val missing: Field? = null,
+    /** The storage refused the last save or delete (review A-03). */
+    val saveFailed: Boolean = false,
     val canSave: Boolean = false,
     val dialog: EntryDialog? = null,
 )

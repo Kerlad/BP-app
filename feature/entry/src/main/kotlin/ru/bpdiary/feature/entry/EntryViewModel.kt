@@ -7,6 +7,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -237,11 +238,15 @@ class EntryViewModel
                 return
             }
             busy = true
+            transient.update { it.copy(saveFailed = false) }
             viewModelScope.launch {
                 val reading = current.toReading(original)
-                when (val result = saveReading(reading, requirePulse = pulseRequired)) {
+                val result =
+                    attempt(saveFailed) { saveReading(reading, requirePulse = pulseRequired) } ?: return@launch
+                when (result) {
                     is SaveResult.Success -> {
-                        settings.setLastArm(current.arm)
+                        // The reading is stored; a failed write of the last arm is not worth an error.
+                        runCatching { settings.setLastArm(current.arm) }
                         savedStateHandle.remove<String>(KEY_FORM)
                         effectChannel.send(
                             EntryEffect.Saved(
@@ -265,11 +270,18 @@ class EntryViewModel
             transient.update { it.copy(dialog = null) }
             if (busy) return
             busy = true
+            transient.update { it.copy(saveFailed = false) }
             viewModelScope.launch {
-                readings.softDelete(id)
+                attempt(saveFailed) { readings.softDelete(id) } ?: return@launch
                 savedStateHandle.remove<String>(KEY_FORM)
                 effectChannel.send(EntryEffect.Deleted(id))
             }
+        }
+
+        /** The storage refused a write: show «Не удалось сохранить…» and unlock Save. */
+        private val saveFailed: () -> Unit = {
+            transient.update { it.copy(saveFailed = true) }
+            busy = false
         }
 
         /** Manual entry needs a pulse; an imported reading edited without one may stay without (D-07). */
@@ -296,10 +308,26 @@ class EntryViewModel
                 liveStatus = liveStatus(th),
                 error = t.error,
                 missing = t.missing,
+                saveFailed = t.saveFailed,
                 canSave = complete(pulseRequired),
                 dialog = t.dialog,
             )
         }
+    }
+
+/** Runs a storage call; on failure calls [onFailure] and returns null (review A-03). */
+@Suppress("TooGenericExceptionCaught") // any storage failure is shown the same way
+private suspend fun <T : Any> attempt(
+    onFailure: () -> Unit,
+    block: suspend () -> T,
+): T? =
+    try {
+        block()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: Exception) {
+        onFailure()
+        null
     }
 
 /** UI-only state that is not worth restoring after process death. */
@@ -308,6 +336,7 @@ private data class Transient(
     val dialog: EntryDialog? = null,
     /** Empty required field the user tried to skip with Save. */
     val missing: Field? = null,
+    val saveFailed: Boolean = false,
 )
 
 @Serializable

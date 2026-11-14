@@ -63,6 +63,7 @@ import ru.bpdiary.feature.transfer.ExportRoute
 import ru.bpdiary.feature.transfer.ImportRoute
 import ru.bpdiary.feature.transfer.exportScreen
 import ru.bpdiary.feature.transfer.importScreen
+import ru.bpdiary.app.core.ui.R as UiR
 
 private const val TOAST_MS = 2_400L
 private const val UNDO_MS = 5_000L
@@ -125,6 +126,7 @@ fun BpApp(
             appGraph(
                 navController = navController,
                 onReadingDeleted = ::offerUndo,
+                onSaveFailed = { toast = UiR.string.save_failed },
                 onReadingSaved = { saved ->
                     navController.leaveEntry(saved)
                     toast = if (saved.edited) R.string.toast_changes_saved else R.string.toast_reading_saved
@@ -148,6 +150,7 @@ fun BpApp(
 private fun NavGraphBuilder.appGraph(
     navController: NavHostController,
     onReadingDeleted: (readingId: Long) -> Unit,
+    onSaveFailed: () -> Unit,
     onReadingSaved: (EntryEffect.Saved) -> Unit,
 ) {
     onboardingScreen(onFinished = { navController.navigate(DisclaimerRoute) })
@@ -164,8 +167,12 @@ private fun NavGraphBuilder.appGraph(
         onAdd = { navController.navigate(ReminderEditRoute()) },
         onOpen = { navController.navigate(ReminderEditRoute(it)) },
     )
-    reminderEditScreen(onClose = { navController.popBackStack() })
-    levelsScreen(onClose = { navController.popBackStack() }, onOpenSettings = { navController.navigate(SettingsRoute) })
+    reminderEditScreen(onClose = { navController.popBackStack() }, onSaveFailed = onSaveFailed)
+    levelsScreen(
+        onClose = { navController.popBackStack() },
+        onOpenSettings = { navController.navigate(SettingsRoute) },
+        onSaveFailed = onSaveFailed,
+    )
     settingsScreen(
         onClose = { navController.popBackStack() },
         onOpenReminders = { navController.navigate(RemindersRoute) },
@@ -177,6 +184,7 @@ private fun NavGraphBuilder.appGraph(
         onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },
         onAddReading = { navController.navigate(EntryRoute()) },
         onDeleted = onReadingDeleted,
+        onSaveFailed = onSaveFailed,
         onOpenExport = { navController.navigate(ExportRoute) },
         onOpenImport = { navController.navigate(ImportRoute) },
     )

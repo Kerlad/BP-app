@@ -4,10 +4,12 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import ru.bpdiary.core.model.Arm
@@ -15,14 +17,19 @@ import ru.bpdiary.core.model.Direction
 import ru.bpdiary.core.model.ThemeMode
 import ru.bpdiary.core.model.Thresholds
 import ru.bpdiary.core.model.problem
+import java.io.IOException
 
 /** Typed access to `settings.preferences_pb`. Unknown or corrupted stored values fall back to the defaults. */
 class SettingsDataStore(
     private val store: DataStore<Preferences>,
 ) {
+    /** A read failure gives the defaults: a broken settings file must never crash the app (review A-03). */
+    private val data: Flow<Preferences> =
+        store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+
     /** Emits only real changes, otherwise every unrelated write would redraw the charts. */
     val thresholds: Flow<Thresholds> =
-        store.data
+        data
             .map { prefs ->
                 val stored =
                     Thresholds(
@@ -92,14 +99,14 @@ class SettingsDataStore(
         key: Preferences.Key<String>,
         default: E,
     ): Flow<E> =
-        store.data
+        data
             .map { prefs -> enumValues<E>().firstOrNull { it.name == prefs[key] } ?: default }
             .distinctUntilChanged()
 
     private fun <T> valueFlow(
         key: Preferences.Key<T>,
         default: T,
-    ): Flow<T> = store.data.map { it[key] ?: default }.distinctUntilChanged()
+    ): Flow<T> = data.map { it[key] ?: default }.distinctUntilChanged()
 
     private companion object {
         val HIGH_SYS = intPreferencesKey("th_high_sys")

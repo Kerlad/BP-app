@@ -196,4 +196,16 @@ class DiaryViewModelTest {
             vm.refresh()
             assertEquals(day(21), vm.state.value.today)
         }
+
+    @Test
+    fun `a failed delete keeps the reading and reports it`() =
+        runTest {
+            val (vm, repo) = viewModel()
+            repo.failWrites = true
+            vm.effects.test {
+                vm.onEvent(DiaryEvent.DeleteClicked(4))
+                assertEquals(DiaryEffect.SaveFailed, awaitItem())
+            }
+            assertEquals(4, vm.state.value.total)
+        }
 }

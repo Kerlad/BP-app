@@ -19,24 +19,28 @@ data object LevelsRoute
 fun NavGraphBuilder.levelsScreen(
     onClose: () -> Unit,
     onOpenSettings: () -> Unit,
+    onSaveFailed: () -> Unit,
 ) {
-    composable<LevelsRoute> { LevelsDestination(onClose, onOpenSettings) }
+    composable<LevelsRoute> { LevelsDestination(onClose, onOpenSettings, onSaveFailed) }
 }
 
 @Composable
 private fun LevelsDestination(
     onClose: () -> Unit,
     onOpenSettings: () -> Unit,
+    onSaveFailed: () -> Unit,
 ) {
     val viewModel = hiltViewModel<LevelsViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val close by rememberUpdatedState(onClose)
+    val failed by rememberUpdatedState(onSaveFailed)
     LaunchedEffect(viewModel, lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             viewModel.effects.collect { effect ->
                 when (effect) {
                     LevelsEffect.Closed -> close()
+                    LevelsEffect.SaveFailed -> failed()
                 }
             }
         }

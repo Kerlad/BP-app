@@ -3,6 +3,7 @@ package ru.bpdiary.feature.levels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -56,7 +57,8 @@ class LevelsViewModel
                 val stored = thresholds.observe().first()
                 written = stored
                 edited.value = stored
-                edited.filterNotNull().debounce(WRITE_DEBOUNCE_MS).collect { write(it) }
+                // A failed background write is retried by the next change and reported on Back.
+                edited.filterNotNull().debounce(WRITE_DEBOUNCE_MS).collect { tryWrite(it) }
             }
         }
 
@@ -76,8 +78,8 @@ class LevelsViewModel
 
                 LevelsEvent.BackClicked -> {
                     viewModelScope.launch {
-                        edited.value?.let { write(it) }
-                        effectChannel.send(LevelsEffect.Closed)
+                        val ok = edited.value?.let { tryWrite(it) } ?: true
+                        effectChannel.send(if (ok) LevelsEffect.Closed else LevelsEffect.SaveFailed)
                     }
                 }
 
@@ -93,9 +95,18 @@ class LevelsViewModel
             change(current)?.let { edited.value = it }
         }
 
-        private suspend fun write(value: Thresholds) {
-            if (value == written) return
-            thresholds.set(value)
-            written = value
+        /** False when the storage refused the write (review A-03): the screen stays as it is. */
+        @Suppress("TooGenericExceptionCaught") // any storage failure is shown the same way
+        private suspend fun tryWrite(value: Thresholds): Boolean {
+            if (value == written) return true
+            return try {
+                thresholds.set(value)
+                written = value
+                true
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                false
+            }
         }
     }

@@ -23,15 +23,19 @@ import ru.bpdiary.core.ui.DayChangeEffect
 @Serializable
 data object DiaryRoute
 
-/** [onDeleted] shows the app-wide «Измерение удалено / Отменить» snackbar. */
+/** [onDeleted] shows the app-wide «Измерение удалено / Отменить» snackbar, [onSaveFailed] the storage error. */
+@Suppress("LongParameterList") // navigation wiring, like the @Composable destination it calls
 fun NavGraphBuilder.diaryScreen(
     onOpenReading: (readingId: Long) -> Unit,
     onAddReading: () -> Unit,
     onDeleted: (readingId: Long) -> Unit,
+    onSaveFailed: () -> Unit,
     onOpenExport: () -> Unit,
     onOpenImport: () -> Unit,
 ) {
-    composable<DiaryRoute> { DiaryDestination(onOpenReading, onAddReading, onDeleted, onOpenExport, onOpenImport) }
+    composable<DiaryRoute> {
+        DiaryDestination(onOpenReading, onAddReading, onDeleted, onSaveFailed, onOpenExport, onOpenImport)
+    }
 }
 
 @Composable
@@ -39,6 +43,7 @@ private fun DiaryDestination(
     onOpenReading: (readingId: Long) -> Unit,
     onAddReading: () -> Unit,
     onDeleted: (readingId: Long) -> Unit,
+    onSaveFailed: () -> Unit,
     onOpenExport: () -> Unit,
     onOpenImport: () -> Unit,
 ) {
@@ -50,11 +55,13 @@ private fun DiaryDestination(
     val scope = rememberCoroutineScope()
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val deleted by rememberUpdatedState(onDeleted)
+    val failed by rememberUpdatedState(onSaveFailed)
     LaunchedEffect(viewModel, lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             viewModel.effects.collect { effect ->
                 when (effect) {
                     is DiaryEffect.Deleted -> deleted(effect.id)
+                    DiaryEffect.SaveFailed -> failed()
                 }
             }
         }
