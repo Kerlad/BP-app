@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
 import androidx.test.core.app.ApplicationProvider
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -250,6 +251,14 @@ class HomeScreenTest {
         show(demo)
         rule.waitForIdle()
         rule.onAllNodes(hasScrollAction()).assertCountEquals(1)
+    }
+
+    @Test
+    fun `at font scale 2 the screen scrolls and the last card is reachable`() {
+        show(demo, fontScale = 2f)
+        rule.waitForIdle()
+        rule.onAllNodes(hasScrollAction()).assertCountEquals(1)
+        rule.onNodeWithText("Следующее напоминание").performScrollTo().assertIsDisplayed()
     }
 
     @Test

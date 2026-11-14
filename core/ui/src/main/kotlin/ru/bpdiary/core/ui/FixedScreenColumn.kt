@@ -15,12 +15,16 @@ import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 private object FlexibleChild
+
+/** Above this font scale the flexible block is never squeezed: the whole screen scrolls instead. */
+private const val LARGE_FONT_SCALE = 1.3f
 
 /** Marks the child of [FixedScreenColumn] that gets the height the others leave. */
 fun Modifier.flexibleHeight(): Modifier = layoutId(FlexibleChild)
@@ -29,7 +33,8 @@ fun Modifier.flexibleHeight(): Modifier = layoutId(FlexibleChild)
  * A main screen that fits the display and does not move: the children keep their height and the one marked
  * [flexibleHeight] gets what is left, down to its minimum intrinsic height. Only when even that does not fit (a small
  * display or a large font) the column scrolls, so that nothing becomes unreachable, and the flexible child takes
- * its full height again: there is no point in squeezing what can be scrolled to.
+ * its full height again: there is no point in squeezing what can be scrolled to. At a font scale above 1.3 the
+ * flexible child is not squeezed at all (a squeezed chart overlaps the large text): the screen scrolls.
  */
 @Composable
 fun FixedScreenColumn(
@@ -38,6 +43,7 @@ fun FixedScreenColumn(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val largeFont = LocalDensity.current.fontScale > LARGE_FONT_SCALE
     BoxWithConstraints(modifier) {
         val room = maxHeight - contentPadding.calculateTopPadding() - contentPadding.calculateBottomPadding()
         val scroll = rememberScrollState()
@@ -57,8 +63,11 @@ fun FixedScreenColumn(
                 placeables.mapIndexed { index, placeable ->
                     placeable ?: measurables[index].let { flexible ->
                         val left = room.roundToPx() - fixedHeight
-                        val fits = left >= flexible.minIntrinsicHeight(constraints.maxWidth)
-                        flexible.measure(if (fits) free.copy(maxHeight = left) else free)
+                        val fits = !largeFont && left >= flexible.minIntrinsicHeight(constraints.maxWidth)
+                        // Not squeezed: its natural height, as a finite maximum (a weighted child in a column with an
+                        // infinite maximum gets no room and the chart would overlap the text above it).
+                        val natural = flexible.maxIntrinsicHeight(constraints.maxWidth)
+                        flexible.measure(free.copy(maxHeight = if (fits) left else natural))
                     }
                 }
             val height = fixedHeight + all.sumOf { it.height } - placeables.sumOf { it?.height ?: 0 }

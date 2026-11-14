@@ -4,6 +4,10 @@ import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
@@ -215,5 +219,13 @@ class ComponentsTest {
         themed { BpCard(onClick = { clicks++ }) { Text("карточка") } }
         rule.onNodeWithText("карточка").performClick()
         assertEquals(1, clicks)
+    }
+
+    @Test
+    fun `stepper value is a polite live region`() {
+        themed { Stepper("120", {}, {}, "меньше", "больше") }
+        rule.onNodeWithText("120").assert(
+            SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite),
+        )
     }
 }
