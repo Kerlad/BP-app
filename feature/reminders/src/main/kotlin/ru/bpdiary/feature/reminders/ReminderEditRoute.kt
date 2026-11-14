@@ -20,9 +20,12 @@ data class ReminderEditRoute(
     val reminderId: Long? = null,
 )
 
-fun NavGraphBuilder.reminderEditScreen(onClose: () -> Unit) {
+fun NavGraphBuilder.reminderEditScreen(
+    onClose: () -> Unit,
+    onSaveFailed: () -> Unit,
+) {
     composable<ReminderEditRoute> { backStackEntry ->
-        ReminderEditDestination(backStackEntry.toRoute<ReminderEditRoute>().reminderId, onClose)
+        ReminderEditDestination(backStackEntry.toRoute<ReminderEditRoute>().reminderId, onClose, onSaveFailed)
     }
 }
 
@@ -30,6 +33,7 @@ fun NavGraphBuilder.reminderEditScreen(onClose: () -> Unit) {
 private fun ReminderEditDestination(
     reminderId: Long?,
     onClose: () -> Unit,
+    onSaveFailed: () -> Unit,
 ) {
     val viewModel =
         hiltViewModel<ReminderEditViewModel, ReminderEditViewModel.Factory>(
@@ -38,11 +42,13 @@ private fun ReminderEditDestination(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val close by rememberUpdatedState(onClose)
+    val failed by rememberUpdatedState(onSaveFailed)
     LaunchedEffect(viewModel, lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             viewModel.effects.collect { effect ->
                 when (effect) {
                     ReminderEditEffect.Closed -> close()
+                    ReminderEditEffect.SaveFailed -> failed()
                 }
             }
         }

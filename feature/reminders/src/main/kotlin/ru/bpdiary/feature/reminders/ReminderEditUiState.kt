@@ -60,4 +60,7 @@ sealed interface ReminderEditEvent {
 
 sealed interface ReminderEditEffect {
     data object Closed : ReminderEditEffect
+
+    /** The reminder could not be stored (review A-03); the app shows «Не удалось сохранить…». */
+    data object SaveFailed : ReminderEditEffect
 }

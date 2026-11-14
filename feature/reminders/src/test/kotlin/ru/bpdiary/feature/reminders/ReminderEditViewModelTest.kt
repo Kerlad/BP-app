@@ -3,7 +3,9 @@ package ru.bpdiary.feature.reminders
 import app.cash.turbine.test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -171,5 +173,21 @@ class ReminderEditViewModelTest {
             }
             assertEquals(3, repository.getAll().size)
             assertEquals(0, scheduler.rescheduleCount)
+        }
+
+    @Test
+    fun `two quick Done taps save one reminder and close once`() =
+        runTest {
+            Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+            val vm = viewModel()
+            vm.effects.test {
+                vm.onEvent(ReminderEditEvent.DoneClicked("Измерение"))
+                vm.onEvent(ReminderEditEvent.DoneClicked("Измерение"))
+                advanceUntilIdle()
+                assertEquals(ReminderEditEffect.Closed, awaitItem())
+                expectNoEvents()
+            }
+            assertEquals(1, repository.getAll().count { it.id > 3 })
+            assertEquals(1, scheduler.rescheduleCount)
         }
 }

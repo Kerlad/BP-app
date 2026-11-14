@@ -6,6 +6,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,6 +47,9 @@ class ReminderEditViewModel
         val effects: Flow<ReminderEditEffect> = effectChannel.receiveAsFlow()
 
         private var original: Reminder? = null
+
+        // Set before the work starts and kept on success: the screen closes, so a second tap must do nothing.
+        private var busy = false
 
         init {
             if (reminderId != null) load(reminderId)
@@ -119,32 +123,51 @@ class ReminderEditViewModel
 
         private fun save(defaultLabel: String) {
             val current = form.value
-            if (!current.canSave) return
+            if (!current.canSave || busy) return
+            busy = true
             viewModelScope.launch {
                 val label = current.label.trim().ifEmpty { defaultLabel }
                 // An existing reminder keeps its switch; a new one starts on.
                 val enabled = original?.enabled ?: true
-                reminders.save(
-                    Reminder(
-                        id = reminderId ?: 0,
-                        time = current.time,
-                        label = label,
-                        days = current.days,
-                        enabled = enabled,
-                    ),
-                )
-                scheduler.rescheduleAll()
-                effectChannel.send(ReminderEditEffect.Closed)
+                @Suppress("TooGenericExceptionCaught") // any storage failure is shown the same way
+                try {
+                    reminders.save(
+                        Reminder(
+                            id = reminderId ?: 0,
+                            time = current.time,
+                            label = label,
+                            days = current.days,
+                            enabled = enabled,
+                        ),
+                    )
+                    scheduler.rescheduleAll()
+                    effectChannel.send(ReminderEditEffect.Closed)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    busy = false
+                    effectChannel.send(ReminderEditEffect.SaveFailed)
+                }
             }
         }
 
         private fun delete() {
             val id = reminderId ?: return
+            if (busy) return
+            busy = true
             form.update { it.copy(confirmDelete = false) }
             viewModelScope.launch {
-                reminders.delete(id)
-                scheduler.rescheduleAll()
-                effectChannel.send(ReminderEditEffect.Closed)
+                @Suppress("TooGenericExceptionCaught") // any storage failure is shown the same way
+                try {
+                    reminders.delete(id)
+                    scheduler.rescheduleAll()
+                    effectChannel.send(ReminderEditEffect.Closed)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    busy = false
+                    effectChannel.send(ReminderEditEffect.SaveFailed)
+                }
             }
         }
     }
