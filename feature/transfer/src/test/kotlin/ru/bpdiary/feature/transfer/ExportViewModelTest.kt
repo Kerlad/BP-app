@@ -3,6 +3,7 @@ package ru.bpdiary.feature.transfer
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -229,5 +230,59 @@ class ExportViewModelTest {
         assertTrue(vm.state.value.failed)
         vm.onEvent(ExportEvent.FormatSelected(ExportFormat.CSV))
         assertFalse(vm.state.value.failed)
+    }
+
+    @Test
+    fun `a second click while a file is being made is ignored`() {
+        val gate = CompletableDeferred<Unit>()
+        renderer.gate = gate
+        val vm = viewModel(daysAgo(1))
+        vm.onEvent(ExportEvent.SaveTargetChosen("content://a"))
+        assertTrue(vm.state.value.busy)
+        vm.onEvent(ExportEvent.SaveTargetChosen("content://b"))
+        vm.onEvent(ExportEvent.ShareClicked)
+        vm.onEvent(ExportEvent.PrintClicked)
+        assertEquals(1, renderer.reports.size)
+
+        gate.complete(Unit)
+        assertFalse(vm.state.value.busy)
+        assertTrue(vm.state.value.saved)
+        assertEquals(setOf("content://a"), files.savedBytes.keys)
+    }
+
+    @Test
+    fun `a renderer that fails with any of the known errors gives failed and frees the buttons`() {
+        listOf(IOException(), IllegalStateException(), OutOfMemoryError()).forEach { error ->
+            renderer.failure = error
+            val vm = viewModel(daysAgo(1))
+            vm.onEvent(ExportEvent.SaveTargetChosen("content://a"))
+            assertTrue("save ${error::class}", vm.state.value.failed)
+            assertFalse(vm.state.value.busy)
+            vm.onEvent(ExportEvent.ShareClicked)
+            assertTrue("share ${error::class}", vm.state.value.failed)
+            assertFalse(vm.state.value.busy)
+        }
+    }
+
+    @Test
+    fun `a print that fails says so and sends no job`() =
+        runTest {
+            renderer.failure = IllegalStateException()
+            val vm = viewModel(daysAgo(1))
+            vm.effects.test {
+                vm.onEvent(ExportEvent.PrintClicked)
+                expectNoEvents()
+            }
+            assertTrue(vm.state.value.failed)
+            assertFalse(vm.state.value.busy)
+        }
+
+    @Test
+    fun `today stays today after a range in the past is chosen`() {
+        val vm = viewModel(daysAgo(40))
+        assertEquals(today, vm.state.value.today)
+        vm.onEvent(ExportEvent.RangeChosen(today.minusDays(41), today.minusDays(39)))
+        assertEquals(today.minusDays(39), vm.state.value.to)
+        assertEquals(today, vm.state.value.today)
     }
 }

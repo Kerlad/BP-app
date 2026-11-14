@@ -95,6 +95,12 @@ interface ImportWorkspace {
         replaceAll: Boolean,
     ): Flow<ImportProgress>
 
+    /** True while the background work of an earlier run (maybe before the app was killed) is queued or running. */
+    suspend fun isRunning(): Boolean
+
+    /** The progress of the work that is already running: the same stream as [run] gives, without a new start. */
+    fun attach(): Flow<ImportProgress>
+
     /** Every bad row of the last run. */
     suspend fun errors(): List<RowError>
 
@@ -107,6 +113,7 @@ interface ImportWorkspace {
     fun clear()
 }
 
+@Suppress("TooManyFunctions")
 class AndroidImportWorkspace
     @Inject
     constructor(
@@ -182,15 +189,32 @@ class AndroidImportWorkspace
                     .build()
             val manager = WorkManager.getInstance(context)
             manager.enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, request)
-            return manager
-                .getWorkInfoByIdFlow(request.id)
+            return progressOf(manager.getWorkInfoByIdFlow(request.id))
+        }
+
+        override suspend fun isRunning(): Boolean =
+            WorkManager
+                .getInstance(context)
+                .getWorkInfosForUniqueWorkFlow(WORK_NAME)
+                .first()
+                .any { it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED }
+
+        override fun attach(): Flow<ImportProgress> =
+            progressOf(
+                WorkManager
+                    .getInstance(context)
+                    .getWorkInfosForUniqueWorkFlow(WORK_NAME)
+                    .map { infos -> infos.firstOrNull() },
+            )
+
+        private fun progressOf(infos: Flow<WorkInfo?>): Flow<ImportProgress> =
+            infos
                 .filterNotNull()
                 .map { it.toProgress() }
                 .transformWhile { progress ->
                     emit(progress)
                     progress is ImportProgress.Running
                 }
-        }
 
         private fun WorkInfo.toProgress(): ImportProgress =
             when (state) {

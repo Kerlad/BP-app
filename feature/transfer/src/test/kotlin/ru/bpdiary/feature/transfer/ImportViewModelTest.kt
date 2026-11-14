@@ -284,4 +284,39 @@ class ImportViewModelTest {
                 assertEquals(ImportEffect.Close, awaitItem())
             }
         }
+
+    @Test
+    fun `work that is already running opens the running step and follows its progress`() {
+        workspace.running = true
+        val progress = MutableSharedFlow<ImportProgress>(replay = 1)
+        workspace.progress = progress
+        val vm = viewModel()
+        assertEquals(ImportStep.RUNNING, vm.state.value.step)
+        assertEquals(1, workspace.attached)
+        assertEquals(0, workspace.runs.size)
+
+        progress.tryEmit(ImportProgress.Running(0.5f))
+        assertEquals(0.5f, vm.state.value.progress)
+        progress.tryEmit(ImportProgress.Done(report))
+        assertEquals(ImportStep.RESULT, vm.state.value.step)
+    }
+
+    @Test
+    fun `while work is running, choosing a file and going back do nothing`() {
+        workspace.running = true
+        workspace.progress = MutableSharedFlow()
+        val vm = viewModel()
+        vm.onEvent(ImportEvent.FileChosen("content://other"))
+        vm.onEvent(ImportEvent.BackClicked)
+        assertEquals(0, workspace.picks)
+        assertEquals(0, workspace.cleared)
+        assertEquals(ImportStep.RUNNING, vm.state.value.step)
+    }
+
+    @Test
+    fun `without running work the wizard starts at the file choice`() {
+        val vm = viewModel()
+        assertEquals(ImportStep.PICK, vm.state.value.step)
+        assertEquals(0, workspace.attached)
+    }
 }

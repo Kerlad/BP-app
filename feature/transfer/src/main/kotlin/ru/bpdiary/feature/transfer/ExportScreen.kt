@@ -89,7 +89,7 @@ fun ExportScreen(
     TransferFrame(stringResource(R.string.export_title), { onEvent(ExportEvent.BackClicked) }, modifier) {
         FormatCard(state.format, onEvent)
         PeriodCard(state, onEvent)
-        val ready = (state.count ?: 0) > 0
+        val ready = (state.count ?: 0) > 0 && !state.busy
         BpPrimaryButton(
             text = stringResource(R.string.export_save),
             onClick = { onEvent(ExportEvent.SaveClicked) },
@@ -119,7 +119,7 @@ fun ExportScreen(
             Text(message, style = BpTheme.typography.body, color = if (state.failed) colors.hi else colors.ok)
         }
     }
-    if (state.choosingRange) RangeDialog(onEvent, state.to)
+    if (state.choosingRange) RangeDialog(onEvent, state.today)
 }
 
 @Composable

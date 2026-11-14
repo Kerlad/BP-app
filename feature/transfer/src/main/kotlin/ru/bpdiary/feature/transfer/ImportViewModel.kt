@@ -135,6 +135,16 @@ class ImportViewModel
 
         private val preview = ImportPreview(workspace, viewModelScope, mutable)
 
+        init {
+            // The app may have been killed during an import: the work goes on, so show it instead of the file choice.
+            viewModelScope.launch {
+                if (workspace.isRunning()) {
+                    mutable.update { it.copy(step = ImportStep.RUNNING, progress = null) }
+                    observe(workspace.attach())
+                }
+            }
+        }
+
         fun onEvent(event: ImportEvent) {
             when (event) {
                 is ImportPreviewEvent -> preview.onEvent(event)
@@ -159,22 +169,26 @@ class ImportViewModel
                 it.copy(step = ImportStep.RUNNING, confirmingReplace = false, showingErrors = false, progress = null)
             }
             viewModelScope.launch {
-                workspace.run(options, current.inspection?.rows ?: 0, replaceAll).collect { progress ->
-                    when (progress) {
-                        is ImportProgress.Running -> {
-                            mutable.update { it.copy(progress = progress.fraction) }
-                        }
+                observe(workspace.run(options, current.inspection?.rows ?: 0, replaceAll))
+            }
+        }
 
-                        is ImportProgress.Done -> {
-                            // The worker keeps the bad rows in a file: its output is too small for them.
-                            val errors = workspace.errors().take(CsvLimits.MAX_ERRORS_SHOWN)
-                            val report = progress.report.copy(errors = errors)
-                            mutable.update { it.copy(step = ImportStep.RESULT, report = report) }
-                        }
+        private suspend fun observe(progress: Flow<ImportProgress>) {
+            progress.collect { item ->
+                when (item) {
+                    is ImportProgress.Running -> {
+                        mutable.update { it.copy(progress = item.fraction) }
+                    }
 
-                        ImportProgress.Failed -> {
-                            mutable.update { it.copy(step = ImportStep.RESULT, failed = true) }
-                        }
+                    is ImportProgress.Done -> {
+                        // The worker keeps the bad rows in a file: its output is too small for them.
+                        val errors = workspace.errors().take(CsvLimits.MAX_ERRORS_SHOWN)
+                        val report = item.report.copy(errors = errors)
+                        mutable.update { it.copy(step = ImportStep.RESULT, report = report) }
+                    }
+
+                    ImportProgress.Failed -> {
+                        mutable.update { it.copy(step = ImportStep.RESULT, failed = true) }
                     }
                 }
             }
@@ -202,6 +216,7 @@ class ImportViewModel
         }
 
         private fun restart() {
+            if (mutable.value.step == ImportStep.RUNNING) return
             preview.cancel()
             workspace.clear()
             mutable.update { ImportUiState(zoneOffset = it.zoneOffset) }

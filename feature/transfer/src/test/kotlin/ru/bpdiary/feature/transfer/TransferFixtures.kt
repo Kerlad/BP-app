@@ -1,5 +1,6 @@
 package ru.bpdiary.feature.transfer
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import ru.bpdiary.core.model.Arm
@@ -73,13 +74,26 @@ internal class FakeImportWorkspace : ImportWorkspace {
     var progress: Flow<ImportProgress> = flowOf(ImportProgress.Done(report))
     var badRows: List<RowError> = emptyList()
     var saveFailure: IOException? = null
+    var running = false
 
     val inspected = ArrayList<CsvOptions>()
     val runs = ArrayList<Boolean>()
     val saved = HashMap<String, String>()
     var cleared = 0
+    var picks = 0
+    var attached = 0
 
-    override suspend fun pick(uri: String): PickResult = pickResult
+    override suspend fun pick(uri: String): PickResult {
+        picks++
+        return pickResult
+    }
+
+    override suspend fun isRunning(): Boolean = running
+
+    override fun attach(): Flow<ImportProgress> {
+        attached++
+        return progress
+    }
 
     override suspend fun detect(
         encoding: CsvEncoding?,
@@ -151,9 +165,15 @@ internal class FakeExportFiles : ExportFiles {
 /** Remembers the reports it was given and answers with the page count as the "PDF". */
 internal class FakeReportRenderer : ReportRenderer {
     val reports = ArrayList<DoctorReport>()
+    var failure: Throwable? = null
+
+    /** When set, a render waits for it: lets a test click again while the first job is still working. */
+    var gate: CompletableDeferred<Unit>? = null
 
     override suspend fun render(report: DoctorReport): ByteArray {
         reports += report
+        gate?.await()
+        failure?.let { throw it }
         return "pdf:${report.pageCount}".toByteArray()
     }
 }

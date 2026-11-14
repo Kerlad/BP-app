@@ -4,6 +4,7 @@ import android.content.res.Resources
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -58,6 +59,10 @@ data class ExportUiState(
     val saved: Boolean = false,
     val failed: Boolean = false,
     val choosingRange: Boolean = false,
+    /** True while a file is being made: a second click must not start a second one. */
+    val busy: Boolean = false,
+    /** The real today (not the end of the chosen period): the latest day the range dialog may offer. */
+    val today: LocalDate = LocalDate.MIN,
 ) {
     val fileName: String get() = exportFileName(from, to, format)
 }
@@ -122,7 +127,7 @@ class ExportViewModel
         private val renderer: ReportRenderer,
         private val time: TimeProvider,
     ) : ViewModel() {
-        private val mutable = MutableStateFlow(ExportUiState())
+        private val mutable = MutableStateFlow(ExportUiState(today = today))
         val state: StateFlow<ExportUiState> = mutable.asStateFlow()
 
         private val effectChannel = Channel<ExportEffect>(Channel.BUFFERED)
@@ -240,39 +245,64 @@ class ExportViewModel
             }
         }
 
-        private fun save(uri: String) {
-            viewModelScope.launch {
-                val done =
-                    try {
-                        files.save(uri, content())
-                        true
-                    } catch (_: IOException) {
-                        false
-                    }
-                mutable.update { it.copy(saved = done, failed = !done) }
-            }
-        }
-
-        private fun share() {
+        /** Runs one file job at a time: [busy] is set at the start and cleared at the end, whatever happens. */
+        private fun exclusive(block: suspend () -> Unit) {
+            if (mutable.value.busy) return
+            mutable.update { it.copy(busy = true) }
             viewModelScope.launch {
                 try {
-                    val uri = files.forShare(mutable.value.fileName, content())
-                    mutable.update { it.copy(failed = false) }
-                    effectChannel.send(ExportEffect.Share(uri, mutable.value.format.mime))
-                } catch (_: IOException) {
-                    mutable.update { it.copy(failed = true) }
+                    block()
+                } finally {
+                    mutable.update { it.copy(busy = false) }
                 }
             }
         }
 
-        private fun print() {
-            viewModelScope.launch {
-                val report = report()
-                val pdf = renderer.render(report)
-                mutable.update { it.copy(failed = false, saved = false) }
-                effectChannel.send(ExportEffect.Print(PrintJob(mutable.value.fileName, report.pageCount, pdf)))
+        /** False when the file could not be made: storage, a renderer in a bad state, or no memory for the PDF. */
+        @Suppress("TooGenericExceptionCaught")
+        private suspend fun attempt(block: suspend () -> Unit): Boolean =
+            try {
+                block()
+                true
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: IOException) {
+                false
+            } catch (_: IllegalStateException) {
+                false
+            } catch (_: OutOfMemoryError) {
+                // A long report as one byte array can exhaust the heap on a weak phone: say so instead of crashing.
+                false
             }
-        }
+
+        private fun save(uri: String) =
+            exclusive {
+                val done = attempt { files.save(uri, content()) }
+                mutable.update { it.copy(saved = done, failed = !done) }
+            }
+
+        private fun share() =
+            exclusive {
+                val done =
+                    attempt {
+                        val uri = files.forShare(mutable.value.fileName, content())
+                        mutable.update { it.copy(failed = false) }
+                        effectChannel.send(ExportEffect.Share(uri, mutable.value.format.mime))
+                    }
+                if (!done) mutable.update { it.copy(failed = true) }
+            }
+
+        private fun print() =
+            exclusive {
+                val done =
+                    attempt {
+                        val report = report()
+                        val pdf = renderer.render(report)
+                        mutable.update { it.copy(failed = false, saved = false) }
+                        effectChannel.send(ExportEffect.Print(PrintJob(mutable.value.fileName, report.pageCount, pdf)))
+                    }
+                if (!done) mutable.update { it.copy(failed = true, saved = false) }
+            }
     }
 
 private fun localDay(reading: Reading): LocalDate = reading.takenAt.atOffset(reading.zoneOffset).toLocalDate()

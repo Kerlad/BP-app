@@ -36,6 +36,8 @@ internal class ImportPreview(
     }
 
     private fun choose(uri: String) {
+        // While the work runs, the file under it must not change (the worker reads the same cache copy).
+        if (state.value.step == ImportStep.RUNNING) return
         state.update { it.copy(busy = true, fileProblem = null) }
         scope.launch {
             when (val result = workspace.pick(uri)) {
