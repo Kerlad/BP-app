@@ -61,6 +61,20 @@ class DisclaimerViewModelTest {
         }
 
     @Test
+    fun `a second continue does not accept again`() =
+        runTest {
+            val vm = DisclaimerViewModel(settings)
+            vm.onEvent(DisclaimerEvent.CheckedChanged(true))
+            vm.effects.test {
+                vm.onEvent(DisclaimerEvent.ContinueClicked)
+                vm.onEvent(DisclaimerEvent.ContinueClicked)
+                assertEquals(DisclaimerEffect.Accepted, awaitItem())
+                expectNoEvents()
+            }
+            assertEquals(DISCLAIMER_VERSION, settings.disclaimerAck.first())
+        }
+
+    @Test
     fun `the checkbox can be cleared again`() {
         val vm = DisclaimerViewModel(settings)
         vm.onEvent(DisclaimerEvent.CheckedChanged(true))

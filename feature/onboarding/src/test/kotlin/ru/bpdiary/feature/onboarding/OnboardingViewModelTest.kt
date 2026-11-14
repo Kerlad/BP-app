@@ -166,6 +166,19 @@ class OnboardingViewModelTest {
         }
 
     @Test
+    fun `back from the disclaimer, the last step opens it again`() =
+        runTest {
+            val vm = viewModel()
+            vm.effects.test {
+                repeat(ONBOARDING_STEPS) { vm.onEvent(OnboardingEvent.NextClicked) }
+                assertEquals(OnboardingEffect.OpenDisclaimer, awaitItem())
+                vm.onEvent(OnboardingEvent.NextClicked)
+                assertEquals(OnboardingEffect.OpenDisclaimer, awaitItem())
+            }
+            assertTrue(settings.onboardingDone.first())
+        }
+
+    @Test
     fun `the onboarding does not accept the disclaimer by itself`() =
         runTest {
             val vm = viewModel()

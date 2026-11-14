@@ -25,6 +25,9 @@ class DisclaimerViewModel
         private val form = MutableStateFlow(DisclaimerUiState())
         val state: StateFlow<DisclaimerUiState> = form.asStateFlow()
 
+        /** Set once accepted, so a double tap on Continue sends the effect only once. */
+        private var accepted = false
+
         private val effectChannel = Channel<DisclaimerEffect>(Channel.BUFFERED)
         val effects: Flow<DisclaimerEffect> = effectChannel.receiveAsFlow()
 
@@ -36,7 +39,8 @@ class DisclaimerViewModel
         }
 
         private fun accept() {
-            if (!form.value.checked) return
+            if (!form.value.checked || accepted) return
+            accepted = true
             viewModelScope.launch {
                 settings.setDisclaimerAck(DISCLAIMER_VERSION)
                 effectChannel.send(DisclaimerEffect.Accepted)

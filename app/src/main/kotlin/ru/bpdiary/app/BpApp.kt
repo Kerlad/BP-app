@@ -93,6 +93,8 @@ fun BpApp(
 
     /** «Измерение удалено / Отменить» for 5 s; the reading stays soft-deleted in the database meanwhile. */
     fun offerUndo(readingId: Long) {
+        // The previous message goes first, so the new one gets its full 5 s.
+        snackbar.currentSnackbarData?.dismiss()
         scope.launch {
             val result =
                 withTimeoutOrNull(UNDO_MS) {
@@ -155,7 +157,7 @@ private fun NavGraphBuilder.appGraph(
     onSaveFailed: () -> Unit,
     onReadingSaved: (EntryEffect.Saved) -> Unit,
 ) {
-    onboardingScreen(onFinished = { navController.navigate(DisclaimerRoute) })
+    onboardingScreen(onFinished = { navController.navigate(DisclaimerRoute) { launchSingleTop = true } })
     disclaimerScreen(onAccepted = navController::openAppAfterDisclaimer)
     homeScreen(
         onAddReading = { navController.navigate(EntryRoute()) },

@@ -67,6 +67,8 @@ class OnboardingViewModel
                 step.update { it + 1 }
                 return
             }
+            // No «done» guard (C-05): system back from the disclaimer returns here and «Далее» must work
+            // again. A double tap opens one screen anyway: the navigation is launchSingleTop.
             viewModelScope.launch {
                 settings.setOnboardingDone(true)
                 effectChannel.send(OnboardingEffect.OpenDisclaimer)
