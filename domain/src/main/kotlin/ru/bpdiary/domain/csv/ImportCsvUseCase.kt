@@ -22,7 +22,7 @@ private fun Reading.key() = ReadingKey(takenAt.epochSecond / SECONDS_IN_MINUTE, 
 
 /**
  * The file into the diary: read, drop the duplicates, write in one transaction. «Заменить всё» replaces the readings
- * only; a failure leaves the diary as it was (docs/13 §13.2).
+ * only; a failure leaves the diary as it was (docs/13 §13.2). Replace all with no valid rows changes nothing.
  */
 class ImportCsvUseCase(
     private val analyzer: CsvAnalyzer,
@@ -64,7 +64,8 @@ class ImportCsvUseCase(
             onRow(++read)
         }
         val saved = rows.map { it.reading }
-        importer.importAll(saved, replaceAll)
+        // Replace all with no valid rows changes nothing: the importer would delete the diary first.
+        if (saved.isNotEmpty()) importer.importAll(saved, replaceAll)
         val days = saved.map { it.takenAt.atZone(time.zone()).toLocalDate() }
         return ImportReport(
             imported = rows.size,

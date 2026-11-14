@@ -227,6 +227,18 @@ class CsvRoundTripTest {
         }
 
     @Test
+    fun `replace all with no valid rows keeps the diary`() =
+        runTest {
+            readings.save(reading(500))
+            readings.save(reading(600))
+
+            val report = importBytes("дата и время;верхнее;нижнее\nx;76;118\n".toByteArray(), replaceAll = true)
+
+            assertEquals(0, report.imported)
+            assertEquals(2, readings.storedCount)
+        }
+
+    @Test
     fun `the report counts what the rows said`() =
         runTest {
             val text =
