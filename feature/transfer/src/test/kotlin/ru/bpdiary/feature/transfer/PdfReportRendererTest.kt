@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.text.TextPaint
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -11,11 +13,15 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+import ru.bpdiary.app.feature.transfer.R
 import ru.bpdiary.core.common.FixedTimeProvider
 import ru.bpdiary.core.model.Arm
 import ru.bpdiary.core.model.Reading
+import ru.bpdiary.core.model.Status
 import ru.bpdiary.core.model.Tag
 import ru.bpdiary.core.model.Thresholds
+import ru.bpdiary.core.ui.labelRes
 import ru.bpdiary.domain.report.buildDoctorReport
 import java.io.File
 import java.time.ZoneOffset
@@ -87,6 +93,47 @@ class PdfReportRendererTest {
         assertEquals(2, pages(50))
         assertEquals(2, pages(51))
         assertEquals(5, pages(200))
+    }
+
+    /** NATIVE graphics: the legacy mode measures no real glyphs, and the check would pass for any text. */
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `every pair of tags fits the tags column`() {
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { textSize = SMALL_SIZE }
+        val labels = Tag.entries.map { resources.getString(it.labelRes()) }
+        val limit = COL_TAGS - 2 * CELL_PAD
+        labels.forEach { a ->
+            labels.forEach { b ->
+                val text = if (a == b) a else listOf(a, b).joinToString(SEPARATOR)
+                assertTrue("«$text» is ${paint.measureText(text)} wide, limit $limit", paint.measureText(text) <= limit)
+            }
+        }
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the widest date fits the date column`() {
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { textSize = SMALL_SIZE }
+        val width = paint.measureText("28.08.2026")
+        assertTrue("date is $width wide", width > 20f)
+        assertTrue("date is $width wide, limit ${COLUMNS[0] - 2 * CELL_PAD}", width <= COLUMNS[0] - 2 * CELL_PAD)
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `arm and status words fit their columns`() {
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { textSize = SMALL_SIZE }
+        val arms = listOf(R.string.csv_arm_left, R.string.csv_arm_right).map { resources.getString(it) }
+        val statuses = Status.entries.map { resources.getString(it.labelRes()) }
+        arms.forEach { assertTrue("«$it»", paint.measureText(it) <= COLUMNS[5] - 2 * CELL_PAD) }
+        statuses.forEach {
+            assertTrue("«$it» ${paint.measureText(it)}", paint.measureText(it) <= COLUMNS[6] - 2 * CELL_PAD)
+        }
+    }
+
+    @Test
+    fun `the columns add up to the width of the content`() {
+        assertEquals(PAGE_WIDTH - 72f, COLUMNS.sum(), 0.001f)
     }
 
     @Test

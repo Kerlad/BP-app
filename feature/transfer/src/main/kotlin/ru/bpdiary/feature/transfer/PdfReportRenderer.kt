@@ -41,7 +41,7 @@ private const val LEVELS_BASELINE = 88f
 private const val RULE_Y = 98f
 private const val TITLE_SIZE = 17f
 private const val TEXT_SIZE = 10f
-private const val SMALL_SIZE = 8.5f
+internal const val SMALL_SIZE = 8.5f
 private const val HAIR = 0.6f
 private const val STROKE_SERIES = 1.6f
 
@@ -84,11 +84,11 @@ private const val TABLE_TOP_FIRST = 384f
 private const val TABLE_TOP_NEXT = 62f
 private const val HEADER_ROW = 18f
 private const val ROW_HEIGHT = 13.8f
-private const val CELL_PAD = 3f
+internal const val CELL_PAD = 3f
 private const val TEXT_RISE = 9.8f
 private const val HEADER_RISE = 12.5f
 private const val RUNNING_HEADER_BASELINE = 48f
-private const val SEPARATOR = " · "
+internal const val SEPARATOR = " · "
 
 // Foot.
 private const val DISCLAIMER_FIRST_BASELINE = 784f
@@ -114,16 +114,17 @@ private val SHORT_DATE: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM")
 private val TIME: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 // Column widths of the table, in points; they add up to CONTENT_WIDTH.
-private const val COL_DATE = 52f
+// Tags get 150: two of them joined by SEPARATOR must fit (A-10); the rest gave way to it.
+private const val COL_DATE = 50f
 private const val COL_TIME = 34f
 private const val COL_SYS = 44f
 private const val COL_DIA = 42f
 private const val COL_PULSE = 34f
-private const val COL_ARM = 40f
-private const val COL_STATUS = 62f
-private const val COL_TAGS = 90f
-private const val COL_COMMENT = 125f
-private val COLUMNS =
+private const val COL_ARM = 34f
+private const val COL_STATUS = 58f
+internal const val COL_TAGS = 150f
+private const val COL_COMMENT = 77f
+internal val COLUMNS =
     floatArrayOf(COL_DATE, COL_TIME, COL_SYS, COL_DIA, COL_PULSE, COL_ARM, COL_STATUS, COL_TAGS, COL_COMMENT)
 
 /** Draws the report of docs/08 §8.2 into a PDF; the layout is [report] pages, one A4 sheet each. */
