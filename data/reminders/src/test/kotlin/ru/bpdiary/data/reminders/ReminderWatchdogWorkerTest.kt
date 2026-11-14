@@ -3,9 +3,11 @@ package ru.bpdiary.data.reminders
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ListenableWorker
+import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
+import androidx.work.testing.WorkManagerTestInitHelper
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -83,5 +85,18 @@ class ReminderWatchdogWorkerTest {
             workerClassName: String,
             workerParameters: WorkerParameters,
         ): ListenableWorker = ReminderWatchdogWorker(appContext, workerParameters, scheduler, readings)
+    }
+
+    @Test
+    fun `the watchdog runs every 6 hours (B-03)`() {
+        WorkManagerTestInitHelper.initializeTestWorkManager(context)
+        ReminderWork.start(context)
+        val info =
+            WorkManager
+                .getInstance(context)
+                .getWorkInfosForUniqueWork("reminders_watchdog")
+                .get()
+                .single()
+        assertEquals(Duration.ofHours(6).toMillis(), info.periodicityInfo?.repeatIntervalMillis)
     }
 }

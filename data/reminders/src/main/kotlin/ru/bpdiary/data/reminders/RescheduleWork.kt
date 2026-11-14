@@ -87,7 +87,10 @@ class BootReceiver : BroadcastReceiver() {
 object ReminderWork {
     private const val RESCHEDULE = "reminders_reschedule"
     private const val WATCHDOG = "reminders_watchdog"
-    private val WATCHDOG_PERIOD: Duration = Duration.ofDays(1)
+
+    /** 6 h, not a day (review B-03): a revoked permission or a dropped alarm is repaired within hours. */
+    private const val WATCHDOG_HOURS = 6L
+    private val WATCHDOG_PERIOD: Duration = Duration.ofHours(WATCHDOG_HOURS)
 
     /** One quick re-plan; a newer request replaces a pending one. */
     fun reschedule(context: Context) {
@@ -100,14 +103,14 @@ object ReminderWork {
             )
     }
 
-    /** At app start: the initial schedule after the database is created, and the daily watchdog. */
+    /** At app start: the initial schedule after the database is created, and the watchdog (UPDATE: new period). */
     fun start(context: Context) {
         reschedule(context)
         WorkManager
             .getInstance(context)
             .enqueueUniquePeriodicWork(
                 WATCHDOG,
-                ExistingPeriodicWorkPolicy.KEEP,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 PeriodicWorkRequestBuilder<ReminderWatchdogWorker>(WATCHDOG_PERIOD).build(),
             )
     }

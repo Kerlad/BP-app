@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import ru.bpdiary.core.designsystem.BpTheme
 import ru.bpdiary.core.model.ThemeMode
 import ru.bpdiary.data.reminders.NotificationReminderNotifier
+import ru.bpdiary.data.reminders.ReminderWork
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -64,6 +65,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /** Every opening of the app repairs the alarm schedule, e.g. after the exact-alarm permission changed (B-03). */
+    override fun onStart() {
+        super.onStart()
+        ReminderWork.reschedule(this)
     }
 
     override fun onNewIntent(intent: Intent) {
