@@ -159,6 +159,7 @@ private fun ResultStep(
                 color = BpTheme.colors.ok,
             )
         }
+        if (state.reportFailed) ErrorText(stringResource(R.string.export_failed))
     }
     BpPrimaryButton(stringResource(R.string.import_open_diary), { onEvent(ImportEvent.OpenDiaryClicked) })
     if (report != null && !state.failed) {

@@ -209,8 +209,14 @@ class AndroidImportWorkspace
             uri: String,
             text: String,
         ) = withContext(Dispatchers.IO) {
-            val out = context.contentResolver.openOutputStream(uri.toUri()) ?: throw FileNotFoundException(uri)
-            out.use { it.write(text.toByteArray(Charsets.UTF_8)) }
+            try {
+                // "wt" truncates: a shorter report must not leave the tail of an older file behind.
+                val out =
+                    context.contentResolver.openOutputStream(uri.toUri(), "wt") ?: throw FileNotFoundException(uri)
+                out.use { it.write(text.toByteArray(Charsets.UTF_8)) }
+            } catch (e: SecurityException) {
+                throw IOException(e)
+            }
         }
 
         override fun clear() {

@@ -42,6 +42,7 @@ data class ImportUiState(
     val report: ImportReport? = null,
     val failed: Boolean = false,
     val reportSaved: Boolean = false,
+    val reportFailed: Boolean = false,
     /** «+03:00»: the note about local time in the preview. */
     val zoneOffset: String = "",
 )
@@ -184,9 +185,9 @@ class ImportViewModel
             viewModelScope.launch {
                 try {
                     workspace.saveText(uri, texts.reportFile(report, workspace.errors()))
-                    mutable.update { it.copy(reportSaved = true) }
+                    mutable.update { it.copy(reportSaved = true, reportFailed = false) }
                 } catch (_: IOException) {
-                    mutable.update { it.copy(reportSaved = false) }
+                    mutable.update { it.copy(reportSaved = false, reportFailed = true) }
                 }
             }
         }

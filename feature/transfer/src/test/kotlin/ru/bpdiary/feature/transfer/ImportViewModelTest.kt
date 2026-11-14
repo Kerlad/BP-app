@@ -239,6 +239,7 @@ class ImportViewModelTest {
         vm.onEvent(ImportEvent.AddClicked)
         vm.onEvent(ImportEvent.ReportTargetChosen("content://report"))
         assertFalse(vm.state.value.reportSaved)
+        assertTrue(vm.state.value.reportFailed)
     }
 
     @Test
