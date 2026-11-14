@@ -83,7 +83,7 @@ fun FixedScreenColumn(
 }
 
 /**
- * The full width, as high as [ratio] asks for, less when the parent has less room, never below [minHeight].
+ * The full width, as high as [ratio] asks for, at least [minHeight], but never more than the parent allows.
  * The way a chart gives way on a [FixedScreenColumn]; give it a weight without fill in its column.
  */
 fun Modifier.shrinkingAspectRatio(
@@ -101,7 +101,10 @@ private data class ShrinkingAspectRatio(
     ): MeasureResult {
         val width = constraints.maxWidth
         val wanted = (width / ratio).roundToInt()
-        val height = wanted.coerceAtMost(constraints.maxHeight).coerceAtLeast(minHeight.roundToPx())
+        // Never taller than the parent allows: a taller child is centred on its slot and overflows it, so the chart
+        // ran into the legend above and the dates below at font scale 2 (F-02). [minHeight] still steers the parent
+        // through the intrinsic height.
+        val height = wanted.coerceAtLeast(minHeight.roundToPx()).coerceAtMost(constraints.maxHeight)
         val placeable = measurable.measure(Constraints.fixed(width, height))
         return layout(width, height) { placeable.place(0, 0) }
     }
