@@ -100,6 +100,19 @@ class DaoTest {
         }
 
     @Test
+    fun `readings with the same time are ordered by id (D-09)`() =
+        runTest {
+            val ids = (1..3).map { readings.insert(entity(takenAt = 5_000)) }
+            assertEquals(ids, readings.observeRange(0, 10_000).first().map { it.id })
+            assertEquals(ids.last(), readings.observeLast().first()?.id)
+            val paged =
+                readings
+                    .pagingSource(status = "", hs = 135, hd = 85, ls = 100, ld = 60)
+                    .load(PagingSource.LoadParams.Refresh(null, 10, false))
+            assertEquals(ids.reversed(), (paged as PagingSource.LoadResult.Page).data.map { it.id })
+        }
+
+    @Test
     fun `soft delete hides and restore brings back`() =
         runTest {
             val id = readings.insert(entity())

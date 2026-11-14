@@ -19,6 +19,8 @@ import ru.bpdiary.core.model.Reminder
 import ru.bpdiary.data.database.BpDatabase
 import ru.bpdiary.data.database.DefaultRemindersCallback
 import ru.bpdiary.domain.DeleteAllDataUseCase
+import ru.bpdiary.domain.EARLIEST_READING_TIME
+import ru.bpdiary.domain.LATEST_READING_TIME
 import ru.bpdiary.domain.fake.FakeReminderScheduler
 import ru.bpdiary.domain.fake.FakeSettingsRepository
 import java.time.DayOfWeek
@@ -101,6 +103,18 @@ class RepositoriesTest {
             assertEquals(
                 listOf("2026-10-01T00:00:00Z", "2026-10-02T00:00:00Z").map(Instant::parse),
                 inRange.first().map { it.takenAt },
+            )
+        }
+
+    @Test
+    fun `the widest range converts and finds a reading from before 1970 (D-03)`() =
+        runTest {
+            readings.save(reading(at = "1969-07-01T10:00:00Z"))
+            readings.save(reading(at = "2026-10-01T00:00:00Z"))
+            val all = readings.observeRange(EARLIEST_READING_TIME, LATEST_READING_TIME).first()
+            assertEquals(
+                listOf("1969-07-01T10:00:00Z", "2026-10-01T00:00:00Z").map(Instant::parse),
+                all.map { it.takenAt },
             )
         }
 

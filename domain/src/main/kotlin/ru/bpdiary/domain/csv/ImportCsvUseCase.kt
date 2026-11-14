@@ -1,12 +1,13 @@
 package ru.bpdiary.domain.csv
 
 import kotlinx.coroutines.flow.first
-import ru.bpdiary.core.common.TimeProvider
 import ru.bpdiary.core.model.Reading
+import ru.bpdiary.domain.EARLIEST_READING_TIME
+import ru.bpdiary.domain.LATEST_READING_TIME
 import ru.bpdiary.domain.ReadingImporter
 import ru.bpdiary.domain.ReadingRepository
 import ru.bpdiary.domain.SettingsRepository
-import java.time.Instant
+import ru.bpdiary.domain.localDay
 
 private const val SECONDS_IN_MINUTE = 60L
 
@@ -29,7 +30,6 @@ class ImportCsvUseCase(
     private val readings: ReadingRepository,
     private val importer: ReadingImporter,
     private val settings: SettingsRepository,
-    private val time: TimeProvider,
 ) {
     /** [onRow] is called after each row of the file, [onError] for each row that cannot be imported. */
     suspend operator fun invoke(
@@ -42,7 +42,7 @@ class ImportCsvUseCase(
         val defaultArm = settings.lastArm.first()
         val seen = HashSet<ReadingKey>()
         if (!replaceAll) {
-            readings.observeRange(Instant.EPOCH, Instant.ofEpochMilli(Long.MAX_VALUE)).first().mapTo(seen) { it.key() }
+            readings.observeRange(EARLIEST_READING_TIME, LATEST_READING_TIME).first().mapTo(seen) { it.key() }
         }
         val rows = ArrayList<MappedRow>()
         val errors = ArrayList<RowError>()
@@ -66,7 +66,8 @@ class ImportCsvUseCase(
         val saved = rows.map { it.reading }
         // Replace all with no valid rows changes nothing: the importer would delete the diary first.
         if (saved.isNotEmpty()) importer.importAll(saved, replaceAll)
-        val days = saved.map { it.takenAt.atZone(time.zone()).toLocalDate() }
+        // Days as the Diary shows them: in the reading's own offset (D-04).
+        val days = saved.map(::localDay)
         return ImportReport(
             imported = rows.size,
             duplicates = duplicates,

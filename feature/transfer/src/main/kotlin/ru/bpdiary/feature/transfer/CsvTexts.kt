@@ -129,14 +129,31 @@ class ImportTexts(
             },
         )
 
-    fun fileProblem(problem: FileProblem): String =
-        resources.getString(
-            when (problem) {
-                FileProblem.UNREADABLE -> R.string.import_error_open
-                FileProblem.TOO_LARGE -> R.string.import_error_large
-                FileProblem.TOO_MANY_ROWS -> R.string.import_error_rows
-            },
-        )
+    fun fileProblem(
+        problem: FileProblem,
+        line: Int? = null,
+    ): String =
+        when (problem) {
+            FileProblem.UNREADABLE -> {
+                resources.getString(R.string.import_error_open)
+            }
+
+            FileProblem.TOO_LARGE -> {
+                resources.getString(R.string.import_error_large)
+            }
+
+            FileProblem.TOO_MANY_ROWS -> {
+                resources.getString(R.string.import_error_rows)
+            }
+
+            FileProblem.UNCLOSED_QUOTE -> {
+                if (line == null) {
+                    resources.getString(R.string.import_error_open)
+                } else {
+                    resources.getString(R.string.import_error_quote, line)
+                }
+            }
+        }
 
     /** «Строка 4: верхнее значение не больше нижнего». */
     fun rowError(error: RowError): String {

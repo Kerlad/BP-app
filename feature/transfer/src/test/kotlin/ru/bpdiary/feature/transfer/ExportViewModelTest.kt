@@ -25,6 +25,7 @@ import ru.bpdiary.core.model.Reading
 import ru.bpdiary.domain.fake.FakeReadingRepository
 import ru.bpdiary.domain.fake.FakeThresholdsRepository
 import java.io.IOException
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 
@@ -99,6 +100,24 @@ class ExportViewModelTest {
         assertEquals("davlenie_2025-09-15_2026-10-20.pdf", vm.state.value.fileName)
         vm.onEvent(ExportEvent.FormatSelected(ExportFormat.CSV))
         assertEquals("davlenie_2025-09-15_2026-10-20.csv", vm.state.value.fileName)
+    }
+
+    @Test
+    fun `a reading later than now is not counted (D-02)`() {
+        val ahead = daysAgo(0).copy(takenAt = time.now().plusSeconds(3_600))
+        val vm = viewModel(daysAgo(0), ahead)
+        assertEquals(1, vm.state.value.count)
+        vm.onEvent(ExportEvent.PeriodSelected(ExportPeriod.ALL))
+        assertEquals(1, vm.state.value.count)
+    }
+
+    @Test
+    fun `all the time also counts a reading from before 1970 (D-03)`() {
+        val old = daysAgo(0).copy(takenAt = Instant.parse("1969-07-01T10:00:00Z"))
+        val vm = viewModel(daysAgo(1), old)
+        vm.onEvent(ExportEvent.PeriodSelected(ExportPeriod.ALL))
+        assertEquals(2, vm.state.value.count)
+        assertEquals(LocalDate.of(1969, 7, 1), vm.state.value.from)
     }
 
     @Test

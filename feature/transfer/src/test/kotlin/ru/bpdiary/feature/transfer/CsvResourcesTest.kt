@@ -92,7 +92,7 @@ class CsvResourcesTest {
 
             val readings = FakeReadingRepository(time)
             val settings = FakeSettingsRepository()
-            val result = ImportCsvUseCase(analyzer, readings, readings, settings, time)(source, found, false)
+            val result = ImportCsvUseCase(analyzer, readings, readings, settings)(source, found, false)
             assertEquals(27, result.imported)
             assertEquals(0, result.errorCount)
             assertEquals(1, result.armFromComment)
@@ -136,6 +136,14 @@ class CsvResourcesTest {
         assertEquals("Время позже текущего: 3", lines[6])
         assertEquals("Без времени, проставлено 12:00: 4", lines[7])
         assertEquals(8, lines.size)
+    }
+
+    @Test
+    fun `an unclosed quote names the line where it opened`() {
+        assertEquals(
+            "Ошибка в строке 2: слишком длинный текст или не закрыта кавычка.",
+            texts.fileProblem(FileProblem.UNCLOSED_QUOTE, 2),
+        )
     }
 
     @Test

@@ -82,7 +82,7 @@ class ChartGeometryTest {
 
     @Test
     fun `week bars match the prototype`() {
-        val week = weekBars(demo, th, today)
+        val week = weekBars(demo, th, today, time.now())
         assertEquals(7, week.days.size)
         assertEquals((6 downTo 0).toList(), week.days.map { it.daysAgo })
         assertEquals(today, week.days.last().date)
@@ -105,10 +105,10 @@ class ChartGeometryTest {
 
     @Test
     fun `missing days have no bar and an empty week has no averages`() {
-        val week = weekBars(listOf(reading("2026-10-18T04:00:00Z")), th, today)
+        val week = weekBars(listOf(reading("2026-10-18T04:00:00Z")), th, today, time.now())
         assertEquals(1, week.days.count { it.bar != null })
         assertNull(week.days.first { it.daysAgo == 0 }.bar)
-        val empty = weekBars(emptyList(), th, today)
+        val empty = weekBars(emptyList(), th, today, time.now())
         assertTrue(empty.days.all { it.bar == null })
         assertNull(empty.avgSys)
         assertNull(empty.avgDia)
@@ -124,7 +124,7 @@ class ChartGeometryTest {
             )
         assertEquals(
             Status.NORMAL,
-            weekBars(day, th, today)
+            weekBars(day, th, today, time.now())
                 .days
                 .last()
                 .bar!!
@@ -139,15 +139,33 @@ class ChartGeometryTest {
                 reading("2026-10-20T04:00:00Z", sys = 150, dia = 95),
                 reading("2026-10-20T05:00:00Z", sys = 110, dia = 70),
             )
-        val bar = weekBars(day, th, today).days.last().bar!!
+        val bar = weekBars(day, th, today, time.now()).days.last().bar!!
         assertEquals(yBar(150), bar.yTop)
         assertEquals(yBar(70), bar.yBottom)
     }
 
     @Test
     fun `readings older than seven days are not drawn`() {
-        val week = weekBars(listOf(reading("2026-10-13T04:00:00Z")), th, today)
+        val week = weekBars(listOf(reading("2026-10-13T04:00:00Z")), th, today, time.now())
         assertTrue(week.days.all { it.bar == null })
+    }
+
+    @Test
+    fun `a reading later than now is not drawn and not averaged (D-02)`() {
+        // now is 09:12 Moscow; 21:00 Moscow is still ahead.
+        val week =
+            weekBars(
+                listOf(reading("2026-10-20T04:00:00Z", sys = 120), reading("2026-10-20T18:00:00Z", sys = 160)),
+                th,
+                today,
+                time.now(),
+            )
+        val bar = week.days.last().bar!!
+        assertEquals(yBar(120), bar.yTop)
+        assertEquals(120, week.avgSys)
+        val onlyAhead = weekBars(listOf(reading("2026-10-20T18:00:00Z")), th, today, time.now())
+        assertNull(onlyAhead.days.last().bar)
+        assertNull(onlyAhead.avgSys)
     }
 
     // --- line chart on demo data --------------------------------------------------------------

@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ReadingDao {
-    @Query("SELECT * FROM readings WHERE deleted_at IS NULL ORDER BY taken_at DESC LIMIT 1")
+    @Query("SELECT * FROM readings WHERE deleted_at IS NULL ORDER BY taken_at DESC, id DESC LIMIT 1")
     fun observeLast(): Flow<ReadingEntity?>
 
     @Query(
         """SELECT * FROM readings
            WHERE deleted_at IS NULL AND taken_at BETWEEN :from AND :to
-           ORDER BY taken_at ASC""",
+           ORDER BY taken_at ASC, id ASC""",
     )
     fun observeRange(
         from: Long,
@@ -33,7 +33,7 @@ interface ReadingDao {
                   OR (:status = 'HIGH' AND (sys >= :hs OR dia >= :hd))
                   OR (:status = 'LOW' AND NOT (sys >= :hs OR dia >= :hd) AND (sys <= :ls OR dia <= :ld))
                   OR (:status = 'NORMAL' AND NOT (sys >= :hs OR dia >= :hd) AND NOT (sys <= :ls OR dia <= :ld)))
-           ORDER BY taken_at DESC""",
+           ORDER BY taken_at DESC, id DESC""",
     )
     fun pagingSource(
         status: String,

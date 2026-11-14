@@ -112,14 +112,21 @@ internal class ImportPreview(
         try {
             work()
         } catch (e: CsvLimitException) {
-            refuse(if (e.limit == CsvLimit.ROWS) FileProblem.TOO_MANY_ROWS else FileProblem.UNREADABLE)
+            if (e.limit == CsvLimit.ROWS) {
+                refuse(FileProblem.TOO_MANY_ROWS)
+            } else {
+                refuse(FileProblem.UNCLOSED_QUOTE, e.line)
+            }
         } catch (_: IOException) {
             refuse(FileProblem.UNREADABLE)
         }
     }
 
-    private fun refuse(problem: FileProblem) {
+    private fun refuse(
+        problem: FileProblem,
+        line: Int? = null,
+    ) {
         workspace.clear()
-        state.update { ImportUiState(fileProblem = problem, zoneOffset = it.zoneOffset) }
+        state.update { ImportUiState(fileProblem = problem, fileProblemLine = line, zoneOffset = it.zoneOffset) }
     }
 }

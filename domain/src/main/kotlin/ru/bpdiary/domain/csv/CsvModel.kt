@@ -26,6 +26,8 @@ enum class CsvLimit { FIELD, ROWS }
 
 class CsvLimitException(
     val limit: CsvLimit,
+    /** For [CsvLimit.FIELD]: the line where the too long field began (an unclosed quote opens it), else null. */
+    val line: Int? = null,
 ) : Exception("CSV limit exceeded: $limit")
 
 /** The file can be opened any number of times: it is read once to analyse it and once to import it. */

@@ -87,8 +87,13 @@ class CsvDateParser(
         SLASHED.matchEntire(text)?.let { match ->
             val (first, second, year) = match.destructured
             val mark = match.groupValues[LAST_GROUP]
-            // The 12-hour format is the American one; the scan of the file decides the order for the others.
-            val monthFirst = if (mark.isNotEmpty()) first.toInt() <= HALF_DAY else !dayFirst
+            // The order is the one of the file; a number above 12 can only be the day, in either place.
+            val monthFirst =
+                when {
+                    mark.isNotEmpty() && first.toInt() > HALF_DAY -> false
+                    mark.isNotEmpty() && second.toInt() > HALF_DAY -> true
+                    else -> !dayFirst
+                }
             val day = if (monthFirst) second.toInt() else first.toInt()
             val month = if (monthFirst) first.toInt() else second.toInt()
             val parts = parts(match, year.toInt(), month, day)

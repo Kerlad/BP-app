@@ -176,6 +176,22 @@ class HomeViewModelTest {
         }
 
     @Test
+    fun `a reading later than now does not reach the week card (D-02)`() =
+        runTest {
+            // The default clock is 09:12 in Moscow: 21:00 is still ahead.
+            val (vm, _) =
+                viewModel(
+                    listOf(
+                        reading("2026-10-20T07:24", sys = 120, dia = 80),
+                        reading("2026-10-20T21:00", sys = 160, dia = 100),
+                    ),
+                )
+            val week = vm.content().week!!
+            assertEquals(120 to 80, week.avgSys to week.avgDia)
+            assertEquals(Status.NORMAL, vm.todayBarStatus())
+        }
+
+    @Test
     fun `pulse out of range and missing pulse`() =
         runTest {
             val (vm, repo) = viewModel(listOf(reading("2026-10-20T07:24", sys = 128, dia = 82, pulse = 95)))

@@ -25,13 +25,15 @@ import javax.inject.Inject
 
 enum class ImportStep { PICK, PREVIEW, STRATEGY, RUNNING, RESULT }
 
-enum class FileProblem { UNREADABLE, TOO_LARGE, TOO_MANY_ROWS }
+enum class FileProblem { UNREADABLE, TOO_LARGE, TOO_MANY_ROWS, UNCLOSED_QUOTE }
 
 data class ImportUiState(
     val step: ImportStep = ImportStep.PICK,
     val busy: Boolean = false,
     val fileName: String = "",
     val fileProblem: FileProblem? = null,
+    /** The line of the file that [fileProblem] is about, when it names one. */
+    val fileProblemLine: Int? = null,
     val options: CsvOptions? = null,
     val inspection: CsvInspection? = null,
     val editingFormat: Boolean = false,

@@ -127,7 +127,7 @@ internal fun homeContent(
         today = today,
         greeting = greetingSlot(now.toLocalTime()),
         last = last?.toUi(today, th),
-        week = if (last == null) null else weekBars(window.readings, th, window.today),
+        week = if (last == null) null else weekBars(window.readings, th, window.today, now.toInstant()),
         nextReminder = nextReminder(info.reminders, now)?.let { nextReminderLabel(it, now) },
         notificationsBanner = !info.notificationsAllowed && info.reminders.any { it.enabled },
     )

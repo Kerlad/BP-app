@@ -22,7 +22,7 @@ class CsvRoundTripTest {
     private val readings = FakeReadingRepository(time)
     private val settings = FakeSettingsRepository()
     private val analyzer = CsvAnalyzer(vocabulary, time)
-    private val import = ImportCsvUseCase(analyzer, readings, readings, settings, time)
+    private val import = ImportCsvUseCase(analyzer, readings, readings, settings)
     private val moscow = ZoneOffset.ofHours(3)
 
     private fun stored() = readings.observeRange(Instant.EPOCH, Instant.ofEpochMilli(Long.MAX_VALUE))
@@ -185,6 +185,44 @@ class CsvRoundTripTest {
             assertEquals(0, second.imported)
             assertEquals(27, second.duplicates)
             assertEquals(27, stored().first().size)
+        }
+
+    @Test
+    fun `a comment that Excel would read as a formula gets an apostrophe in the file and loses it on import`() =
+        runTest {
+            val comments = listOf("- без жалоб", "=1+1", "+7", "@home", "'=x", "- ", "обычный")
+            val original = comments.mapIndexed { i, text -> reading(i.toLong(), comment = text) }
+
+            val bytes = export(original)
+            val text = String(bytes, Charsets.UTF_8)
+            assertTrue(";'- без жалоб;" in text, text)
+            assertTrue(";'=1+1;" in text, text)
+            assertTrue(";''=x;" in text, text)
+            assertTrue(";обычный;" in text, text)
+
+            val report = importBytes(bytes)
+
+            assertEquals(comments.size, report.imported)
+            assertEquals(original, stored().first().map { it.copy(id = 0) })
+        }
+
+    @Test
+    fun `a long comment is cut before a broken emoji, not inside it`() =
+        runTest {
+            val comment = "a".repeat(CsvLimits.MAX_COMMENT_CHARS - 1) + "😀"
+            val header = "дата и время;верхнее;нижнее;пульс;комментарий"
+            val source = sourceOf("$header\n07.10.2026 06:48;118;76;79;$comment\n")
+            val report = import(source, analyzer.detect(source), replaceAll = false)
+
+            assertEquals(1, report.imported)
+            assertEquals(1, report.commentsCut)
+            assertEquals(
+                119,
+                stored()
+                    .first()
+                    .single()
+                    .comment.length,
+            )
         }
 
     @Test

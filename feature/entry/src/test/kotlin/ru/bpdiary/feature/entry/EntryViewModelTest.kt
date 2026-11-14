@@ -282,6 +282,14 @@ class EntryViewModelTest {
         }
 
     @Test
+    fun `the comment is not cut inside an emoji`() =
+        runTest {
+            val vm = viewModel()
+            vm.onEvent(EntryEvent.CommentChanged("а".repeat(119) + "😀"))
+            assertEquals(119, vm.state.value.comment.length)
+        }
+
+    @Test
     fun `tags and comment are saved and the comment is cut at 120 characters`() =
         runTest {
             val vm = viewModel()

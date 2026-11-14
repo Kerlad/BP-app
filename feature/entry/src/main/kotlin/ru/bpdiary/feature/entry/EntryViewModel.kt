@@ -41,6 +41,7 @@ import ru.bpdiary.domain.classify
 import ru.bpdiary.domain.dayLabel
 import ru.bpdiary.domain.isCritical
 import ru.bpdiary.domain.reduce
+import ru.bpdiary.domain.takeWholeChars
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -161,7 +162,7 @@ class EntryViewModel
                 }
 
                 is EntryEvent.CommentChanged -> {
-                    updateForm { it.copy(comment = event.text.take(COMMENT_MAX_LENGTH)) }
+                    updateForm { it.copy(comment = event.text.takeWholeChars(COMMENT_MAX_LENGTH)) }
                 }
 
                 EntryEvent.SaveClicked -> {

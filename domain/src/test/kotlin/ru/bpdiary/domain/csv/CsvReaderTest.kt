@@ -70,6 +70,14 @@ class CsvReaderTest {
     }
 
     @Test
+    fun `a quote that is never closed reports the line where it opened`() {
+        val text = "a,b\n1,\"" + "x\n".repeat(CsvLimits.MAX_FIELD_CHARS)
+        val error = assertThrows<CsvLimitException> { rows(text) }
+        assertEquals(CsvLimit.FIELD, error.limit)
+        assertEquals(2, error.line)
+    }
+
+    @Test
     fun `more rows than the limit are refused`() {
         val text = "1\n".repeat(CsvLimits.MAX_ROWS + 2)
         val error = assertThrows<CsvLimitException> { rows(text) }

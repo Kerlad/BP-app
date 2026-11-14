@@ -7,6 +7,14 @@ import ru.bpdiary.core.model.Status
 import ru.bpdiary.core.model.Thresholds
 import java.time.Instant
 
+/**
+ * Widest range for [ReadingRepository.observeRange]. `takenAt` is stored as epoch milliseconds in a Long, so these are
+ * the Long extremes: `Instant.ofEpochMilli(Long.MIN_VALUE).toEpochMilli()` round-trips (JDK 9+), while `Instant.MIN`
+ * would overflow in the conversion.
+ */
+val EARLIEST_READING_TIME: Instant = Instant.ofEpochMilli(Long.MIN_VALUE)
+val LATEST_READING_TIME: Instant = Instant.ofEpochMilli(Long.MAX_VALUE)
+
 interface ReadingRepository {
     fun observeLast(): Flow<Reading?>
 

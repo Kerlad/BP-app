@@ -44,8 +44,7 @@ internal object TransferProvidesModule {
         readings: ReadingRepository,
         importer: ReadingImporter,
         settings: SettingsRepository,
-        time: TimeProvider,
-    ): ImportCsvUseCase = ImportCsvUseCase(analyzer, readings, importer, settings, time)
+    ): ImportCsvUseCase = ImportCsvUseCase(analyzer, readings, importer, settings)
 }
 
 @Module

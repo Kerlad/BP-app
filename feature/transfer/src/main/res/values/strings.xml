@@ -149,6 +149,8 @@
         strategies.
     -->
     <string name="import_back_description">Назад</string>
+    <!-- PROVISIONAL -->
+    <string name="import_error_quote">Ошибка в строке %1$d: слишком длинный текст или не закрыта кавычка.</string>
     <string name="import_error_rows">Файл слишком большой — больше 200 000 строк.</string>
     <string name="import_encoding">Кодировка: %1$s</string>
     <string name="import_delimiter">Разделитель: %1$s</string>

@@ -67,8 +67,10 @@ fun weekBars(
     readings: List<Reading>,
     th: Thresholds,
     today: LocalDate,
+    now: Instant,
 ): WeekBars {
-    val byDay = readings.groupBy { localDay(it) }
+    // Readings ahead of the clock (the import allows up to 24 h) are not drawn, as on the Charts screen.
+    val byDay = readings.filter { !it.takenAt.isAfter(now) }.groupBy { localDay(it) }
     val slots =
         (BAR_DAYS - 1 downTo 0).map { daysAgo ->
             val date = today.minusDays(daysAgo.toLong())

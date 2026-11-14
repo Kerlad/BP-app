@@ -5,6 +5,7 @@ import ru.bpdiary.core.model.Reading
 import ru.bpdiary.core.model.Tag
 import ru.bpdiary.domain.Reason
 import ru.bpdiary.domain.ValidationRules
+import ru.bpdiary.domain.takeWholeChars
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -65,7 +66,7 @@ class CsvRowMapper(
         val moment = moment(row)
         val notes = notes(row)
         val arm = arm(row, notes.comment)
-        val comment = notes.comment.take(CsvLimits.MAX_COMMENT_CHARS)
+        val comment = notes.comment.takeWholeChars(CsvLimits.MAX_COMMENT_CHARS)
         val reading =
             Reading(
                 takenAt = moment.instant,
@@ -137,8 +138,12 @@ class CsvRowMapper(
         val written =
             options.columns.indices
                 .filter { options.columns[it] == ColumnRole.COMMENT }
-                .map { row.fields.getOrNull(it).orEmpty() }
-                .filter { it.isNotBlank() }
+                .map {
+                    row.fields
+                        .getOrNull(it)
+                        .orEmpty()
+                        .withoutFormulaGuard()
+                }.filter { it.isNotBlank() }
                 .joinToString(PART_SEPARATOR)
         val wholeTag = tagOf(written)
         val comment = parts.filter { tagOf(it) == null } + if (wholeTag == null) listOf(written) else emptyList()

@@ -40,7 +40,7 @@ fun writeCsv(
                 texts.arms.getValue(reading.arm),
                 texts.statuses.getValue(classify(reading.sys, reading.dia, thresholds)),
                 Tag.entries.filter { it in reading.tags }.joinToString(TAG_SEPARATOR) { texts.tags.getValue(it) },
-                reading.comment,
+                reading.comment.withFormulaGuard(),
                 TIMESTAMP.format(moment),
             )
         out.append(fields.joinToString(DELIMITER.toString()) { escape(it) }).append(CRLF)

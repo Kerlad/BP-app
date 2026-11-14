@@ -89,6 +89,7 @@ class CsvReader(
     private var row = ArrayList<String>()
     private var line = 1
     private var rowLine = 1
+    private var fieldLine = 1
     private var rows = 0
     private var mode = Mode.PLAIN
     private var afterCr = false
@@ -136,6 +137,7 @@ class CsvReader(
             }
 
             ch == '"' && field.isEmpty() -> {
+                fieldLine = line
                 Mode.QUOTED
             }
 
@@ -162,7 +164,8 @@ class CsvReader(
         mode: Mode,
         ch: Char,
     ): Mode {
-        if (field.length >= CsvLimits.MAX_FIELD_CHARS) throw CsvLimitException(CsvLimit.FIELD)
+        if (field.isEmpty() && mode == Mode.PLAIN) fieldLine = line
+        if (field.length >= CsvLimits.MAX_FIELD_CHARS) throw CsvLimitException(CsvLimit.FIELD, fieldLine)
         field.append(ch)
         return mode
     }

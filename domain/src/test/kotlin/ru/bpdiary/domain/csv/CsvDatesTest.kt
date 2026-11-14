@@ -27,6 +27,28 @@ class CsvDatesTest {
     }
 
     @Test
+    fun `the 12-hour form follows the chosen order of day and month`() {
+        // 05/10/2026 3:00 PM: 5 October with day first, 10 May otherwise (Moscow is +03:00).
+        assertEquals(
+            Instant.parse("2026-10-05T12:00:00Z"),
+            parser(dayFirst = true).parse("05/10/2026 3:00 PM")?.instant,
+        )
+        assertEquals(
+            Instant.parse("2026-05-10T12:00:00Z"),
+            parser(dayFirst = false).parse("05/10/2026 3:00 PM")?.instant,
+        )
+        // A number above 12 can only be the day, whatever the order.
+        assertEquals(
+            Instant.parse("2026-10-13T12:00:00Z"),
+            parser(dayFirst = false).parse("13/10/2026 3:00 PM")?.instant,
+        )
+        assertEquals(
+            Instant.parse("2026-10-13T12:00:00Z"),
+            parser(dayFirst = false).parse("10/13/2026 3:00 PM")?.instant,
+        )
+    }
+
+    @Test
     fun `a two-digit year up to next year is 20yy, the others 19yy`() {
         assertEquals(Instant.parse("2027-10-07T03:48:00Z"), instant("07.10.27 06:48"))
         // Moscow was at +04:00 in the summer of 1998.
@@ -47,8 +69,14 @@ class CsvDatesTest {
     fun `slashes follow the order of the file, the 12-hour form is American`() {
         assertEquals(Instant.parse("2026-05-03T03:48:00Z"), parser(dayFirst = true).parse("03/05/2026 06:48")?.instant)
         assertEquals(Instant.parse("2026-03-05T03:48:00Z"), parser(dayFirst = false).parse("03/05/2026 06:48")?.instant)
-        assertEquals(Instant.parse("2026-03-05T15:15:00Z"), instant("03/05/2026 06:15 PM"))
-        assertEquals(Instant.parse("2026-03-04T21:15:00Z"), instant("03/05/2026 12:15 AM"))
+        assertEquals(
+            Instant.parse("2026-03-05T15:15:00Z"),
+            parser(dayFirst = false).parse("03/05/2026 06:15 PM")?.instant,
+        )
+        assertEquals(
+            Instant.parse("2026-03-04T21:15:00Z"),
+            parser(dayFirst = false).parse("03/05/2026 12:15 AM")?.instant,
+        )
     }
 
     @Test

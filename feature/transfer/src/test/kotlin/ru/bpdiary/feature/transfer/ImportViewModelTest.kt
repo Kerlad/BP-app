@@ -85,6 +85,16 @@ class ImportViewModelTest {
     }
 
     @Test
+    fun `a file with a field that never ends is refused with the line of its quote`() {
+        workspace.detectFailure = CsvLimitException(CsvLimit.FIELD, line = 2)
+        val state = viewModel().atPreview().state.value
+        assertEquals(ImportStep.PICK, state.step)
+        assertEquals(FileProblem.UNCLOSED_QUOTE, state.fileProblem)
+        assertEquals(2, state.fileProblemLine)
+        assertEquals(1, workspace.cleared)
+    }
+
+    @Test
     fun `a file that stops being readable is refused`() {
         workspace.detectFailure = IOException()
         assertEquals(

@@ -55,7 +55,7 @@ private fun PickStep(
         style = BpTheme.typography.body,
         color = BpTheme.colors.ink,
     )
-    state.fileProblem?.let { ErrorText(texts.fileProblem(it)) }
+    state.fileProblem?.let { ErrorText(texts.fileProblem(it, state.fileProblemLine)) }
     if (state.busy) {
         CircularProgressIndicator(color = BpTheme.colors.ac)
     } else {

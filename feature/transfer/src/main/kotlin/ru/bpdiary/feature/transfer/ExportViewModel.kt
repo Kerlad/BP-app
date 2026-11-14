@@ -17,13 +17,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.bpdiary.core.common.TimeProvider
 import ru.bpdiary.core.model.Reading
+import ru.bpdiary.domain.EARLIEST_READING_TIME
+import ru.bpdiary.domain.LATEST_READING_TIME
 import ru.bpdiary.domain.ReadingRepository
 import ru.bpdiary.domain.ThresholdsRepository
 import ru.bpdiary.domain.csv.writeCsv
 import ru.bpdiary.domain.report.DoctorReport
 import ru.bpdiary.domain.report.buildDoctorReport
 import java.io.IOException
-import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -206,10 +207,10 @@ class ExportViewModel
             to: LocalDate,
         ): List<Reading> {
             val zone = time.zone()
-            val start = if (period == ExportPeriod.ALL) Instant.EPOCH else from.atStartOfDay(zone).toInstant()
+            val start = if (period == ExportPeriod.ALL) EARLIEST_READING_TIME else from.atStartOfDay(zone).toInstant()
             val end =
                 if (period == ExportPeriod.ALL) {
-                    Instant.ofEpochMilli(Long.MAX_VALUE)
+                    LATEST_READING_TIME
                 } else {
                     to
                         .plusDays(1)
@@ -217,7 +218,9 @@ class ExportViewModel
                         .toInstant()
                         .minusMillis(1)
                 }
-            return readings.observeRange(start, end).first()
+            // Readings ahead of the clock are left out of the count and of the files (D-02).
+            val now = time.now()
+            return readings.observeRange(start, end).first().filter { !it.takenAt.isAfter(now) }
         }
 
         private suspend fun report(): DoctorReport {
