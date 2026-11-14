@@ -16,7 +16,8 @@ import javax.inject.Singleton
 
 /**
  * One exact alarm for the nearest enabled reminder, re-planned after every firing (docs/07 §7.1).
- * Without the exact-alarm permission it falls back to a 10-minute window (D-12): late, but it still comes.
+ * Without the exact-alarm permission it falls back to an inexact alarm that is allowed in Doze. This replaces the
+ * 10-minute `setWindow` of D-12/P-7 (review B-02): a window alarm is held back in Doze for hours.
  * The snooze has its own request code, so [rescheduleAll] never cancels it (D-13).
  */
 @Singleton
@@ -54,10 +55,14 @@ class AlarmReminderScheduler
             operation: PendingIntent,
         ) {
             if (canScheduleExact()) {
-                alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, operation)
-            } else {
-                alarms.setWindow(AlarmManager.RTC_WAKEUP, at, FALLBACK_WINDOW.toMillis(), operation)
+                try {
+                    alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, operation)
+                    return
+                } catch (_: SecurityException) {
+                    // The permission was revoked between the check and the call (review B-01).
+                }
             }
+            alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, operation)
         }
 
         private fun cancel(requestCode: Int) {
@@ -93,6 +98,5 @@ class AlarmReminderScheduler
             const val REQ_REMINDER = 1000
             const val REQ_SNOOZE = 9000
             val SNOOZE: Duration = Duration.ofMinutes(15)
-            val FALLBACK_WINDOW: Duration = Duration.ofMinutes(10)
         }
     }

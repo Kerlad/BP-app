@@ -60,12 +60,16 @@ class ReminderReceiver : BroadcastReceiver() {
         NotificationManagerCompat.from(context).cancel(NotificationReminderNotifier.notificationId(id))
     }
 
+    /**
+     * The next alarm is planned first: a failure to show this notification must not end the chain of
+     * reminders (review B-01).
+     */
     internal suspend fun handle(
         id: Long,
         snooze: Boolean,
     ) {
-        reminders.getById(id)?.takeIf { snooze || it.enabled }?.let(notifier::show)
-        scheduler.rescheduleAll()
+        runCatching { scheduler.rescheduleAll() }
+        runCatching { reminders.getById(id)?.takeIf { snooze || it.enabled }?.let(notifier::show) }
     }
 
     companion object {

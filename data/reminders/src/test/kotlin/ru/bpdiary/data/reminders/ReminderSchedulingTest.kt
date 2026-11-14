@@ -127,7 +127,7 @@ class ReminderSchedulingTest {
         }
 
     @Test
-    fun `without exact alarms a 10 minute window is used`() =
+    fun `without exact alarms an inexact alarm that also fires in Doze is used (B-02)`() =
         runTest {
             ShadowAlarmManager.setCanScheduleExactAlarms(false)
             val s = scheduler("2026-10-20T09:12")
@@ -135,8 +135,21 @@ class ReminderSchedulingTest {
             s.rescheduleAll()
             val alarm = shadow.scheduledAlarms.single()
             assertEquals(at("2026-10-20T21:00"), alarm.triggerAtMs)
-            assertEquals(AlarmReminderScheduler.FALLBACK_WINDOW.toMillis(), alarm.windowLengthMs)
-            assertFalse(alarm.isAllowWhileIdle)
+            assertTrue(alarm.isAllowWhileIdle)
+        }
+
+    @Test
+    fun `a failing notification does not break the alarm chain (B-01)`() =
+        runTest {
+            val s = scheduler("2026-10-20T21:00")
+            val receiver =
+                ReminderReceiver().apply {
+                    this.reminders = this@ReminderSchedulingTest.reminders
+                    scheduler = s
+                    notifier = ReminderNotifier { error("notification failed") }
+                }
+            receiver.handle(id = 3, snooze = false)
+            assertEquals(at("2026-10-21T08:00"), shadow.peekNextScheduledAlarm()?.triggerAtMs)
         }
 
     @Test
