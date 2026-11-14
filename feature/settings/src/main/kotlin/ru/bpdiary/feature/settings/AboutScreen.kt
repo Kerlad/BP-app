@@ -37,6 +37,7 @@ fun AboutScreen(
     version: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenLicenses: () -> Unit = {},
 ) {
     val colors = BpTheme.colors
     val privacyUrl = stringResource(R.string.about_privacy_url)
@@ -69,6 +70,16 @@ fun AboutScreen(
                 text = stringResource(R.string.about_version, version),
                 style = BpTheme.typography.secondary,
                 color = colors.mut,
+            )
+            Text(
+                text = stringResource(R.string.about_licenses),
+                style = BpTheme.typography.secondary.copy(textDecoration = TextDecoration.Underline),
+                color = colors.ac,
+                modifier =
+                    Modifier
+                        .heightIn(min = 48.dp)
+                        .wrapContentHeight()
+                        .clickable(role = Role.Button, onClick = onOpenLicenses),
             )
             if (privacyUrl.isNotBlank()) {
                 val uriHandler = LocalUriHandler.current

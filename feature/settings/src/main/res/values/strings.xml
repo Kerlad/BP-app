@@ -38,4 +38,10 @@
     <string name="about_privacy">Политика конфиденциальности</string>
     <!-- Public page without sign-in (store requirement); PRIVACY.md in the public GitHub repository. -->
     <string name="about_privacy_url" translatable="false">https://github.com/Kerlad/BP-app/blob/main/PRIVACY.md</string>
+
+    <!-- PROVISIONAL (ROADMAP E-06 §9.4): the licences screen -->
+    <string name="about_licenses">Лицензии</string>
+    <string name="licenses_title">Лицензии</string>
+    <string name="licenses_font_heading">Шрифт Golos Text</string>
+    <string name="licenses_libraries_heading">Библиотеки</string>
 </resources>

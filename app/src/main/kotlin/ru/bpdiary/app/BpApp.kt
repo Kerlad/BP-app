@@ -56,8 +56,10 @@ import ru.bpdiary.feature.reminders.RemindersRoute
 import ru.bpdiary.feature.reminders.reminderEditScreen
 import ru.bpdiary.feature.reminders.remindersScreen
 import ru.bpdiary.feature.settings.AboutRoute
+import ru.bpdiary.feature.settings.LicensesRoute
 import ru.bpdiary.feature.settings.SettingsRoute
 import ru.bpdiary.feature.settings.aboutScreen
+import ru.bpdiary.feature.settings.licensesScreen
 import ru.bpdiary.feature.settings.settingsScreen
 import ru.bpdiary.feature.transfer.ExportRoute
 import ru.bpdiary.feature.transfer.ImportRoute
@@ -181,7 +183,11 @@ private fun NavGraphBuilder.appGraph(
         onOpenAbout = { navController.navigate(AboutRoute) },
         onDataDeleted = navController::restartFromOnboarding,
     )
-    aboutScreen(onClose = { navController.popBackStack() })
+    aboutScreen(
+        onClose = { navController.popBackStack() },
+        onOpenLicenses = { navController.navigate(LicensesRoute) },
+    )
+    licensesScreen(onClose = { navController.popBackStack() })
     diaryScreen(
         onOpenReading = { navController.navigate(EntryRoute(readingId = it)) },
         onAddReading = { navController.navigate(EntryRoute()) },

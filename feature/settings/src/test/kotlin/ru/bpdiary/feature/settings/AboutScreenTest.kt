@@ -32,10 +32,13 @@ class AboutScreenTest {
     private fun show(
         dark: Boolean = false,
         onBack: () -> Unit = {},
+        onOpenLicenses: () -> Unit = {},
     ) {
         rule.setContent {
             view = LocalView.current
-            BpTheme(Direction.SAGE, dark) { AboutScreen(version = "0.1.0", onBack = onBack) }
+            BpTheme(Direction.SAGE, dark) {
+                AboutScreen(version = "0.1.0", onBack = onBack, onOpenLicenses = onOpenLicenses)
+            }
         }
     }
 
@@ -87,5 +90,13 @@ class AboutScreenTest {
         show(onBack = { backs++ })
         rule.onNodeWithContentDescription("Назад").performClick()
         assertEquals(1, backs)
+    }
+
+    @Test
+    fun `the licenses row opens the licenses`() {
+        var opened = 0
+        show(onOpenLicenses = { opened++ })
+        rule.onNodeWithText("Лицензии").assertHasClickAction().performClick()
+        assertEquals(1, opened)
     }
 }
